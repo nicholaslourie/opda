@@ -18,7 +18,7 @@ setup(
         'Topic :: Scientific/Engineering :: Artificial Intelligence'
     ],
     license='',
-    packages=['ersa'],
+    packages=['ersa', 'experiments'],
     package_dir={'': 'src'},
     scripts=[],
     install_requires=[ln.strip() for ln in open('requirements.txt', 'r')],
