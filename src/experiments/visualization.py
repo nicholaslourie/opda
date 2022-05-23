@@ -152,3 +152,39 @@ def plot_pdf(
     ax.set_title(f'PDF (${name}$)')
 
     return fig, ax
+
+
+def plot_dist(
+        xs,
+        name,
+        *,
+        axes = None,
+):
+    """Return a plot visualizing the distribution of ``xs``.
+
+    Parameters
+    ----------
+    xs : 1D array of floats, required
+        The sample whose distribution should be visualized.
+    name : str, required
+        The name of the random variable represented by ``xs``.
+    ax : plt.Axes or None, optional (default=None)
+        An axes on which to make the plot, or ``None``. If ``None``,
+        then a figure and axes for the plot will be automatically
+        generated.
+
+    Returns
+    -------
+    plt.Figure, plt.Axes
+        The figure and axes on which the plot was made. If ``ax`` was
+        not ``None``, then the returned figure will be ``None``.
+    """
+    if axes is None:
+        fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(11, 5), sharex=True)
+    else:
+        fig = None
+
+    plot_cdf(xs, name=name, ax=axes[0])
+    plot_pdf(xs, name=name, ax=axes[1])
+
+    return fig, axes
