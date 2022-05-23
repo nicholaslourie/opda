@@ -1,5 +1,8 @@
 attrs==21.4.0
+autograd==1.4
+future==0.18.2
 iniconfig==1.1.1
+numpy==1.22.4
 packaging==21.3
 pluggy==1.0.0
 py==1.11.0
