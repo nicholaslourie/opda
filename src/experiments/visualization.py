@@ -25,8 +25,9 @@ def plot_random_search(
     n_grid : int, optional (default=1_000)
         The number of grid points to use when plotting the function.
     ax : plt.Axes or None, optional (default=None)
-        An axes on which to make the plot or ``None``. If ``None``, then
-        a figure and axes for the plot will be automatically generated.
+        An axes on which to make the plot, or ``None``. If ``None``,
+        then a figure and axes for the plot will be automatically
+        generated.
 
     Returns
     -------
@@ -67,5 +68,46 @@ def plot_random_search(
     ax.set_title('Random Search')
     ax.set_xlabel('$x$')
     ax.set_ylabel('$y$')
+
+    return fig, ax
+
+
+def plot_cdf(
+        xs,
+        name,
+        *,
+        ax = None,
+):
+    """Return a plot visualizing the empirical CDF of ``xs``.
+
+    Parameters
+    ----------
+    xs : 1D array of floats, required
+        The sample whose empirical CDF should be visualized.
+    name : str, required
+        The name of the random variable represented by ``xs``.
+    ax : plt.Axes or None, optional (default=None)
+        An axes on which to make the plot, or ``None``. If ``None``,
+        then a figure and axes for the plot will be automatically
+        generated.
+
+    Returns
+    -------
+    plt.Figure, plt.Axes
+        The figure and axes on which the plot was made. If ``ax`` was
+        not ``None``, then the returned figure will be ``None``.
+    """
+    if ax is None:
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 10))
+    else:
+        fig = None
+
+    n, = xs.shape
+
+    ax.plot(np.sort(xs), (np.arange(n) + 1) / n)
+
+    ax.set_xlabel(f'${name.lower()}$')
+    ax.set_ylabel(f'$\mathbb{{P}}({name.upper()} \leq {name.lower()})$')
+    ax.set_title(f'CDF (${name}$)')
 
     return fig, ax
