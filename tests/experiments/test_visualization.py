@@ -11,3 +11,7 @@ class PlotRandomSearchTestCase(unittest.TestCase):
 
 class PlotCdfTestCase(unittest.TestCase):
     """Test experiments.visualization.plot_cdf."""
+
+
+class PlotPdfTestCase(unittest.TestCase):
+    """Test experiments.visualization.plot_pdf."""

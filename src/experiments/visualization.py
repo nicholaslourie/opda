@@ -111,3 +111,44 @@ def plot_cdf(
     ax.set_title(f'CDF (${name}$)')
 
     return fig, ax
+
+
+def plot_pdf(
+        xs,
+        name,
+        *,
+        ax = None,
+):
+    """Return a plot visualizing a histogram of ``xs``.
+
+    Parameters
+    ----------
+    xs : 1D array of floats, required
+        The sample for which to create a histogram.
+    name : str, required
+        The name of the random variable represented by ``xs``.
+    ax : plt.Axes or None, optional (default=None)
+        An axes on which to make the plot, or ``None``. If ``None``,
+        then a figure and axes for the plot will be automatically
+        generated.
+
+    Returns
+    -------
+    plt.Figure, plt.Axes
+        The figure and axes on which the plot was made. If ``ax`` was
+        not ``None``, then the returned figure will be ``None``.
+    """
+    if ax is None:
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 10))
+    else:
+        fig = None
+
+    n, = xs.shape
+
+    ax.hist(xs, density=True)
+
+    ax.set_xlabel(f'${name.lower()}$')
+    ax.set_ylabel(f'$d\mathbb{{P}}({name.upper()} = {name.lower()})$')
+    ax.set_title(f'PDF (${name}$)')
+
+    return fig, ax
