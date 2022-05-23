@@ -14,3 +14,33 @@ random search, answering questions such as:
 
 A major application of ERSA is understanding how performance improves as
 you tune a machine learning model's hyper-parameters.
+
+
+Setup
+=====
+Check you have a virtual environment with Python 3.9 installed.
+
+1. Clone the repo:
+
+   .. code:: bash
+
+             $ git clone git@github.com:nalourie/ersa.git
+
+2. Install the package with ``pip``:
+
+   .. code:: bash
+
+             $ pip install .
+
+   Use the ``--editable`` option for development.
+
+
+Usage
+=====
+You can use the following commands to accomplish common tasks:
+
+Run tests:
+
+.. code:: bash
+
+          $ pytest
