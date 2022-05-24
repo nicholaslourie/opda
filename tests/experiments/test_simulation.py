@@ -2,11 +2,13 @@
 
 import unittest
 
+import numpy as np
+
 from experiments import simulation
 
 
 class MakeDampedLinearSinTestCase(unittest.TestCase):
-    """Test experiments.make_damped_linear_sin."""
+    """Test experiments.simulation.make_damped_linear_sin."""
 
     def test_make_damped_linear_sin(self):
         # Test 1 dimension.
@@ -33,4 +35,46 @@ class MakeDampedLinearSinTestCase(unittest.TestCase):
                 [1., 2., 3.],
             ]).shape,
             (2,),
+        )
+
+
+class SimulationTestCase(unittest.TestCase):
+    """Test experiments.simulation.Simulation."""
+
+    def test_run(self):
+        sim_kwargs = {
+            'n_trials': 7,
+            'n_samples': 5,
+            'n_dims': 3,
+            'func': simulation.make_damped_linear_sin(
+                weights=[1., -1., 0.],
+                bias=0.,
+                scale=1.,
+            ),
+            'bounds': [[-1., 1.]] * 3,
+        }
+        sim = simulation.Simulation.run(**sim_kwargs)
+
+        for key, expected in sim_kwargs.items():
+            actual = getattr(sim, key)
+            if isinstance(actual, np.ndarray):
+                self.assertTrue(np.array_equal(actual, expected))
+            else:
+                self.assertEqual(actual, expected)
+
+        self.assertLessEqual(sim.y_min, np.min(sim.yss))
+        self.assertGreaterEqual(sim.y_max, np.max(sim.yss))
+        self.assertEqual(sim.y_min, sim.func(sim.y_argmin))
+        self.assertEqual(sim.y_max, sim.func(sim.y_argmax))
+        self.assertEqual(
+            sim.xss.shape,
+            (sim.n_trials, sim.n_samples, sim.n_dims),
+        )
+        self.assertEqual(
+            sim.yss.shape,
+            (sim.n_trials, sim.n_samples),
+        )
+        self.assertEqual(
+            sim.yss_cummax.shape,
+            (sim.n_trials, sim.n_samples),
         )
