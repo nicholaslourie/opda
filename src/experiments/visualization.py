@@ -107,7 +107,7 @@ def plot_cdf(
     ax.plot(np.sort(xs), (np.arange(n) + 1) / n)
 
     ax.set_xlabel(f'${name.lower()}$')
-    ax.set_ylabel(f'$\mathbb{{P}}({name.upper()} \leq {name.lower()})$')
+    ax.set_ylabel(f'$\\mathbb{{P}}({name.upper()} \\leq {name.lower()})$')
     ax.set_title(f'CDF (${name}$)')
 
     return fig, ax
@@ -148,7 +148,7 @@ def plot_pdf(
     ax.hist(xs, density=True)
 
     ax.set_xlabel(f'${name.lower()}$')
-    ax.set_ylabel(f'$d\mathbb{{P}}({name.upper()} = {name.lower()})$')
+    ax.set_ylabel(f'$d\\mathbb{{P}}({name.upper()} = {name.lower()})$')
     ax.set_title(f'PDF (${name}$)')
 
     return fig, ax
