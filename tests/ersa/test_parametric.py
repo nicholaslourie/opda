@@ -150,3 +150,17 @@ class QuadraticDistributionTestCase(unittest.TestCase):
                     dist.average_tuning_curve(list(range(1, 6))),
                     atol=0.075,
                 ))
+
+    def test_ppf_is_inverse_of_cdf(self):
+        # N.B. For continuous distributions like the quadratic
+        # distribution, the quantile function is the inverse of the
+        # cumulative distribution function.
+        a, b = 0., 1.
+        for c in [0.5, 10.]:
+            for convex in [False, True]:
+                dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
+                for _ in range(5):
+                    ys = dist.sample(100)
+                    self.assertTrue(np.allclose(dist.ppf(dist.cdf(ys)), ys))
+                    us = np.random.uniform(0, 1, size=100)
+                    self.assertTrue(np.allclose(dist.cdf(dist.ppf(us)), us))
