@@ -54,17 +54,20 @@ class QuadraticDistributionTestCase(unittest.TestCase):
             # broadcasting
             for _ in range(7):
                 us = np.random.uniform(0, 1, size=5)
-                self.assertTrue(np.array_equal(
-                    dist.pdf(a + us * (b - a)), np.ones_like(us),
-                ))
+                self.assertEqual(
+                    dist.pdf(a + us * (b - a)).tolist(),
+                    np.ones_like(us).tolist(),
+                )
                 us = np.random.uniform(0, 1, size=(5, 3))
-                self.assertTrue(np.array_equal(
-                    dist.pdf(a + us * (b - a)), np.ones_like(us),
-                ))
+                self.assertEqual(
+                    dist.pdf(a + us * (b - a)).tolist(),
+                    np.ones_like(us).tolist(),
+                )
                 us = np.random.uniform(0, 1, size=(5, 3, 2))
-                self.assertTrue(np.array_equal(
-                    dist.pdf(a + us * (b - a)), np.ones_like(us),
-                ))
+                self.assertEqual(
+                    dist.pdf(a + us * (b - a)).tolist(),
+                    np.ones_like(us).tolist(),
+                )
 
     def test_cdf(self):
         a, b, c = 0., 1., 1.
@@ -79,17 +82,20 @@ class QuadraticDistributionTestCase(unittest.TestCase):
             # broadcasting
             for _ in range(7):
                 us = np.random.uniform(0, 1, size=5)
-                self.assertTrue(np.array_equal(
-                    dist.cdf(a + us * (b - a)), us,
-                ))
+                self.assertEqual(
+                    dist.cdf(a + us * (b - a)).tolist(),
+                    us.tolist(),
+                )
                 us = np.random.uniform(0, 1, size=(5, 3))
-                self.assertTrue(np.array_equal(
-                    dist.cdf(a + us * (b - a)), us,
-                ))
+                self.assertEqual(
+                    dist.cdf(a + us * (b - a)).tolist(),
+                    us.tolist(),
+                )
                 us = np.random.uniform(0, 1, size=(5, 3, 2))
-                self.assertTrue(np.array_equal(
-                    dist.cdf(a + us * (b - a)), us,
-                ))
+                self.assertEqual(
+                    dist.cdf(a + us * (b - a)).tolist(),
+                    us.tolist(),
+                )
 
     def test_ppf(self):
         a, b, c = 0., 1., 1.
@@ -106,17 +112,20 @@ class QuadraticDistributionTestCase(unittest.TestCase):
             # broadcasting
             for _ in range(7):
                 us = np.random.uniform(0, 1, size=5)
-                self.assertTrue(np.array_equal(
-                    dist.ppf(us), a + us * (b - a),
-                ))
+                self.assertEqual(
+                    dist.ppf(us).tolist(),
+                    (a + us * (b - a)).tolist(),
+                )
                 us = np.random.uniform(0, 1, size=(5, 3))
-                self.assertTrue(np.array_equal(
-                    dist.ppf(us), a + us * (b - a),
-                ))
+                self.assertEqual(
+                    dist.ppf(us).tolist(),
+                    (a + us * (b - a)).tolist(),
+                )
                 us = np.random.uniform(0, 1, size=(5, 3, 2))
-                self.assertTrue(np.array_equal(
-                    dist.ppf(us), a + us * (b - a),
-                ))
+                self.assertEqual(
+                    dist.ppf(us).tolist(),
+                    (a + us * (b - a)).tolist(),
+                )
 
     def test_quantile_tuning_curve(self):
         a, b = 0., 1.

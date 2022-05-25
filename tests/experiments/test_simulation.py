@@ -58,7 +58,7 @@ class SimulationTestCase(unittest.TestCase):
         for key, expected in sim_kwargs.items():
             actual = getattr(sim, key)
             if isinstance(actual, np.ndarray):
-                self.assertTrue(np.array_equal(actual, expected))
+                self.assertEqual(actual.tolist(), expected)
             else:
                 self.assertEqual(actual, expected)
 
