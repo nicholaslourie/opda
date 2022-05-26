@@ -10,23 +10,6 @@ from ersa import parametric
 class QuadraticDistributionTestCase(unittest.TestCase):
     """Test ersa.parametric.QuadraticDistribution."""
 
-    def test_estimate_initial_parameters_and_bounds(self):
-        a, b, c = 0., 1., 1.
-        ys = parametric.QuadraticDistribution(a, b, c).sample(1_000)
-        for fraction in [0.5, 1.]:
-            for convex in [False, True]:
-                init_params, bounds = parametric.QuadraticDistribution\
-                    .estimate_initial_parameters_and_bounds(ys, fraction=1.)
-                self.assertLess(abs(init_params[0] - a), 0.1)
-                self.assertLess(abs(init_params[1] - b), 0.1)
-                self.assertLess(abs(init_params[2] - c), 0.25)
-                self.assertGreater(a, bounds[0, 0])
-                self.assertLess(a, bounds[0, 1])
-                self.assertGreater(b, bounds[1, 0])
-                self.assertLess(b, bounds[1, 1])
-                self.assertGreater(c, bounds[2, 0])
-                self.assertLess(c, bounds[2, 1])
-
     def test_sample(self):
         a, b = 0., 1.
         for c in [0.5, 10.]:
@@ -150,6 +133,23 @@ class QuadraticDistributionTestCase(unittest.TestCase):
                     dist.average_tuning_curve(list(range(1, 6))),
                     atol=0.075,
                 ))
+
+    def test_estimate_initial_parameters_and_bounds(self):
+        a, b, c = 0., 1., 1.
+        ys = parametric.QuadraticDistribution(a, b, c).sample(1_000)
+        for fraction in [0.5, 1.]:
+            for convex in [False, True]:
+                init_params, bounds = parametric.QuadraticDistribution\
+                    .estimate_initial_parameters_and_bounds(ys, fraction=1.)
+                self.assertLess(abs(init_params[0] - a), 0.1)
+                self.assertLess(abs(init_params[1] - b), 0.1)
+                self.assertLess(abs(init_params[2] - c), 0.25)
+                self.assertGreater(a, bounds[0, 0])
+                self.assertLess(a, bounds[0, 1])
+                self.assertGreater(b, bounds[1, 0])
+                self.assertLess(b, bounds[1, 1])
+                self.assertGreater(c, bounds[2, 0])
+                self.assertLess(c, bounds[2, 1])
 
     def test_ppf_is_inverse_of_cdf(self):
         # N.B. For continuous distributions like the quadratic

@@ -36,79 +36,6 @@ class QuadraticDistribution:
         self.c = c
         self.convex = convex
 
-    @classmethod
-    def estimate_initial_parameters_and_bounds(
-            cls,
-            ys,
-            fraction=1.,
-            convex=False,
-    ):
-        """Return initial parameter estimates and bounds.
-
-        Use the initial parameter estimates and bounds returned by
-        this method to initialize parameters for optimization based
-        estimates like MLE.
-
-        Parameters
-        ----------
-        ys : 1D array of floats, required
-            The sample from which to estimate the initial parameters and
-            bounds.
-        fraction : float (0. <= fraction <= 1.), optional (default=1.)
-            The fraction of the sample to use. If ``convex`` is
-            ``False``, the greatest ``fraction`` numbers are
-            retained. If ``convex`` is ``True``, the least ``fraction``
-            numbers are retained.
-        convex : bool, optional (default=False)
-            Whether to estimate initial parameters and bounds for the
-            convex or concave form of the distribution.
-
-        Returns
-        -------
-        3 array of floats, 3 x 2 array of floats
-            An array of initial parameter estimates and an array of
-            bounds.
-        """
-        ys_fraction = (
-            np.sort(ys)[:int(fraction * len(ys))]
-            if convex else
-            np.sort(ys)[-int(fraction * len(ys)):]
-        )
-
-        a = ys_fraction[0]
-        b = ys_fraction[-1]
-        # Initialize c with its MLE assuming a and b are known.
-        c = (
-            1. / np.mean(np.log((b - a) / (ys_fraction[1:-1] - a)))
-            if convex else
-            1. / np.mean(np.log((b - a) / (b - ys_fraction[1:-1])))
-        )
-
-        # Correct a and b for the fact that we're using only a fraction.
-        if convex:
-            # Push a a bit lower than min(ys).
-            a = a - 0.05 * (b - a)
-            # Set b so that P(y <= ys_fraction[-1]) = fraction.
-            b = a + (b - a) / fraction**(1/c)
-            # Push b a little higher.
-            b = b + 0.05 * (b - a)
-        else:
-            # Push b a bit higher than max(ys).
-            b = b + 0.05 * (b - a)
-            # Set a so that P(y > ys_fraction[0]) = fraction.
-            a = b - (b - a) / fraction**(1/c)
-            # Push a a little lower.
-            a = a - 0.05 * (b - a)
-
-        params = np.array([a, b, c])
-        bounds = np.array([
-            (-np.inf, ys_fraction[0]),
-            (ys_fraction[-1], np.inf),
-            (0, np.inf),
-        ])
-
-        return params, bounds
-
     def sample(self, size):
         """Return a sample from the quadratic distribution.
 
@@ -283,3 +210,76 @@ class QuadraticDistribution:
             )
 
         return ys
+
+    @classmethod
+    def estimate_initial_parameters_and_bounds(
+            cls,
+            ys,
+            fraction=1.,
+            convex=False,
+    ):
+        """Return initial parameter estimates and bounds.
+
+        Use the initial parameter estimates and bounds returned by
+        this method to initialize parameters for optimization based
+        estimates like MLE.
+
+        Parameters
+        ----------
+        ys : 1D array of floats, required
+            The sample from which to estimate the initial parameters and
+            bounds.
+        fraction : float (0. <= fraction <= 1.), optional (default=1.)
+            The fraction of the sample to use. If ``convex`` is
+            ``False``, the greatest ``fraction`` numbers are
+            retained. If ``convex`` is ``True``, the least ``fraction``
+            numbers are retained.
+        convex : bool, optional (default=False)
+            Whether to estimate initial parameters and bounds for the
+            convex or concave form of the distribution.
+
+        Returns
+        -------
+        3 array of floats, 3 x 2 array of floats
+            An array of initial parameter estimates and an array of
+            bounds.
+        """
+        ys_fraction = (
+            np.sort(ys)[:int(fraction * len(ys))]
+            if convex else
+            np.sort(ys)[-int(fraction * len(ys)):]
+        )
+
+        a = ys_fraction[0]
+        b = ys_fraction[-1]
+        # Initialize c with its MLE assuming a and b are known.
+        c = (
+            1. / np.mean(np.log((b - a) / (ys_fraction[1:-1] - a)))
+            if convex else
+            1. / np.mean(np.log((b - a) / (b - ys_fraction[1:-1])))
+        )
+
+        # Correct a and b for the fact that we're using only a fraction.
+        if convex:
+            # Push a a bit lower than min(ys).
+            a = a - 0.05 * (b - a)
+            # Set b so that P(y <= ys_fraction[-1]) = fraction.
+            b = a + (b - a) / fraction**(1/c)
+            # Push b a little higher.
+            b = b + 0.05 * (b - a)
+        else:
+            # Push b a bit higher than max(ys).
+            b = b + 0.05 * (b - a)
+            # Set a so that P(y > ys_fraction[0]) = fraction.
+            a = b - (b - a) / fraction**(1/c)
+            # Push a a little lower.
+            a = a - 0.05 * (b - a)
+
+        params = np.array([a, b, c])
+        bounds = np.array([
+            (-np.inf, ys_fraction[0]),
+            (ys_fraction[-1], np.inf),
+            (0, np.inf),
+        ])
+
+        return params, bounds

@@ -10,328 +10,6 @@ from ersa import nonparametric
 class EmpiricalDistributionTestCase(unittest.TestCase):
     """Test ersa.nonparametric.EmpiricalDistribution."""
 
-    def test_naive_tuning_curve(self):
-        ys = [42.]
-        dist = nonparametric.EmpiricalDistribution(ys)
-        # Test when len(ys) == 1.
-        self.assertEqual(dist.naive_tuning_curve(1), 42.)
-        self.assertEqual(dist.naive_tuning_curve(10), 42.)
-        self.assertEqual(
-            dist.naive_tuning_curve([1, 10]).tolist(),
-            [42., 42.],
-        )
-        self.assertEqual(
-            dist.naive_tuning_curve([
-                [1, 10],
-                [10, 1],
-            ]).tolist(),
-            [
-                [42., 42.],
-                [42., 42.],
-            ],
-        )
-
-        ys = [0., 50., 25., 100., 75.]
-        dist = nonparametric.EmpiricalDistribution(ys)
-        # Test 0 < ns <= len(ys).
-        #   scalar
-        self.assertEqual(dist.naive_tuning_curve(1), 0.)
-        self.assertEqual(dist.naive_tuning_curve(3), 50.)
-        self.assertEqual(dist.naive_tuning_curve(5), 100.)
-        #   1D array
-        self.assertEqual(
-            dist.naive_tuning_curve([1, 2, 3, 4, 5]).tolist(),
-            [0., 50., 50., 100., 100.],
-        )
-        self.assertEqual(
-            dist.naive_tuning_curve([2, 4, 1, 3, 5]).tolist(),
-            [50., 100., 0., 50., 100.],
-        )
-        #   2D array
-        self.assertEqual(
-            dist.naive_tuning_curve([
-                [1, 2, 3, 4, 5],
-                [2, 4, 1, 3, 5],
-            ]).tolist(),
-            [
-                [0., 50., 50., 100., 100.],
-                [50., 100., 0., 50., 100.],
-            ],
-        )
-        # Test ns > len(ys).
-        #   scalar
-        self.assertEqual(dist.naive_tuning_curve(6), 100.)
-        self.assertEqual(dist.naive_tuning_curve(10), 100.)
-        #   1D array
-        self.assertEqual(
-            dist.naive_tuning_curve([1, 2, 10]).tolist(),
-            [0., 50., 100.],
-        )
-        #   2D array
-        self.assertEqual(
-            dist.naive_tuning_curve([
-                [1, 2, 10],
-                [10, 2, 1],
-            ]).tolist(),
-            [
-                [0., 50., 100.],
-                [100., 50., 0.],
-            ],
-        )
-        # Test ns <= 0.
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve(0)
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve(-1)
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([0])
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([-2])
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([0, 1])
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([-2, 1])
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([[0], [1]])
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([[-2], [1]])
-
-        ys = [-1, 0, 1]
-        ws = [0.1, 0.5, 0.4]
-        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-        # Test when ws != None.
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve(1)
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([1])
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([2, 1])
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([[2], [1]])
-
-    def test_v_tuning_curve(self):
-        ys = [42.]
-        dist = nonparametric.EmpiricalDistribution(ys)
-        # Test when len(ys) == 1.
-        self.assertEqual(dist.v_tuning_curve(1), 42.)
-        self.assertEqual(dist.v_tuning_curve(10), 42.)
-        self.assertEqual(
-            dist.v_tuning_curve([1, 10]).tolist(),
-            [42., 42.],
-        )
-        self.assertEqual(
-            dist.v_tuning_curve([
-                [1, 10],
-                [10, 1],
-            ]).tolist(),
-            [
-                [42., 42.],
-                [42., 42.],
-            ],
-        )
-
-        ys = [0., 50., 25., 100., 75.]
-        dist = nonparametric.EmpiricalDistribution(ys)
-        curve = np.mean(
-            np.maximum.accumulate(
-                np.random.choice(ys, size=(2_500, 7), replace=True),
-                axis=1,
-            ),
-            axis=0,
-        )
-        # Test 0 < ns <= len(ys).
-        #   scalar
-        self.assertAlmostEqual(dist.v_tuning_curve(1), curve[0], delta=5.)
-        self.assertAlmostEqual(dist.v_tuning_curve(3), curve[2], delta=5.)
-        self.assertAlmostEqual(dist.v_tuning_curve(5), curve[4], delta=5.)
-        #   1D array
-        self.assertTrue(np.allclose(
-            dist.v_tuning_curve([1, 2, 3, 4, 5]),
-            curve[:5],
-            atol=5.,
-        ))
-        self.assertTrue(np.allclose(
-            dist.v_tuning_curve([2, 4, 1, 3, 5]),
-            [curve[1], curve[3], curve[0], curve[2], curve[4]],
-            atol=5.,
-        ))
-        #   2D array
-        self.assertTrue(np.allclose(
-            dist.v_tuning_curve([
-                [1, 2, 3, 4, 5],
-                [2, 4, 1, 3, 5],
-            ]),
-            [
-                curve[:5],
-                [curve[1], curve[3], curve[0], curve[2], curve[4]],
-            ],
-            atol=5.,
-        ))
-        # Test ns > len(ys).
-        #   scalar
-        self.assertAlmostEqual(dist.v_tuning_curve(6), curve[5], delta=5.)
-        self.assertAlmostEqual(dist.v_tuning_curve(7), curve[6], delta=5.)
-        #   1D array
-        self.assertTrue(np.allclose(
-            dist.v_tuning_curve([1, 2, 7]),
-            [curve[0], curve[1], curve[6]],
-            atol=5.,
-        ))
-        #   2D array
-        self.assertTrue(np.allclose(
-            dist.v_tuning_curve([
-                [1, 2, 7],
-                [6, 2, 1],
-            ]),
-            [
-                [curve[0], curve[1], curve[6]],
-                [curve[5], curve[1], curve[0]],
-            ],
-            atol=5.,
-        ))
-        # Test ns <= 0.
-        with self.assertRaises(ValueError):
-            dist.v_tuning_curve(0)
-        with self.assertRaises(ValueError):
-            dist.v_tuning_curve(-1)
-        with self.assertRaises(ValueError):
-            dist.v_tuning_curve([0])
-        with self.assertRaises(ValueError):
-            dist.v_tuning_curve([-2])
-        with self.assertRaises(ValueError):
-            dist.v_tuning_curve([0, 1])
-        with self.assertRaises(ValueError):
-            dist.v_tuning_curve([-2, 1])
-        with self.assertRaises(ValueError):
-            dist.v_tuning_curve([[0], [1]])
-        with self.assertRaises(ValueError):
-            dist.v_tuning_curve([[-2], [1]])
-
-        ys = [-1, 0, 1]
-        ws = [0.1, 0.5, 0.4]
-        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-        # Test when ws != None.
-        with self.assertRaises(ValueError):
-            dist.v_tuning_curve(1)
-        with self.assertRaises(ValueError):
-            dist.v_tuning_curve([1])
-        with self.assertRaises(ValueError):
-            dist.v_tuning_curve([2, 1])
-        with self.assertRaises(ValueError):
-            dist.v_tuning_curve([[2], [1]])
-
-    def test_u_tuning_curve(self):
-        ys = [42.]
-        dist = nonparametric.EmpiricalDistribution(ys)
-        # Test when len(ys) == 1.
-        self.assertEqual(dist.u_tuning_curve(1), 42.)
-        self.assertEqual(dist.u_tuning_curve(10), 42.)
-        self.assertEqual(
-            dist.u_tuning_curve([1, 10]).tolist(),
-            [42., 42.],
-        )
-        self.assertEqual(
-            dist.u_tuning_curve([
-                [1, 10],
-                [10, 1],
-            ]).tolist(),
-            [
-                [42., 42.],
-                [42., 42.],
-            ],
-        )
-
-        ys = [0., 50., 25., 100., 75.]
-        dist = nonparametric.EmpiricalDistribution(ys)
-        curve = np.mean(
-            np.maximum.accumulate(
-                # Sort random numbers to batch sampling without replacement.
-                np.array(ys)[np.argsort(np.random.rand(2_500, 5), axis=1)],
-                axis=1,
-            ),
-            axis=0,
-        )
-        # Test 0 < ns <= len(ys).
-        #   scalar
-        self.assertAlmostEqual(dist.u_tuning_curve(1), curve[0], delta=5.)
-        self.assertAlmostEqual(dist.u_tuning_curve(3), curve[2], delta=5.)
-        self.assertAlmostEqual(dist.u_tuning_curve(5), curve[4], delta=5.)
-        #   1D array
-        self.assertTrue(np.allclose(
-            dist.u_tuning_curve([1, 2, 3, 4, 5]),
-            curve,
-            atol=5.,
-        ))
-        self.assertTrue(np.allclose(
-            dist.u_tuning_curve([2, 4, 1, 3, 5]),
-            [curve[1], curve[3], curve[0], curve[2], curve[4]],
-            atol=5.,
-        ))
-        #   2D array
-        self.assertTrue(np.allclose(
-            dist.u_tuning_curve([
-                [1, 2, 3, 4, 5],
-                [2, 4, 1, 3, 5],
-            ]),
-            [
-                curve,
-                [curve[1], curve[3], curve[0], curve[2], curve[4]],
-            ],
-            atol=5.,
-        ))
-        # Test ns > len(ys).
-        #   scalar
-        self.assertAlmostEqual(dist.u_tuning_curve(6), curve[4], delta=5.)
-        self.assertAlmostEqual(dist.u_tuning_curve(7), curve[4], delta=5.)
-        #   1D array
-        self.assertTrue(np.allclose(
-            dist.u_tuning_curve([1, 2, 7]),
-            [curve[0], curve[1], curve[4]],
-            atol=5.,
-        ))
-        #   2D array
-        self.assertTrue(np.allclose(
-            dist.u_tuning_curve([
-                [1, 2, 7],
-                [6, 2, 1],
-            ]),
-            [
-                [curve[0], curve[1], curve[4]],
-                [curve[4], curve[1], curve[0]],
-            ],
-            atol=5.,
-        ))
-        # Test ns <= 0.
-        with self.assertRaises(ValueError):
-            dist.u_tuning_curve(0)
-        with self.assertRaises(ValueError):
-            dist.u_tuning_curve(-1)
-        with self.assertRaises(ValueError):
-            dist.u_tuning_curve([0])
-        with self.assertRaises(ValueError):
-            dist.u_tuning_curve([-2])
-        with self.assertRaises(ValueError):
-            dist.u_tuning_curve([0, 1])
-        with self.assertRaises(ValueError):
-            dist.u_tuning_curve([-2, 1])
-        with self.assertRaises(ValueError):
-            dist.u_tuning_curve([[0], [1]])
-        with self.assertRaises(ValueError):
-            dist.u_tuning_curve([[-2], [1]])
-
-        ys = [-1, 0, 1]
-        ws = [0.1, 0.5, 0.4]
-        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-        # Test when ws != None.
-        with self.assertRaises(ValueError):
-            dist.u_tuning_curve(1)
-        with self.assertRaises(ValueError):
-            dist.u_tuning_curve([1])
-        with self.assertRaises(ValueError):
-            dist.u_tuning_curve([2, 1])
-        with self.assertRaises(ValueError):
-            dist.u_tuning_curve([[2], [1]])
-
     def test_sample(self):
         # Test without weights.
         #   when len(ys) == 1
@@ -870,6 +548,328 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 dist.average_tuning_curve([[0], [1]])
             with self.assertRaises(ValueError):
                 dist.average_tuning_curve([[-2], [1]])
+
+    def test_naive_tuning_curve(self):
+        ys = [42.]
+        dist = nonparametric.EmpiricalDistribution(ys)
+        # Test when len(ys) == 1.
+        self.assertEqual(dist.naive_tuning_curve(1), 42.)
+        self.assertEqual(dist.naive_tuning_curve(10), 42.)
+        self.assertEqual(
+            dist.naive_tuning_curve([1, 10]).tolist(),
+            [42., 42.],
+        )
+        self.assertEqual(
+            dist.naive_tuning_curve([
+                [1, 10],
+                [10, 1],
+            ]).tolist(),
+            [
+                [42., 42.],
+                [42., 42.],
+            ],
+        )
+
+        ys = [0., 50., 25., 100., 75.]
+        dist = nonparametric.EmpiricalDistribution(ys)
+        # Test 0 < ns <= len(ys).
+        #   scalar
+        self.assertEqual(dist.naive_tuning_curve(1), 0.)
+        self.assertEqual(dist.naive_tuning_curve(3), 50.)
+        self.assertEqual(dist.naive_tuning_curve(5), 100.)
+        #   1D array
+        self.assertEqual(
+            dist.naive_tuning_curve([1, 2, 3, 4, 5]).tolist(),
+            [0., 50., 50., 100., 100.],
+        )
+        self.assertEqual(
+            dist.naive_tuning_curve([2, 4, 1, 3, 5]).tolist(),
+            [50., 100., 0., 50., 100.],
+        )
+        #   2D array
+        self.assertEqual(
+            dist.naive_tuning_curve([
+                [1, 2, 3, 4, 5],
+                [2, 4, 1, 3, 5],
+            ]).tolist(),
+            [
+                [0., 50., 50., 100., 100.],
+                [50., 100., 0., 50., 100.],
+            ],
+        )
+        # Test ns > len(ys).
+        #   scalar
+        self.assertEqual(dist.naive_tuning_curve(6), 100.)
+        self.assertEqual(dist.naive_tuning_curve(10), 100.)
+        #   1D array
+        self.assertEqual(
+            dist.naive_tuning_curve([1, 2, 10]).tolist(),
+            [0., 50., 100.],
+        )
+        #   2D array
+        self.assertEqual(
+            dist.naive_tuning_curve([
+                [1, 2, 10],
+                [10, 2, 1],
+            ]).tolist(),
+            [
+                [0., 50., 100.],
+                [100., 50., 0.],
+            ],
+        )
+        # Test ns <= 0.
+        with self.assertRaises(ValueError):
+            dist.naive_tuning_curve(0)
+        with self.assertRaises(ValueError):
+            dist.naive_tuning_curve(-1)
+        with self.assertRaises(ValueError):
+            dist.naive_tuning_curve([0])
+        with self.assertRaises(ValueError):
+            dist.naive_tuning_curve([-2])
+        with self.assertRaises(ValueError):
+            dist.naive_tuning_curve([0, 1])
+        with self.assertRaises(ValueError):
+            dist.naive_tuning_curve([-2, 1])
+        with self.assertRaises(ValueError):
+            dist.naive_tuning_curve([[0], [1]])
+        with self.assertRaises(ValueError):
+            dist.naive_tuning_curve([[-2], [1]])
+
+        ys = [-1, 0, 1]
+        ws = [0.1, 0.5, 0.4]
+        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+        # Test when ws != None.
+        with self.assertRaises(ValueError):
+            dist.naive_tuning_curve(1)
+        with self.assertRaises(ValueError):
+            dist.naive_tuning_curve([1])
+        with self.assertRaises(ValueError):
+            dist.naive_tuning_curve([2, 1])
+        with self.assertRaises(ValueError):
+            dist.naive_tuning_curve([[2], [1]])
+
+    def test_v_tuning_curve(self):
+        ys = [42.]
+        dist = nonparametric.EmpiricalDistribution(ys)
+        # Test when len(ys) == 1.
+        self.assertEqual(dist.v_tuning_curve(1), 42.)
+        self.assertEqual(dist.v_tuning_curve(10), 42.)
+        self.assertEqual(
+            dist.v_tuning_curve([1, 10]).tolist(),
+            [42., 42.],
+        )
+        self.assertEqual(
+            dist.v_tuning_curve([
+                [1, 10],
+                [10, 1],
+            ]).tolist(),
+            [
+                [42., 42.],
+                [42., 42.],
+            ],
+        )
+
+        ys = [0., 50., 25., 100., 75.]
+        dist = nonparametric.EmpiricalDistribution(ys)
+        curve = np.mean(
+            np.maximum.accumulate(
+                np.random.choice(ys, size=(2_500, 7), replace=True),
+                axis=1,
+            ),
+            axis=0,
+        )
+        # Test 0 < ns <= len(ys).
+        #   scalar
+        self.assertAlmostEqual(dist.v_tuning_curve(1), curve[0], delta=5.)
+        self.assertAlmostEqual(dist.v_tuning_curve(3), curve[2], delta=5.)
+        self.assertAlmostEqual(dist.v_tuning_curve(5), curve[4], delta=5.)
+        #   1D array
+        self.assertTrue(np.allclose(
+            dist.v_tuning_curve([1, 2, 3, 4, 5]),
+            curve[:5],
+            atol=5.,
+        ))
+        self.assertTrue(np.allclose(
+            dist.v_tuning_curve([2, 4, 1, 3, 5]),
+            [curve[1], curve[3], curve[0], curve[2], curve[4]],
+            atol=5.,
+        ))
+        #   2D array
+        self.assertTrue(np.allclose(
+            dist.v_tuning_curve([
+                [1, 2, 3, 4, 5],
+                [2, 4, 1, 3, 5],
+            ]),
+            [
+                curve[:5],
+                [curve[1], curve[3], curve[0], curve[2], curve[4]],
+            ],
+            atol=5.,
+        ))
+        # Test ns > len(ys).
+        #   scalar
+        self.assertAlmostEqual(dist.v_tuning_curve(6), curve[5], delta=5.)
+        self.assertAlmostEqual(dist.v_tuning_curve(7), curve[6], delta=5.)
+        #   1D array
+        self.assertTrue(np.allclose(
+            dist.v_tuning_curve([1, 2, 7]),
+            [curve[0], curve[1], curve[6]],
+            atol=5.,
+        ))
+        #   2D array
+        self.assertTrue(np.allclose(
+            dist.v_tuning_curve([
+                [1, 2, 7],
+                [6, 2, 1],
+            ]),
+            [
+                [curve[0], curve[1], curve[6]],
+                [curve[5], curve[1], curve[0]],
+            ],
+            atol=5.,
+        ))
+        # Test ns <= 0.
+        with self.assertRaises(ValueError):
+            dist.v_tuning_curve(0)
+        with self.assertRaises(ValueError):
+            dist.v_tuning_curve(-1)
+        with self.assertRaises(ValueError):
+            dist.v_tuning_curve([0])
+        with self.assertRaises(ValueError):
+            dist.v_tuning_curve([-2])
+        with self.assertRaises(ValueError):
+            dist.v_tuning_curve([0, 1])
+        with self.assertRaises(ValueError):
+            dist.v_tuning_curve([-2, 1])
+        with self.assertRaises(ValueError):
+            dist.v_tuning_curve([[0], [1]])
+        with self.assertRaises(ValueError):
+            dist.v_tuning_curve([[-2], [1]])
+
+        ys = [-1, 0, 1]
+        ws = [0.1, 0.5, 0.4]
+        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+        # Test when ws != None.
+        with self.assertRaises(ValueError):
+            dist.v_tuning_curve(1)
+        with self.assertRaises(ValueError):
+            dist.v_tuning_curve([1])
+        with self.assertRaises(ValueError):
+            dist.v_tuning_curve([2, 1])
+        with self.assertRaises(ValueError):
+            dist.v_tuning_curve([[2], [1]])
+
+    def test_u_tuning_curve(self):
+        ys = [42.]
+        dist = nonparametric.EmpiricalDistribution(ys)
+        # Test when len(ys) == 1.
+        self.assertEqual(dist.u_tuning_curve(1), 42.)
+        self.assertEqual(dist.u_tuning_curve(10), 42.)
+        self.assertEqual(
+            dist.u_tuning_curve([1, 10]).tolist(),
+            [42., 42.],
+        )
+        self.assertEqual(
+            dist.u_tuning_curve([
+                [1, 10],
+                [10, 1],
+            ]).tolist(),
+            [
+                [42., 42.],
+                [42., 42.],
+            ],
+        )
+
+        ys = [0., 50., 25., 100., 75.]
+        dist = nonparametric.EmpiricalDistribution(ys)
+        curve = np.mean(
+            np.maximum.accumulate(
+                # Sort random numbers to batch sampling without replacement.
+                np.array(ys)[np.argsort(np.random.rand(2_500, 5), axis=1)],
+                axis=1,
+            ),
+            axis=0,
+        )
+        # Test 0 < ns <= len(ys).
+        #   scalar
+        self.assertAlmostEqual(dist.u_tuning_curve(1), curve[0], delta=5.)
+        self.assertAlmostEqual(dist.u_tuning_curve(3), curve[2], delta=5.)
+        self.assertAlmostEqual(dist.u_tuning_curve(5), curve[4], delta=5.)
+        #   1D array
+        self.assertTrue(np.allclose(
+            dist.u_tuning_curve([1, 2, 3, 4, 5]),
+            curve,
+            atol=5.,
+        ))
+        self.assertTrue(np.allclose(
+            dist.u_tuning_curve([2, 4, 1, 3, 5]),
+            [curve[1], curve[3], curve[0], curve[2], curve[4]],
+            atol=5.,
+        ))
+        #   2D array
+        self.assertTrue(np.allclose(
+            dist.u_tuning_curve([
+                [1, 2, 3, 4, 5],
+                [2, 4, 1, 3, 5],
+            ]),
+            [
+                curve,
+                [curve[1], curve[3], curve[0], curve[2], curve[4]],
+            ],
+            atol=5.,
+        ))
+        # Test ns > len(ys).
+        #   scalar
+        self.assertAlmostEqual(dist.u_tuning_curve(6), curve[4], delta=5.)
+        self.assertAlmostEqual(dist.u_tuning_curve(7), curve[4], delta=5.)
+        #   1D array
+        self.assertTrue(np.allclose(
+            dist.u_tuning_curve([1, 2, 7]),
+            [curve[0], curve[1], curve[4]],
+            atol=5.,
+        ))
+        #   2D array
+        self.assertTrue(np.allclose(
+            dist.u_tuning_curve([
+                [1, 2, 7],
+                [6, 2, 1],
+            ]),
+            [
+                [curve[0], curve[1], curve[4]],
+                [curve[4], curve[1], curve[0]],
+            ],
+            atol=5.,
+        ))
+        # Test ns <= 0.
+        with self.assertRaises(ValueError):
+            dist.u_tuning_curve(0)
+        with self.assertRaises(ValueError):
+            dist.u_tuning_curve(-1)
+        with self.assertRaises(ValueError):
+            dist.u_tuning_curve([0])
+        with self.assertRaises(ValueError):
+            dist.u_tuning_curve([-2])
+        with self.assertRaises(ValueError):
+            dist.u_tuning_curve([0, 1])
+        with self.assertRaises(ValueError):
+            dist.u_tuning_curve([-2, 1])
+        with self.assertRaises(ValueError):
+            dist.u_tuning_curve([[0], [1]])
+        with self.assertRaises(ValueError):
+            dist.u_tuning_curve([[-2], [1]])
+
+        ys = [-1, 0, 1]
+        ws = [0.1, 0.5, 0.4]
+        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+        # Test when ws != None.
+        with self.assertRaises(ValueError):
+            dist.u_tuning_curve(1)
+        with self.assertRaises(ValueError):
+            dist.u_tuning_curve([1])
+        with self.assertRaises(ValueError):
+            dist.u_tuning_curve([2, 1])
+        with self.assertRaises(ValueError):
+            dist.u_tuning_curve([[2], [1]])
 
     def test_ppf_is_almost_sure_left_inverse_of_cdf(self):
         # N.B. In general, the quantile function is an almost sure left

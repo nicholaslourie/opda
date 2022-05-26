@@ -105,119 +105,6 @@ class EmpiricalDistribution:
         )
         self._ws_cumsum = np.cumsum(self._ws)
 
-    def naive_tuning_curve(self, ns):
-        """Return the naive estimate for the tuning curve at ``ns``.
-
-        The naive tuning curve estimate assigns to n the maximum value
-        seen in the first n samples. The estimate assumes each sample
-        has identical weight, so this method cannot be called when
-        ``ws`` is not ``None``.
-
-        Parameters
-        ----------
-        ns : array of ints, required
-            The values at which to evaluate the naive tuning curve. The
-            values must be positive integers.
-
-        Returns
-        -------
-        array of floats
-            The values of the naive tuning curve.
-        """
-        # Validate the instance and arguments.
-        if self._has_ws:
-            raise ValueError(
-                'naive_tuning_curve cannot be called when ws is not None.'
-            )
-
-        ns = np.array(ns)
-        if np.any(ns <= 0):
-            raise ValueError('ns must be positive.')
-
-        # Compute the naive tuning curve estimate.
-        ns = np.clip(ns, None, self._n)
-
-        return self._original_ys_cummax[ns - 1]
-
-    def v_tuning_curve(self, ns):
-        """Return the v estimate for the tuning curve at ``ns``.
-
-        The v statistic tuning curve estimate assigns to n the average
-        value of the maximum after n observations when resampling with
-        replacement. The estimate is consistent but biased.
-
-        Parameters
-        ----------
-        ns : array of ints, required
-            The values at which to evaluate the v tuning curve. The
-            values must be positive integers.
-
-        Returns
-        -------
-        array of floats
-            The values of the v tuning curve estimate.
-        """
-        # Validate the instance and arguments.
-        if self._has_ws:
-            raise ValueError(
-                'v_tuning_curve cannot be called when ws is not None.'
-            )
-
-        ns = np.array(ns)
-        if np.any(ns <= 0):
-            raise ValueError('ns must be positive.')
-
-        # Compute the v statistic tuning curve estimate.
-        return np.sum(
-            (
-                (self._ns / self._n)**ns[..., None]
-                - ((self._ns - 1) / self._n)**ns[..., None]
-            ) * self._original_ys_sorted,
-            axis=-1,
-        )
-
-    def u_tuning_curve(self, ns):
-        """Return the u estimate for the tuning curve at ``ns``.
-
-        The u statistic tuning curve estimate assigns to n the average
-        value of the maximum after n observations when resampling
-        without replacement. The estimate is unbiased for n less than or
-        equal to the original sample size. For larger n, we return the
-        maximum value from the original sample.
-
-        Parameters
-        ----------
-        ns : array of ints, required
-            The values at which to evaluate the u tuning curve. The
-            values must be positive integers.
-
-        Returns
-        -------
-        array of floats
-            The values of the u tuning curve estimate.
-        """
-        # Validate the instance and arguments.
-        if self._has_ws:
-            raise ValueError(
-                'u_tuning_curve cannot be called when ws is not None.'
-            )
-
-        ns = np.array(ns)
-        if np.any(ns <= 0):
-            raise ValueError('ns must be positive.')
-
-        # Compute the u statistic tuning curve estimate.
-        ns = np.clip(ns, None, self._n)
-
-        return np.sum(
-            (
-                special.comb(self._ns, ns[..., None])
-                - special.comb(self._ns - 1, ns[..., None])
-            ) / special.comb(self._n, ns[..., None])
-            * self._original_ys_sorted,
-            axis=-1,
-        )
-
     def sample(self, size):
         """Return a sample from the empirical distribution.
 
@@ -370,5 +257,118 @@ class EmpiricalDistribution:
                 self._ws_cumsum[1:-1]**ns[..., None]
                 - self._ws_cumsum[:-2]**ns[..., None]
             ) * self._ys[1:-1],
+            axis=-1,
+        )
+
+    def naive_tuning_curve(self, ns):
+        """Return the naive estimate for the tuning curve at ``ns``.
+
+        The naive tuning curve estimate assigns to n the maximum value
+        seen in the first n samples. The estimate assumes each sample
+        has identical weight, so this method cannot be called when
+        ``ws`` is not ``None``.
+
+        Parameters
+        ----------
+        ns : array of ints, required
+            The values at which to evaluate the naive tuning curve. The
+            values must be positive integers.
+
+        Returns
+        -------
+        array of floats
+            The values of the naive tuning curve.
+        """
+        # Validate the instance and arguments.
+        if self._has_ws:
+            raise ValueError(
+                'naive_tuning_curve cannot be called when ws is not None.'
+            )
+
+        ns = np.array(ns)
+        if np.any(ns <= 0):
+            raise ValueError('ns must be positive.')
+
+        # Compute the naive tuning curve estimate.
+        ns = np.clip(ns, None, self._n)
+
+        return self._original_ys_cummax[ns - 1]
+
+    def v_tuning_curve(self, ns):
+        """Return the v estimate for the tuning curve at ``ns``.
+
+        The v statistic tuning curve estimate assigns to n the average
+        value of the maximum after n observations when resampling with
+        replacement. The estimate is consistent but biased.
+
+        Parameters
+        ----------
+        ns : array of ints, required
+            The values at which to evaluate the v tuning curve. The
+            values must be positive integers.
+
+        Returns
+        -------
+        array of floats
+            The values of the v tuning curve estimate.
+        """
+        # Validate the instance and arguments.
+        if self._has_ws:
+            raise ValueError(
+                'v_tuning_curve cannot be called when ws is not None.'
+            )
+
+        ns = np.array(ns)
+        if np.any(ns <= 0):
+            raise ValueError('ns must be positive.')
+
+        # Compute the v statistic tuning curve estimate.
+        return np.sum(
+            (
+                (self._ns / self._n)**ns[..., None]
+                - ((self._ns - 1) / self._n)**ns[..., None]
+            ) * self._original_ys_sorted,
+            axis=-1,
+        )
+
+    def u_tuning_curve(self, ns):
+        """Return the u estimate for the tuning curve at ``ns``.
+
+        The u statistic tuning curve estimate assigns to n the average
+        value of the maximum after n observations when resampling
+        without replacement. The estimate is unbiased for n less than or
+        equal to the original sample size. For larger n, we return the
+        maximum value from the original sample.
+
+        Parameters
+        ----------
+        ns : array of ints, required
+            The values at which to evaluate the u tuning curve. The
+            values must be positive integers.
+
+        Returns
+        -------
+        array of floats
+            The values of the u tuning curve estimate.
+        """
+        # Validate the instance and arguments.
+        if self._has_ws:
+            raise ValueError(
+                'u_tuning_curve cannot be called when ws is not None.'
+            )
+
+        ns = np.array(ns)
+        if np.any(ns <= 0):
+            raise ValueError('ns must be positive.')
+
+        # Compute the u statistic tuning curve estimate.
+        ns = np.clip(ns, None, self._n)
+
+        return np.sum(
+            (
+                special.comb(self._ns, ns[..., None])
+                - special.comb(self._ns - 1, ns[..., None])
+            ) / special.comb(self._n, ns[..., None])
+            * self._original_ys_sorted,
             axis=-1,
         )
