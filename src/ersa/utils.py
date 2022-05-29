@@ -1,6 +1,7 @@
 """Utilities"""
 
 import numpy as np
+from scipy import stats
 
 
 def sort_by_first(*args):
@@ -64,3 +65,39 @@ def dkw_epsilon(n, confidence):
         np.log(2. / (1. - confidence))
         / (2. * n)
     )
+
+
+def beta_ppf_interval(a, b, coverage):
+    """Return an interval containing ``coverage`` of the probability.
+
+    For the beta distribution with parameters ``a`` and ``b``, return
+    the interval about the median that contains ``coverage`` of the
+    probability mass.
+
+    Parameters
+    ----------
+    a : float or array of floats, required
+        The alpha parameter for the beta distribution.
+    b : float or array of floats, required
+        The beta parameter for the beta distribution.
+    coverage : float, required
+        The desired coverage for the returned intervals.
+
+    Returns
+    -------
+    float or array of floats, float or array of floats
+        A pair of floats or arrays of floats with the shape determined
+        by broadcasting ``a``, ``b``, and ``coverage`` together. The
+        first returned value gives the lower bound and the second the
+        upper bound for the intervals.
+    """
+    a = np.array(a)
+    b = np.array(b)
+    coverage = np.array(coverage)
+
+    beta = stats.beta(a, b)
+
+    x = beta.ppf((1. - coverage) / 2.)
+    y = beta.ppf((1. + coverage) / 2.)
+
+    return x, y
