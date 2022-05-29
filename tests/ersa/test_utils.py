@@ -308,3 +308,114 @@ class BetaPpfIntervalTestCase(unittest.TestCase):
             np.abs(beta.cdf(hi) - (1. + coverage) / 2.)
             < 1e-10
         ))
+
+
+class BetaPpfCoverageTestCase(unittest.TestCase):
+    """Test ersa.utils.beta_ppf_coverage."""
+
+    def test_beta_ppf_coverage(self):
+        # Test when a and b are scalars.
+        for a in [1., 2., 3.]:
+            for b in [1., 2., 3.]:
+                # when x is a scalar.
+                for x in [0.25, 0.50, 0.75]:
+                    coverage = utils.beta_ppf_coverage(a, b, x)
+                    lo, hi = utils.beta_ppf_interval(a, b, coverage)
+                    self.assertEqual(coverage.shape, ())
+                    self.assertTrue(np.all(
+                        np.isclose(lo, x) | np.isclose(hi, x)
+                    ))
+                # when x is an array.
+                k = 5
+                x = np.random.rand(k)
+                coverage = utils.beta_ppf_coverage(a, b, x)
+                lo, hi = utils.beta_ppf_interval(a, b, coverage)
+                self.assertEqual(coverage.shape, (k,))
+                self.assertTrue(np.all(
+                    np.isclose(lo, x) | np.isclose(hi, x)
+                ))
+        # Test when a and b are 1D arrays.
+        n = 3
+        a = np.arange(1, n + 1)
+        b = np.arange(n + 1, 1, -1)
+        #   when x is a scalar.
+        for x in [0.25, 0.50, 0.75]:
+            coverage = utils.beta_ppf_coverage(a, b, x)
+            lo, hi = utils.beta_ppf_interval(a, b, coverage)
+            self.assertEqual(coverage.shape, (n,))
+            self.assertTrue(np.all(
+                np.isclose(lo, x) | np.isclose(hi, x)
+            ))
+        #   when x is an array.
+        x = np.random.rand(n)
+        coverage = utils.beta_ppf_coverage(a, b, x)
+        lo, hi = utils.beta_ppf_interval(a, b, coverage)
+        self.assertEqual(coverage.shape, (n,))
+        self.assertTrue(np.all(
+            np.isclose(lo, x) | np.isclose(hi, x)
+        ))
+        # Test when a and b are 2D arrays.
+        n, m = 3, 2
+        a = np.arange(1, n * m + 1).reshape(n, m)
+        b = np.arange(n * m + 1, 1, -1).reshape(n, m)
+        #   when x is a scalar.
+        for x in [0.25, 0.50, 0.75]:
+            coverage = utils.beta_ppf_coverage(a, b, x)
+            lo, hi = utils.beta_ppf_interval(a, b, coverage)
+            self.assertEqual(coverage.shape, (n, m))
+            self.assertTrue(np.all(
+                np.isclose(lo, x) | np.isclose(hi, x)
+            ))
+        #   when x is an array.
+        x = np.random.rand(n, m)
+        coverage = utils.beta_ppf_coverage(a, b, x)
+        lo, hi = utils.beta_ppf_interval(a, b, coverage)
+        self.assertEqual(coverage.shape, (n, m))
+        self.assertTrue(np.all(
+            np.isclose(lo, x) | np.isclose(hi, x)
+        ))
+        # Test when a and b broadcast over each other.
+        n, m = 3, 2
+        a = np.arange(1, n + 1).reshape(n, 1)
+        b = np.arange(m + 1, 1, -1).reshape(1, m)
+        #   when x is a scalar.
+        for x in [0.25, 0.50, 0.75]:
+            coverage = utils.beta_ppf_coverage(a, b, x)
+            lo, hi = utils.beta_ppf_interval(a, b, coverage)
+            self.assertEqual(coverage.shape, (n, m))
+            self.assertTrue(np.all(
+                np.isclose(lo, x) | np.isclose(hi, x)
+            ))
+        #   when x is an array.
+        x = np.random.rand(n, m)
+        coverage = utils.beta_ppf_coverage(a, b, x)
+        lo, hi = utils.beta_ppf_interval(a, b, coverage)
+        self.assertEqual(coverage.shape, (n, m))
+        self.assertTrue(np.all(
+            np.isclose(lo, x) | np.isclose(hi, x)
+        ))
+        # Test when x broadcasts over a and b.
+        #   when a and b have the same shape.
+        n = 3
+        a = np.arange(1, n + 1)[:, None]
+        b = np.arange(n + 1, 1, -1)[:, None]
+        k = 5
+        x = np.random.rand(k)[None, :]
+        coverage = utils.beta_ppf_coverage(a, b, x)
+        lo, hi = utils.beta_ppf_interval(a, b, coverage)
+        self.assertEqual(coverage.shape, (n, k))
+        self.assertTrue(np.all(
+            np.isclose(lo, x) | np.isclose(hi, x)
+        ))
+        #   when a and b broadcast over each other.
+        n, m = 3, 2
+        a = np.arange(1, n + 1).reshape(n, 1)[..., None]
+        b = np.arange(m + 1, 1, -1).reshape(1, m)[..., None]
+        k = 5
+        x = np.random.rand(k)[None, None, :]
+        coverage = utils.beta_ppf_coverage(a, b, x)
+        lo, hi = utils.beta_ppf_interval(a, b, coverage)
+        self.assertEqual(coverage.shape, (n, m, k))
+        self.assertTrue(np.all(
+            np.isclose(lo, x) | np.isclose(hi, x)
+        ))

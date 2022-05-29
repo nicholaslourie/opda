@@ -101,3 +101,37 @@ def beta_ppf_interval(a, b, coverage):
     y = beta.ppf((1. + coverage) / 2.)
 
     return x, y
+
+
+def beta_ppf_coverage(a, b, x):
+    """Return the coverage of the smallest interval containing ``x``.
+
+    For the beta distribution with parameters ``a`` and ``b``, return
+    the coverage of the smallest ppf interval containing ``x``. See the
+    related function: ``beta_ppf_interval``.
+
+    Parameters
+    ----------
+    a : float or array of floats, required
+        The alpha parameter for the beta distribution.
+    b : float or array of floats, required
+        The beta parameter for the beta distribution.
+    x : float or array of floats, required
+        The points defining the minimal intervals whose coverage to
+        return.
+
+    Returns
+    -------
+    float or array of floats
+        A float or array of floats with shape determined by broadcasting
+        ``a``, ``b``, and ``x`` together. The values represent the
+        coverage of the minimal ppf interval containing the
+        corresponding value from ``x``.
+    """
+    a = np.array(a)
+    b = np.array(b)
+    x = np.array(x)
+
+    beta = stats.beta(a, b)
+
+    return 2 * np.abs(0.5 - beta.cdf(x))
