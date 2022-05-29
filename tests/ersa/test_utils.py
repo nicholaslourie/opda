@@ -2,6 +2,8 @@
 
 import unittest
 
+import numpy as np
+
 from ersa import utils
 
 
@@ -94,3 +96,13 @@ class SortByFirstTestCase(unittest.TestCase):
                 ['c', 'a', 'b'],
             ),
         )
+
+
+class DkwEpsilonTestCase(unittest.TestCase):
+    """Test ersa.utils.dkw_epsilon."""
+
+    def test_dkw_epsilon(self):
+        self.assertEqual(utils.dkw_epsilon(2, 1. - 2./np.e), 0.5)
+        self.assertEqual(utils.dkw_epsilon(8, 1. - 2./np.e), 0.25)
+        self.assertEqual(utils.dkw_epsilon(1, 1. - 2./np.e**2), 1.)
+        self.assertEqual(utils.dkw_epsilon(4, 1. - 2./np.e**2), 0.5)

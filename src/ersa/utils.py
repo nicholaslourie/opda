@@ -31,3 +31,36 @@ def sort_by_first(*args):
 
     sorting = np.argsort(args[0])
     return tuple(arg[sorting] for arg in args)
+
+
+def dkw_epsilon(n, confidence):
+    """Return epsilon from the Dvoretzky-Kiefer-Wolfowitz inequaltiy.
+
+    The Dvoretzky-Kiefer-Wolfowitz inequality states that a confidence
+    interval for the CDF is given by the empirical CDF plus or minus:
+
+    .. math::
+
+       \\epsilon = \\sqrt{\\frac{\\log \\frac{2}{\\alpha}}{2n}}
+
+    Where :math:`1 - \\alpha` is the coverage.
+
+    Parameters
+    ----------
+    n : int, required
+        The number of samples.
+    confidence : float, required
+        The desired confidence or coverage.
+
+    Returns
+    -------
+    float
+        The epsilon for the Dvoretzky-Kiefer-Wolfowitz inequality.
+    """
+    n = np.array(n)
+    confidence = np.array(confidence)
+
+    return np.sqrt(
+        np.log(2. / (1. - confidence))
+        / (2. * n)
+    )
