@@ -205,3 +205,69 @@ def beta_ppf_coverage(a, b, x):
     beta = stats.beta(a, b)
 
     return 2 * np.abs(0.5 - beta.cdf(x))
+
+
+def beta_hpd_coverage(a, b, x, atol=1e-10):
+    """Return the coverage of the smallest interval containing ``x``.
+
+    For the beta distribution with parameters ``a`` and ``b``, return
+    the coverage of the smallest hpd interval containing ``x``. See the
+    related function: ``beta_hpd_interval``.
+
+    Parameters
+    ----------
+    a : float or array of floats, required
+        The alpha parameter for the beta distribution.
+    b : float or array of floats, required
+        The beta parameter for the beta distribution.
+    x : float or array of floats, required
+        The points defining the minimal intervals whose coverage to
+        return.
+
+    Returns
+    -------
+    float or array of floats
+        A float or array of floats with shape determined by broadcasting
+        ``a``, ``b``, and ``x`` together. The values represent the
+        coverage of the minimal hpd interval containing the
+        corresponding value from ``x``.
+    """
+    # Use binary search to find the coverage of the HPD interval
+    # containing x.
+    a = np.array(a)
+    b = np.array(b)
+    x = np.array(x)
+
+    if np.any((a <= 1.) & (b <= 1.)):
+        raise ValueError(
+            'Either a or b must be greater than one to have an HPD interval.'
+        )
+
+    beta = stats.beta(a, b)
+
+    mode = (a - 1) / (a + b - 2)
+    mode = np.where(a <= 1., 0., mode)
+    mode = np.where(b <= 1., 1., mode)
+    x_is_lower_end = x < mode
+
+    # Initialize bounds.
+    y_lo = np.where(x_is_lower_end, mode, 0.)
+    y_hi = np.where(x_is_lower_end, 1., mode)
+    # Binary search for the other end.
+    for _ in range(1_000):
+        y = (y_lo + y_hi) / 2.
+
+        x_is_lower_pdf = beta.pdf(x) < beta.pdf(y)
+        y_lo = np.where(x_is_lower_end == x_is_lower_pdf, y, y_lo)
+        y_hi = np.where(x_is_lower_end != x_is_lower_pdf, y, y_hi)
+
+        if np.all(y_hi - y_lo < atol):
+            break
+    else:
+        raise exceptions.OptimizationException(
+            'beta_hpd_coverage failed to converge.'
+        )
+
+    x, y = np.where(x_is_lower_end, x, y), np.where(x_is_lower_end, y, x)
+
+    return beta.cdf(y) - beta.cdf(x)
