@@ -3,8 +3,10 @@
 import unittest
 
 import numpy as np
+import pytest
+from scipy import stats
 
-from ersa import nonparametric
+from ersa import nonparametric, utils
 
 
 class EmpiricalDistributionTestCase(unittest.TestCase):
@@ -871,6 +873,45 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         with self.assertRaises(ValueError):
             dist.u_tuning_curve([[2], [1]])
 
+    @pytest.mark.level(2)
+    def test_confidence_bands(self):
+        n = 10
+        for method in ['dkw', 'ks', 'beta_ppf', 'beta_hpd']:
+            for confidence in [0.25, 0.5, 0.75]:
+                ys = np.random.uniform(0, 1, size=n)
+                lo, dist, hi =\
+                    nonparametric.EmpiricalDistribution.confidence_bands(
+                        ys, confidence, method=method,
+                    )
+                # Check that dist is the empirical distribution.
+                self.assertEqual(
+                    dist.cdf(ys).tolist(),
+                    nonparametric.EmpiricalDistribution(ys).cdf(ys).tolist(),
+                )
+                # Check bounded below by 0.
+                self.assertGreaterEqual(np.min(lo.cdf(ys)), 0. - 1e-15)
+                self.assertGreaterEqual(np.min(dist.cdf(ys)), 0. - 1e-15)
+                self.assertGreaterEqual(np.min(hi.cdf(ys)), 0. - 1e-15)
+                # Check bounded above by 1.
+                self.assertLessEqual(np.max(lo.cdf(ys)), 1. + 1e-15)
+                self.assertLessEqual(np.max(dist.cdf(ys)), 1. + 1e-15)
+                self.assertLessEqual(np.max(hi.cdf(ys)), 1. + 1e-15)
+                # Check bands are proper distance from the empirical CDF.
+                if method == 'dkw' or method == 'ks':
+                    epsilon = (
+                        utils.dkw_epsilon(n, confidence)
+                        if method == 'dkw' else
+                        stats.kstwo(n).ppf(confidence)
+                    )
+                    self.assertTrue(np.allclose(
+                        (dist.cdf(ys) - lo.cdf(ys))[dist.cdf(ys) > epsilon],
+                        epsilon,
+                    ))
+                    self.assertTrue(np.allclose(
+                        (hi.cdf(ys) - dist.cdf(ys))[1. - dist.cdf(ys) > epsilon],
+                        epsilon,
+                    ))
+
     def test_ppf_is_almost_sure_left_inverse_of_cdf(self):
         # N.B. In general, the quantile function is an almost sure left
         # inverse of the cumulative distribution function.
@@ -895,3 +936,103 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         self.assertEqual(dist.ppf(0.), -np.inf)
         self.assertEqual(dist.ppf(1.), 0.)
         self.assertEqual(dist.ppf(1. + 1e-12), 0.)
+
+    @pytest.mark.level(3)
+    def test_dkw_bands_have_correct_coverage(self):
+        n_trials = 2_500
+        dist = stats.norm(0., 1.)
+        grid = np.linspace(-5., 5., num=10_000)
+        for confidence in [0.5, 0.9, 0.99]:
+            for n_samples in [10, 100]:
+                covered = []
+                for _ in range(n_trials):
+                    ys = dist.rvs(size=n_samples)
+                    lo, _, hi =\
+                        nonparametric.EmpiricalDistribution.confidence_bands(
+                            ys, confidence, method='dkw',
+                        )
+                    covered.append(
+                        np.all(lo.cdf(grid) <= dist.cdf(grid))
+                        & np.all(dist.cdf(grid) <= hi.cdf(grid))
+                    )
+
+                stderr = (confidence * (1. - confidence) / n_trials)**0.5
+                self.assertGreater(np.mean(covered) + 6 * stderr, confidence)
+
+    @pytest.mark.level(3)
+    def test_ks_bands_have_correct_coverage(self):
+        n_trials = 2_500
+        dist = stats.norm(0., 1.)
+        grid = np.linspace(-5., 5., num=10_000)
+        for confidence in [0.5, 0.9, 0.99]:
+            for n_samples in [10, 100]:
+                covered = []
+                for _ in range(n_trials):
+                    ys = dist.rvs(size=n_samples)
+                    lo, _, hi =\
+                        nonparametric.EmpiricalDistribution.confidence_bands(
+                            ys, confidence, method='ks',
+                        )
+                    covered.append(
+                        np.all(lo.cdf(grid) <= dist.cdf(grid))
+                        & np.all(dist.cdf(grid) <= hi.cdf(grid))
+                    )
+
+                stderr = (confidence * (1. - confidence) / n_trials)**0.5
+                self.assertAlmostEqual(
+                    np.mean(covered),
+                    confidence,
+                    delta=6 * stderr,
+                )
+
+    @pytest.mark.level(3)
+    def test_beta_ppf_bands_has_correct_coverage(self):
+        n_trials = 2_500
+        dist = stats.norm(0., 1.)
+        grid = np.linspace(-5., 5., num=10_000)
+        for confidence in [0.5, 0.9, 0.99]:
+            for n_samples in [10, 100]:
+                covered = []
+                for _ in range(n_trials):
+                    ys = dist.rvs(size=n_samples)
+                    lo, _, hi =\
+                        nonparametric.EmpiricalDistribution.confidence_bands(
+                            ys, confidence, method='beta_ppf',
+                        )
+                    covered.append(
+                        np.all(lo.cdf(grid) <= dist.cdf(grid))
+                        & np.all(dist.cdf(grid) <= hi.cdf(grid))
+                    )
+
+                stderr = (confidence * (1. - confidence) / n_trials)**0.5
+                self.assertAlmostEqual(
+                    np.mean(covered),
+                    confidence,
+                    delta=6 * stderr,
+                )
+
+    @pytest.mark.level(3)
+    def test_beta_hpd_bands_has_correct_coverage(self):
+        n_trials = 2_500
+        dist = stats.norm(0., 1.)
+        grid = np.linspace(-5., 5., num=10_000)
+        for confidence in [0.5, 0.9, 0.99]:
+            for n_samples in [10, 100]:
+                covered = []
+                for _ in range(n_trials):
+                    ys = dist.rvs(size=n_samples)
+                    lo, _, hi =\
+                        nonparametric.EmpiricalDistribution.confidence_bands(
+                            ys, confidence, method='beta_hpd',
+                        )
+                    covered.append(
+                        np.all(lo.cdf(grid) <= dist.cdf(grid))
+                        & np.all(dist.cdf(grid) <= hi.cdf(grid))
+                    )
+
+                stderr = (confidence * (1. - confidence) / n_trials)**0.5
+                self.assertAlmostEqual(
+                    np.mean(covered),
+                    confidence,
+                    delta=6 * stderr,
+                )

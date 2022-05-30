@@ -1,10 +1,119 @@
 """Nonparametric ERSA."""
 
+import functools
+
 import numpy as np
-from scipy import special
+from scipy import special, stats
 
 from ersa import utils
 
+
+# helper functions and classes
+
+@functools.cache
+def _dkw_band_weights(n, confidence):
+    ws_cumsum = (1. + np.arange(n)) / n
+    epsilon = utils.dkw_epsilon(n, confidence)
+    return (
+        np.clip(ws_cumsum - epsilon, 0., 1.),
+        np.clip(ws_cumsum + epsilon, 0., 1.),
+    )
+
+
+@functools.cache
+def _ks_band_weights(n, confidence):
+    ws_cumsum = (1. + np.arange(n)) / n
+    epsilon = stats.kstwo(n).ppf(confidence)
+    return (
+        np.clip(ws_cumsum - epsilon, 0., 1.),
+        np.clip(ws_cumsum + epsilon, 0., 1.),
+    )
+
+
+@functools.cache
+def _beta_band_weights(n, confidence, kind, n_trials=100_000):
+    # NOTE: For i.i.d. samples, the i'th order statistic's quantile is
+    # beta(i, n + 1 - i) distributed. Thus, an interval covering
+    # ``confidence`` probability from the beta(i, n + 1 - i)
+    # distribution provides a confidence interval for the CDF at the
+    # i'th order statistic. We extend these pointwise confidence
+    # intervals until they hold simultaneously. Thus, if the j'th order
+    # statistic is the largest order statistic smaller than x, we can
+    # bound the CDF at x between the lower bound for the j'th and the
+    # upper bound for the j+1'th order statistics' quantiles.
+    #
+    # Instead of searching for the coverage level that makes the
+    # pointwise intervals hold simultaneously, it's faster to interpret
+    # the confidence band as a statistical test and simulate the test
+    # statistic's distribution in order to find the critical value.
+    #
+    # The default number of trials strikes a trade off between
+    # speed and precision. How close the simulated sample's quantile is
+    # to the true critical value determines the precision. To explore
+    # the precision, we can examine a confidence interval for the
+    # quantile of the sample's order statistics (again, using the beta
+    # distribution). For example, see the following code snippet:
+    #
+    #     >>> import numpy as np
+    #     ... from ersa.utils import beta_hpd_interval
+    #     ...
+    #     ... n_trials = 100_000
+    #     ... quantiles = np.array([0.5, 0.75, 0.9, 0.95, 0.99, 0.999])
+    #     ... ks = (quantiles * n_trials).astype(int)
+    #     ... lo, hi = beta_hpd_interval(ks, n_trials + 1 - ks, 0.999)
+    #     ... rel_err_lo = (1. - hi) / (1. - quantiles) - 1.
+    #     ... rel_err_hi = (1. - lo) / (1. - quantiles) - 1.
+    #     ... fmt_qnt = lambda q: f'{q: .3f}'
+    #     ... fmt_err = lambda e: f'{e:+.3f}'
+    #     ... print(
+    #     ...     f'99.9% Confidence Interval for Error of (1 - quantile)\n'
+    #     ...     f'-----------------------------------------------------\n'
+    #     ...     f'quantile     : {", ".join(map(fmt_qnt, quantiles))}\n'
+    #     ...     f'rel err (lo) : {", ".join(map(fmt_err, rel_err_lo))}\n'
+    #     ...     f'rel err (hi) : {", ".join(map(fmt_err, rel_err_hi))}\n'
+    #     ... )
+    #     99.9% Confidence Interval for Error of (1 - quantile)
+    #     -----------------------------------------------------
+    #     quantile     :  0.500,  0.750,  0.900,  0.950,  0.990,  0.999
+    #     rel err (lo) : -0.010, -0.018, -0.031, -0.045, -0.100, -0.294
+    #     rel err (hi) : +0.010, +0.018, +0.032, +0.046, +0.107, +0.366
+    #
+    # From the above execution trace, it can be seen that with 100,000
+    # samples, ``1 - confidence`` will be within about +/- 10% of the
+    # true value, for typical usage (i.e., confidence up to 99%).
+
+    if kind == 'ppf':
+        interval = utils.beta_ppf_interval
+        coverage = utils.beta_ppf_coverage
+    elif kind == 'hpd':
+        interval = utils.beta_hpd_interval
+        coverage = utils.beta_hpd_coverage
+    else:
+        raise ValueError('kind must be one of "ppf" or "hpd".')
+
+    ns = np.arange(1, n + 1)
+    a = ns
+    b = n + 1 - ns
+
+    # Compute the critical value of the test statistic.
+    ts = np.random.rand(n_trials, n)
+    ts.sort(kind='quicksort', axis=-1)
+    ts = np.max(coverage(a, b, ts), axis=-1)
+    critical_value = np.quantile(ts, confidence)
+
+    lo, hi = interval(a, b, critical_value)
+    # NOTE: If the j'th order statistic is the largest one smaller than
+    # x, then the lower bound for the j'th and the upper bound for the
+    # j+1'th provide the bounds for the CDF at x.
+    hi = np.concatenate([hi[1:], [1.]])
+
+    return (
+        np.clip(lo, 0., 1.),
+        np.clip(hi, 0., 1.),
+    )
+
+
+# main functions and classes
 
 class EmpiricalDistribution:
     """The empirical distribution.
@@ -371,4 +480,126 @@ class EmpiricalDistribution:
             ) / special.comb(self._n, ns[..., None])
             * self._original_ys_sorted,
             axis=-1,
+        )
+
+    @classmethod
+    def confidence_bands(
+            cls,
+            ys,
+            confidence,
+            method = 'beta_ppf',
+            *,
+            a = None,
+            b = None,
+    ):
+        """Return confidence bands for the CDF.
+
+        Return three instances of ``EmpiricalDistribution``, offering
+        a lower confidence band, point estimate, and upper confidence
+        band for the CDF of the distribution that generated ``ys``.
+
+        The properties of the CDF bands depend on the method used to
+        construct them, as set by the ``method`` parameter.
+
+        Parameters
+        ----------
+        ys : 1D array of floats, required
+            The sample from the distribution.
+        confidence : float, required
+            The coverage or confidence level for the bands.
+        method : str, optional (default='beta_ppf')
+            One of the strings 'dkw', 'ks', 'beta_ppf', or
+            'beta_hpd'. The ``method`` parameter determines the kind of
+            confidence band and thus its properties. See `Notes`_ for
+            details on the different methods.
+        a : float or None, optional (default=None)
+            The minimum of the support of the underlying distribution.
+            If ``None``, then it will be set to ``-np.inf``.
+        b : float or None, optional (default=None)
+            The maximum of the support of the underlying distribution.
+            If ``None``, then it will be set to ``np.inf``.
+
+        Returns
+        -------
+        EmpiricalDistribution, EmpiricalDistribution, EmpiricalDistribution
+            A lower confidence band, point estimate, and upper
+            confidence band for the distribution's CDF.
+
+        Notes
+        -----
+        There are four built-in methods for generating confidence
+        bands: dkw, ks, beta_ppf, and beta_hpd. All three methods provide
+        simultaneous confidence bands.
+
+        The dkw method uses the Dvoretzky-Kiefer-Wolfowitz inequality
+        which is fast to compute but overly conservative.
+
+        The ks method inverts the Kolmogorov-Smirnov test to provide a
+        confidence band with exact coverage and which is uniformly
+        spaced above and below the empirical cumulative
+        distribution. Because the band has uniform width, it is much
+        looser at the ends than in the middle, and most violations of
+        the confidence band tend to occur near the median.
+
+        The beta methods expand pointwise confidence bands for the order
+        statistics, based on the beta distribution, until they hold
+        simultaneously with exact coverage. These pointwise bands may
+        either use the equal-tailed interval (beta_ppf) or the highest
+        density interval (beta_hpd) from the beta distribution. The
+        highest density interval yields the tightest bands; however, the
+        equal-tailed intervals are almost the same size and
+        significantly faster to compute. The beta bands do not have
+        uniform width and are tighter near the end points. They're
+        violated equally often across the whole range. See "A
+        Probabilistic Upper Bound on Differential Entropy"
+        (Learned-Miller and DeStefano, 2008) for details.
+
+        References
+        ----------
+        Learned-Miller, E and DeStefano, J, "A Probabilistic Upper
+        Bound on Differential Entropy" (2008). IEEE TRANSACTIONS ON
+        INFORMATION THEORY. 732.
+        """
+        a = a if a is not None else -np.inf
+        b = b if b is not None else np.inf
+
+        n = len(ys)
+        ys_extended = np.concatenate([[a], ys, [b]])
+        unsorting = np.argsort(np.argsort(ys_extended))
+
+        if method == 'dkw':
+            ws_lo_cumsum, ws_hi_cumsum = _dkw_band_weights(
+                n, confidence,
+            )
+        elif method == 'ks':
+            ws_lo_cumsum, ws_hi_cumsum = _ks_band_weights(
+                n, confidence,
+            )
+        elif method == 'beta_ppf':
+            ws_lo_cumsum, ws_hi_cumsum = _beta_band_weights(
+                n, confidence, kind='ppf',
+            )
+        elif method == 'beta_hpd':
+            ws_lo_cumsum, ws_hi_cumsum = _beta_band_weights(
+                n, confidence, kind='hpd',
+            )
+        else:
+            raise ValueError(
+                'method must be one of "dkw", "ks", "beta_ppf", or'
+                ' "beta_hpd".'
+            )
+
+        ws_lo = np.diff(
+            np.concatenate([[0.], ws_lo_cumsum, [1.]]),
+            prepend=[0.],
+        )[unsorting]
+        ws_hi = np.diff(
+            np.concatenate([[ws_hi_cumsum[0]], ws_hi_cumsum, [1.]]),
+            prepend=[0.],
+        )[unsorting]
+
+        return (
+            cls(ys_extended, ws=ws_lo, a=a, b=b),
+            cls(ys, ws=None, a=a, b=b),
+            cls(ys_extended, ws=ws_hi, a=a, b=b),
         )
