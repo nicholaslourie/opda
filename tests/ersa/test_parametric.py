@@ -152,7 +152,7 @@ class QuadraticDistributionTestCase(unittest.TestCase):
                 self.assertLess(c, bounds[2, 1])
 
     def test_ppf_is_inverse_of_cdf(self):
-        # N.B. For continuous distributions like the quadratic
+        # NOTE: For continuous distributions like the quadratic
         # distribution, the quantile function is the inverse of the
         # cumulative distribution function.
         a, b = 0., 1.

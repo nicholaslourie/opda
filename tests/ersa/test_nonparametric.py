@@ -913,7 +913,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     ))
 
     def test_ppf_is_almost_sure_left_inverse_of_cdf(self):
-        # N.B. In general, the quantile function is an almost sure left
+        # NOTE: In general, the quantile function is an almost sure left
         # inverse of the cumulative distribution function.
         dist = nonparametric.EmpiricalDistribution(
             np.random.uniform(0, 1, size=5),
