@@ -213,6 +213,7 @@ class EmpiricalDistribution:
             np.concatenate([[0.] * len(prepend), self.ws, [0.] * len(postpend)]),
         )
         self._ws_cumsum = np.cumsum(self._ws)
+        self._ws_cumsum_prev = np.concatenate([[0.], self._ws_cumsum[:-1]])
 
     def sample(self, size):
         """Return a sample from the empirical distribution.
@@ -361,11 +362,12 @@ class EmpiricalDistribution:
             raise ValueError('ns must be positive.')
 
         # Compute the average tuning curve.
+        ws = (
+            self._ws_cumsum**ns[..., None]
+            - self._ws_cumsum_prev**ns[..., None]
+        )
         return np.sum(
-            (
-                self._ws_cumsum[1:-1]**ns[..., None]
-                - self._ws_cumsum[:-2]**ns[..., None]
-            ) * self._ys[1:-1],
+            ws * np.where(ws != 0., self._ys, 0.),
             axis=-1,
         )
 
