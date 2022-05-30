@@ -3,6 +3,8 @@
 import numpy as np
 from scipy import stats
 
+from ersa import exceptions
+
 
 def sort_by_first(*args):
     """Return the arrays sorted by the first array.
@@ -99,6 +101,74 @@ def beta_ppf_interval(a, b, coverage):
 
     x = beta.ppf((1. - coverage) / 2.)
     y = beta.ppf((1. + coverage) / 2.)
+
+    return x, y
+
+
+def beta_hpd_interval(a, b, coverage, atol=1e-10):
+    """Return an interval containing ``coverage`` of the probability.
+
+    For the beta distribution with parameters ``a`` and ``b``, return
+    the shortest interval that contains ``coverage`` of the
+    probability mass.
+
+    Parameters
+    ----------
+    a : float or array of floats, required
+        The alpha parameter for the beta distribution.
+    b : float or array of floats, required
+        The beta parameter for the beta distribution.
+    coverage : float, required
+        The desired coverage for the returned intervals.
+
+    Returns
+    -------
+    float or array of floats, float or array of floats
+        A pair of floats or arrays of floats with the shape determined
+        by broadcasting ``a``, ``b``, and ``coverage`` together. The
+        first returned value gives the lower bound and the second the
+        upper bound for the intervals.
+    """
+    # NOTE: Given the lower endpoint of the interval, ``x``, we can immediately
+    # compute the upper one as: ``beta.ppf(beta.cdf(x) + coverage)``. Below the
+    # interval, the density of the lower endpoint is less than the upper
+    # one. Above the interval, it's the reverse. Thus, we can find the lower
+    # endpoint via binary search.
+    #
+    # The beta distribution only has a mode when ``a`` or ``b`` is greater than
+    # 1. If both are greater than 1, the mode is in the interior of [0, 1]. If
+    # ``a`` or ``b`` is less than or equal to 1, then the mode is on the
+    # boundary. If ``a`` and ``b`` are less than or equal to 1, then the mode
+    # is not unique and the highest density region is not necessarily an
+    # interval.
+    a = np.array(a)
+    b = np.array(b)
+    coverage = np.array(coverage)
+
+    if np.any((a <= 1.) & (b <= 1.)):
+        raise ValueError(
+            'Either a or b must be greater than one to have an HPD interval.'
+        )
+
+    beta = stats.beta(a, b)
+
+    # Initialize bounds.
+    x_lo = np.where(b <= 1., beta.ppf(1. - coverage), 0.)
+    x_hi = np.where(a <= 1., 0., beta.ppf(1. - coverage))
+    # Binary search for the lower endpoint.
+    for _ in range(1_000):
+        x = (x_lo + x_hi) / 2.
+        y = beta.ppf(np.clip(beta.cdf(x) + coverage, 0., 1.))
+
+        x_lo = np.where(beta.pdf(x) < beta.pdf(y), x, x_lo)
+        x_hi = np.where(beta.pdf(x) >= beta.pdf(y), x, x_hi)
+
+        if np.all(x_hi - x_lo < atol):
+            break
+    else:
+        raise exceptions.OptimizationException(
+            'beta_hpd_interval failed to converge.'
+        )
 
     return x, y
 
