@@ -31,7 +31,7 @@ def _ks_band_weights(n, confidence):
 
 
 @functools.cache
-def _beta_band_weights(n, confidence, kind, n_trials=100_000):
+def _ld_band_weights(n, confidence, kind, n_trials=100_000):
     # NOTE: For i.i.d. samples, the i'th order statistic's quantile is
     # beta(i, n + 1 - i) distributed. Thus, an interval covering
     # ``confidence`` probability from the beta(i, n + 1 - i)
@@ -494,7 +494,7 @@ class EmpiricalDistribution:
             cls,
             ys,
             confidence,
-            method = 'beta_equal_tailed',
+            method = 'ld_equal_tailed',
             *,
             a = None,
             b = None,
@@ -514,9 +514,9 @@ class EmpiricalDistribution:
             The sample from the distribution.
         confidence : float, required
             The coverage or confidence level for the bands.
-        method : str, optional (default='beta_equal_tailed')
-            One of the strings 'dkw', 'ks', 'beta_equal_tailed', or
-            'beta_highest_density'. The ``method`` parameter determines the kind of
+        method : str, optional (default='ld_equal_tailed')
+            One of the strings 'dkw', 'ks', 'ld_equal_tailed', or
+            'ld_highest_density'. The ``method`` parameter determines the kind of
             confidence band and thus its properties. See `Notes`_ for
             details on the different methods.
         a : float or None, optional (default=None)
@@ -535,7 +535,7 @@ class EmpiricalDistribution:
         Notes
         -----
         There are four built-in methods for generating confidence bands:
-        dkw, ks, beta_equal_tailed, and beta_highest_density. All three methods provide
+        dkw, ks, ld_equal_tailed, and ld_highest_density. All three methods provide
         simultaneous confidence bands.
 
         The dkw method uses the Dvoretzky-Kiefer-Wolfowitz inequality
@@ -548,14 +548,15 @@ class EmpiricalDistribution:
         looser at the ends than in the middle, and most violations of
         the confidence band tend to occur near the median.
 
-        The beta methods expand pointwise confidence bands for the order
-        statistics, based on the beta distribution, until they hold
-        simultaneously with exact coverage. These pointwise bands may
-        either use the equal-tailed interval (beta_equal_tailed) or the highest
-        density interval (beta_highest_density) from the beta distribution. The
-        highest density interval yields the tightest bands; however, the
-        equal-tailed intervals are almost the same size and
-        significantly faster to compute. The beta bands do not have
+        The ld (Learned-Miller-DeStefano) methods expand pointwise
+        confidence bands for the order statistics, based on the beta
+        distribution, until they hold simultaneously with exact
+        coverage. These pointwise bands may either use the
+        equal-tailed interval (ld_equal_tailed) or the highest density
+        interval (ld_highest_density) from the beta distribution. The
+        highest density interval yields the tightest bands; however,
+        the equal-tailed intervals are almost the same size and
+        significantly faster to compute. The ld bands do not have
         uniform width and are tighter near the end points. They're
         violated equally often across the whole range. See "A
         Probabilistic Upper Bound on Differential Entropy"
@@ -582,18 +583,18 @@ class EmpiricalDistribution:
             ws_lo_cumsum, ws_hi_cumsum = _ks_band_weights(
                 n, confidence,
             )
-        elif method == 'beta_equal_tailed':
-            ws_lo_cumsum, ws_hi_cumsum = _beta_band_weights(
+        elif method == 'ld_equal_tailed':
+            ws_lo_cumsum, ws_hi_cumsum = _ld_band_weights(
                 n, confidence, kind='equal_tailed',
             )
-        elif method == 'beta_highest_density':
-            ws_lo_cumsum, ws_hi_cumsum = _beta_band_weights(
+        elif method == 'ld_highest_density':
+            ws_lo_cumsum, ws_hi_cumsum = _ld_band_weights(
                 n, confidence, kind='highest_density',
             )
         else:
             raise ValueError(
-                'method must be one of "dkw", "ks", "beta_equal_tailed",'
-                ' or "beta_highest_density".'
+                'method must be one of "dkw", "ks", "ld_equal_tailed",'
+                ' or "ld_highest_density".'
             )
 
         ws_lo = np.diff(

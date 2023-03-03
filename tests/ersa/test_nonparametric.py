@@ -876,7 +876,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
     @pytest.mark.level(2)
     def test_confidence_bands(self):
         n = 10
-        methods = ['dkw', 'ks', 'beta_equal_tailed', 'beta_highest_density']
+        methods = ['dkw', 'ks', 'ld_equal_tailed', 'ld_highest_density']
         for method in methods:
             for confidence in [0.25, 0.5, 0.75]:
                 ys = np.random.uniform(0, 1, size=n)
@@ -1060,7 +1060,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 )
 
     @pytest.mark.level(3)
-    def test_beta_equal_tailed_bands_has_correct_coverage(self):
+    def test_ld_equal_tailed_bands_has_correct_coverage(self):
         n_trials = 2_500
         dist = stats.norm(0., 1.)
         grid = np.linspace(-5., 5., num=10_000)
@@ -1071,7 +1071,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     ys = dist.rvs(size=n_samples)
                     lo, _, hi =\
                         nonparametric.EmpiricalDistribution.confidence_bands(
-                            ys, confidence, method='beta_equal_tailed',
+                            ys, confidence, method='ld_equal_tailed',
                         )
                     covered.append(
                         np.all(lo.cdf(grid) <= dist.cdf(grid))
@@ -1086,7 +1086,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 )
 
     @pytest.mark.level(3)
-    def test_beta_highest_density_bands_has_correct_coverage(self):
+    def test_ld_highest_density_bands_has_correct_coverage(self):
         n_trials = 2_500
         dist = stats.norm(0., 1.)
         grid = np.linspace(-5., 5., num=10_000)
@@ -1097,7 +1097,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     ys = dist.rvs(size=n_samples)
                     lo, _, hi =\
                         nonparametric.EmpiricalDistribution.confidence_bands(
-                            ys, confidence, method='beta_highest_density',
+                            ys, confidence, method='ld_highest_density',
                         )
                     covered.append(
                         np.all(lo.cdf(grid) <= dist.cdf(grid))
