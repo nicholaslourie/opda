@@ -83,7 +83,7 @@ class Simulation:
     func : function, required
         A broadcastable function mapping vectors of length ``n_dims`` to
         scalars.
-    bounds : n_dims x 2 array of ints, required
+    bounds : n_dims x 2 array of floats, required
         Bounds on each dimension for the random search's uniform
         sampling.
     y_argmin : n_dims array of floats, required
