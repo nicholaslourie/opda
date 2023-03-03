@@ -75,13 +75,17 @@ class Simulation:
     n_trials : int, required
         The number of trials to simulate.
     n_samples : int, required
-        The number of samples to take in the random search for each trial.
+        The number of samples to take in the random search for each
+        trial.
     n_dims : int, required
-        The number of dimensions that ``func`` expects in each data point.
+        The number of dimensions that ``func`` expects in each data
+        point.
     func : function, required
-        A broadcastable function mapping vectors of length ``n_dims`` to scalars.
+        A broadcastable function mapping vectors of length ``n_dims`` to
+        scalars.
     bounds : n_dims x 2 array of ints, required
-        Bounds on each dimension for the random search's uniform sampling.
+        Bounds on each dimension for the random search's uniform
+        sampling.
     y_argmin : n_dims array of floats, required
         An input at which ``func`` takes its minimum in ``bounds``.
     y_argmax : n_dims array of floats, required
