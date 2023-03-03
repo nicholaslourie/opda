@@ -32,7 +32,7 @@ def plot_random_search(
     Returns
     -------
     plt.Figure, plt.Axes
-        The figure and axes on which the plot was made. If ``ax`` was
+        The figure and axis on which the plot was made. If ``ax`` was
         not ``None``, then the returned figure will be ``None``.
     """
     if ax is None:
@@ -94,7 +94,7 @@ def plot_cdf(
     Returns
     -------
     plt.Figure, plt.Axes
-        The figure and axes on which the plot was made. If ``ax`` was
+        The figure and axis on which the plot was made. If ``ax`` was
         not ``None``, then the returned figure will be ``None``.
     """
     if ax is None:
@@ -135,7 +135,7 @@ def plot_pdf(
     Returns
     -------
     plt.Figure, plt.Axes
-        The figure and axes on which the plot was made. If ``ax`` was
+        The figure and axis on which the plot was made. If ``ax`` was
         not ``None``, then the returned figure will be ``None``.
     """
     if ax is None:
@@ -168,15 +168,15 @@ def plot_dist(
         The sample whose distribution should be visualized.
     name : str, required
         The name of the random variable represented by ``xs``.
-    ax : plt.Axes or None, optional (default=None)
-        An axes on which to make the plot, or ``None``. If ``None``,
-        then a figure and axes for the plot will be automatically
+    axes : plt.Axes or None, optional (default=None)
+        Axes on which to make the plot, or ``None``. If ``None``, then
+        a figure and axes for the plot will be automatically
         generated.
 
     Returns
     -------
     plt.Figure, plt.Axes
-        The figure and axes on which the plot was made. If ``ax`` was
+        The figure and axes on which the plot was made. If ``axes`` was
         not ``None``, then the returned figure will be ``None``.
     """
     if axes is None:
