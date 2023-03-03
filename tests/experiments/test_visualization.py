@@ -17,8 +17,8 @@ class PlotPdfTestCase(unittest.TestCase):
     """Test experiments.visualization.plot_pdf."""
 
 
-class PlotDistTestCase(unittest.TestCase):
-    """Test experiments.visualization.plot_dist."""
+class PlotDistributionTestCase(unittest.TestCase):
+    """Test experiments.visualization.plot_distribution."""
 
 
 class PlotDistributionApproximationTestCase(unittest.TestCase):

@@ -154,7 +154,7 @@ def plot_pdf(
     return fig, ax
 
 
-def plot_dist(
+def plot_distribution(
         xs,
         name,
         *,
@@ -223,7 +223,7 @@ def plot_distribution_approximation(
         The figure and axes on which the plot was made. If ``axes`` was
         not ``None``, then the returned figure will be ``None``.
     """
-    fig, axes = plot_dist(
+    fig, axes = plot_distribution(
         simulation.yss_cummax[:, n-1],
         name=f'Y_{{({n})}}',
         axes=axes,
