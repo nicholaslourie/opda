@@ -110,17 +110,17 @@ class DkwEpsilonTestCase(unittest.TestCase):
         self.assertEqual(utils.dkw_epsilon(4, 1. - 2./np.e**2), 0.5)
 
 
-class BetaPpfIntervalTestCase(unittest.TestCase):
-    """Test ersa.utils.beta_ppf_interval."""
+class BetaEqualTailedIntervalTestCase(unittest.TestCase):
+    """Test ersa.utils.beta_equal_tailed_interval."""
 
-    def test_beta_ppf_interval(self):
+    def test_beta_equal_tailed_interval(self):
         # Test when a and b are scalars.
         for a in [1., 5., 10.]:
             for b in [1., 5., 10.]:
                 beta = stats.beta(a, b)
                 # when coverage is a scalar.
                 for coverage in [0.25, 0.50, 0.75]:
-                    lo, hi = utils.beta_ppf_interval(a, b, coverage)
+                    lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
                     self.assertEqual(lo.shape, ())
                     self.assertEqual(hi.shape, ())
                     self.assertAlmostEqual(
@@ -132,7 +132,7 @@ class BetaPpfIntervalTestCase(unittest.TestCase):
                 # when coverage is an array.
                 k = 5
                 coverage = np.random.rand(k)
-                lo, hi = utils.beta_ppf_interval(a, b, coverage)
+                lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
                 self.assertEqual(lo.shape, (k,))
                 self.assertEqual(hi.shape, (k,))
                 self.assertTrue(np.allclose(
@@ -154,7 +154,7 @@ class BetaPpfIntervalTestCase(unittest.TestCase):
         beta = stats.beta(a, b)
         #   when coverage is a scalar.
         for coverage in [0.25, 0.50, 0.75]:
-            lo, hi = utils.beta_ppf_interval(a, b, coverage)
+            lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
             self.assertEqual(lo.shape, (n,))
             self.assertEqual(hi.shape, (n,))
             self.assertTrue(np.all(
@@ -171,7 +171,7 @@ class BetaPpfIntervalTestCase(unittest.TestCase):
             ))
         #   when coverage is an array.
         coverage = np.random.rand(n)
-        lo, hi = utils.beta_ppf_interval(a, b, coverage)
+        lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(lo.shape, (n,))
         self.assertEqual(hi.shape, (n,))
         self.assertTrue(np.allclose(
@@ -193,7 +193,7 @@ class BetaPpfIntervalTestCase(unittest.TestCase):
         beta = stats.beta(a, b)
         #   when coverage is a scalar.
         for coverage in [0.25, 0.50, 0.75]:
-            lo, hi = utils.beta_ppf_interval(a, b, coverage)
+            lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
             self.assertEqual(lo.shape, (n, m))
             self.assertEqual(hi.shape, (n, m))
             self.assertTrue(np.all(
@@ -210,7 +210,7 @@ class BetaPpfIntervalTestCase(unittest.TestCase):
             ))
         #   when coverage is an array.
         coverage = np.random.rand(n, m)
-        lo, hi = utils.beta_ppf_interval(a, b, coverage)
+        lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(lo.shape, (n, m))
         self.assertEqual(hi.shape, (n, m))
         self.assertTrue(np.allclose(
@@ -232,7 +232,7 @@ class BetaPpfIntervalTestCase(unittest.TestCase):
         beta = stats.beta(a, b)
         #   when coverage is a scalar.
         for coverage in [0.25, 0.50, 0.75]:
-            lo, hi = utils.beta_ppf_interval(a, b, coverage)
+            lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
             self.assertEqual(lo.shape, (n, m))
             self.assertEqual(hi.shape, (n, m))
             self.assertTrue(np.all(
@@ -249,7 +249,7 @@ class BetaPpfIntervalTestCase(unittest.TestCase):
             ))
         #   when coverage is an array.
         coverage = np.random.rand(n, m)
-        lo, hi = utils.beta_ppf_interval(a, b, coverage)
+        lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(lo.shape, (n, m))
         self.assertEqual(hi.shape, (n, m))
         self.assertTrue(np.allclose(
@@ -272,7 +272,7 @@ class BetaPpfIntervalTestCase(unittest.TestCase):
         beta = stats.beta(a, b)
         k = 5
         coverage = np.random.rand(k)[None, :]
-        lo, hi = utils.beta_ppf_interval(a, b, coverage)
+        lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(lo.shape, (n, k))
         self.assertEqual(hi.shape, (n, k))
         self.assertTrue(np.allclose(
@@ -294,7 +294,7 @@ class BetaPpfIntervalTestCase(unittest.TestCase):
         beta = stats.beta(a, b)
         k = 5
         coverage = np.random.rand(k)[None, None, :]
-        lo, hi = utils.beta_ppf_interval(a, b, coverage)
+        lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(lo.shape, (n, m, k))
         self.assertEqual(hi.shape, (n, m, k))
         self.assertTrue(np.allclose(
@@ -311,41 +311,48 @@ class BetaPpfIntervalTestCase(unittest.TestCase):
         ))
 
 
-class BetaHpdIntervalTestCase(unittest.TestCase):
-    """Test ersa.utils.beta_hpd_interval."""
+class BetaHighestDensityIntervalTestCase(unittest.TestCase):
+    """Test ersa.utils.beta_highest_density_interval."""
 
     @pytest.mark.level(1)
-    def test_beta_hpd_interval(self):
+    def test_beta_highest_density_interval(self):
         # Test when a and b are scalars.
         for a in [1., 5., 10.]:
             for b in [1., 5., 10.]:
                 if a == 1. and b == 1.:
-                    # No HPD interval exists when a <= 1 and b <= 1.
+                    # No highest density interval exists when a <= 1 and b <= 1.
                     continue
                 beta = stats.beta(a, b)
                 # when coverage is a scalar.
                 for coverage in [0.25, 0.50, 0.75]:
-                    lo, hi = utils.beta_hpd_interval(a, b, coverage)
+                    lo, hi = utils.beta_highest_density_interval(a, b, coverage)
                     self.assertEqual(lo.shape, ())
                     self.assertEqual(hi.shape, ())
                     self.assertAlmostEqual(
                         beta.cdf(hi) - beta.cdf(lo),
                         coverage,
                     )
-                    ppf_lo, ppf_hi = utils.beta_ppf_interval(a, b, coverage)
-                    self.assertLess((hi - lo) - (ppf_hi - ppf_lo), 1e-12)
+                    equal_tailed_lo, equal_tailed_hi =\
+                        utils.beta_equal_tailed_interval(a, b, coverage)
+                    self.assertLess(
+                        (hi - lo) - (equal_tailed_hi - equal_tailed_lo),
+                        1e-12,
+                    )
                 # when coverage is an array.
                 k = 5
                 coverage = np.random.rand(k)
-                lo, hi = utils.beta_hpd_interval(a, b, coverage)
+                lo, hi = utils.beta_highest_density_interval(a, b, coverage)
                 self.assertEqual(lo.shape, (k,))
                 self.assertEqual(hi.shape, (k,))
                 self.assertTrue(np.allclose(
                     beta.cdf(hi) - beta.cdf(lo),
                     coverage,
                 ))
-                ppf_lo, ppf_hi = utils.beta_ppf_interval(a, b, coverage)
-                self.assertTrue(np.all((hi - lo) - (ppf_hi - ppf_lo) < 1e-12))
+                equal_tailed_lo, equal_tailed_hi =\
+                    utils.beta_equal_tailed_interval(a, b, coverage)
+                self.assertTrue(np.all(
+                    (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12
+                ))
         # Test when a and b are 1D arrays.
         n = 10
         a = np.arange(1, n + 1)
@@ -353,28 +360,38 @@ class BetaHpdIntervalTestCase(unittest.TestCase):
         beta = stats.beta(a, b)
         #   when coverage is a scalar.
         for coverage in [0.25, 0.50, 0.75]:
-            lo, hi = utils.beta_hpd_interval(a, b, coverage)
+            lo, hi = utils.beta_highest_density_interval(a, b, coverage)
             self.assertEqual(lo.shape, (n,))
             self.assertEqual(hi.shape, (n,))
             self.assertTrue(np.all(
                 np.abs((beta.cdf(hi) - beta.cdf(lo)) - coverage)
                 < 1e-10
             ))
-            ppf_lo, ppf_hi = utils.beta_ppf_interval(a, b, coverage)
-            self.assertTrue(np.all((hi - lo) - (ppf_hi - ppf_lo) < 1e-12))
-            self.assertTrue(np.any((ppf_hi - ppf_lo) - (hi - lo) > 1e-5))
+            equal_tailed_lo, equal_tailed_hi =\
+                utils.beta_equal_tailed_interval(a, b, coverage)
+            self.assertTrue(np.all(
+                (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12
+            ))
+            self.assertTrue(np.any(
+                (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5
+            ))
         #   when coverage is an array.
         coverage = np.random.rand(n)
-        lo, hi = utils.beta_hpd_interval(a, b, coverage)
+        lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(lo.shape, (n,))
         self.assertEqual(hi.shape, (n,))
         self.assertTrue(np.allclose(
             beta.cdf(hi) - beta.cdf(lo),
             coverage,
         ))
-        ppf_lo, ppf_hi = utils.beta_ppf_interval(a, b, coverage)
-        self.assertTrue(np.all((hi - lo) - (ppf_hi - ppf_lo) < 1e-12))
-        self.assertTrue(np.any((ppf_hi - ppf_lo) - (hi - lo) > 1e-5))
+        equal_tailed_lo, equal_tailed_hi =\
+            utils.beta_equal_tailed_interval(a, b, coverage)
+        self.assertTrue(np.all(
+            (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12
+        ))
+        self.assertTrue(np.any(
+            (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5
+        ))
         # Test when a and b are 2D arrays.
         n, m = 5, 2
         a = np.arange(1, n * m + 1).reshape(n, m)
@@ -382,28 +399,38 @@ class BetaHpdIntervalTestCase(unittest.TestCase):
         beta = stats.beta(a, b)
         #   when coverage is a scalar.
         for coverage in [0.25, 0.50, 0.75]:
-            lo, hi = utils.beta_hpd_interval(a, b, coverage)
+            lo, hi = utils.beta_highest_density_interval(a, b, coverage)
             self.assertEqual(lo.shape, (n, m))
             self.assertEqual(hi.shape, (n, m))
             self.assertTrue(np.all(
                 np.abs((beta.cdf(hi) - beta.cdf(lo)) - coverage)
                 < 1e-10
             ))
-            ppf_lo, ppf_hi = utils.beta_ppf_interval(a, b, coverage)
-            self.assertTrue(np.all((hi - lo) - (ppf_hi - ppf_lo) < 1e-12))
-            self.assertTrue(np.any((ppf_hi - ppf_lo) - (hi - lo) > 1e-5))
+            equal_tailed_lo, equal_tailed_hi =\
+                utils.beta_equal_tailed_interval(a, b, coverage)
+            self.assertTrue(np.all(
+                (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12
+            ))
+            self.assertTrue(np.any(
+                (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5
+            ))
         #   when coverage is an array.
         coverage = np.random.rand(n, m)
-        lo, hi = utils.beta_hpd_interval(a, b, coverage)
+        lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(lo.shape, (n, m))
         self.assertEqual(hi.shape, (n, m))
         self.assertTrue(np.allclose(
             beta.cdf(hi) - beta.cdf(lo),
             coverage,
         ))
-        ppf_lo, ppf_hi = utils.beta_ppf_interval(a, b, coverage)
-        self.assertTrue(np.all((hi - lo) - (ppf_hi - ppf_lo) < 1e-12))
-        self.assertTrue(np.any((ppf_hi - ppf_lo) - (hi - lo) > 1e-5))
+        equal_tailed_lo, equal_tailed_hi =\
+            utils.beta_equal_tailed_interval(a, b, coverage)
+        self.assertTrue(np.all(
+            (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12
+        ))
+        self.assertTrue(np.any(
+            (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5
+        ))
         # Test when a and b broadcast over each other.
         n, m = 5, 2
         a = np.arange(1, n + 1).reshape(n, 1)
@@ -411,28 +438,38 @@ class BetaHpdIntervalTestCase(unittest.TestCase):
         beta = stats.beta(a, b)
         #   when coverage is a scalar.
         for coverage in [0.25, 0.50, 0.75]:
-            lo, hi = utils.beta_hpd_interval(a, b, coverage)
+            lo, hi = utils.beta_highest_density_interval(a, b, coverage)
             self.assertEqual(lo.shape, (n, m))
             self.assertEqual(hi.shape, (n, m))
             self.assertTrue(np.all(
                 np.abs((beta.cdf(hi) - beta.cdf(lo)) - coverage)
                 < 1e-10
             ))
-            ppf_lo, ppf_hi = utils.beta_ppf_interval(a, b, coverage)
-            self.assertTrue(np.all((hi - lo) - (ppf_hi - ppf_lo) < 1e-12))
-            self.assertTrue(np.any((ppf_hi - ppf_lo) - (hi - lo) > 1e-5))
+            equal_tailed_lo, equal_tailed_hi =\
+                utils.beta_equal_tailed_interval(a, b, coverage)
+            self.assertTrue(np.all(
+                (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12
+            ))
+            self.assertTrue(np.any(
+                (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5
+            ))
         #   when coverage is an array.
         coverage = np.random.rand(n, m)
-        lo, hi = utils.beta_hpd_interval(a, b, coverage)
+        lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(lo.shape, (n, m))
         self.assertEqual(hi.shape, (n, m))
         self.assertTrue(np.allclose(
             beta.cdf(hi) - beta.cdf(lo),
             coverage,
         ))
-        ppf_lo, ppf_hi = utils.beta_ppf_interval(a, b, coverage)
-        self.assertTrue(np.all((hi - lo) - (ppf_hi - ppf_lo) < 1e-12))
-        self.assertTrue(np.any((ppf_hi - ppf_lo) - (hi - lo) > 1e-5))
+        equal_tailed_lo, equal_tailed_hi =\
+            utils.beta_equal_tailed_interval(a, b, coverage)
+        self.assertTrue(np.all(
+            (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12
+        ))
+        self.assertTrue(np.any(
+            (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5
+        ))
         # Test when coverage broadcasts over a and b.
         #   when a and b have the same shape.
         n = 10
@@ -441,16 +478,21 @@ class BetaHpdIntervalTestCase(unittest.TestCase):
         beta = stats.beta(a, b)
         k = 5
         coverage = np.random.rand(k)[None, :]
-        lo, hi = utils.beta_hpd_interval(a, b, coverage)
+        lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(lo.shape, (n, k))
         self.assertEqual(hi.shape, (n, k))
         self.assertTrue(np.allclose(
             beta.cdf(hi) - beta.cdf(lo),
             np.tile(coverage, (n, 1)),
         ))
-        ppf_lo, ppf_hi = utils.beta_ppf_interval(a, b, coverage)
-        self.assertTrue(np.all((hi - lo) - (ppf_hi - ppf_lo) < 1e-12))
-        self.assertTrue(np.any((ppf_hi - ppf_lo) - (hi - lo) > 1e-5))
+        equal_tailed_lo, equal_tailed_hi =\
+            utils.beta_equal_tailed_interval(a, b, coverage)
+        self.assertTrue(np.all(
+            (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12
+        ))
+        self.assertTrue(np.any(
+            (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5
+        ))
         #   when a and b broadcast over each other.
         n, m = 3, 2
         a = np.arange(1, n + 1).reshape(n, 1)[..., None]
@@ -458,40 +500,45 @@ class BetaHpdIntervalTestCase(unittest.TestCase):
         beta = stats.beta(a, b)
         k = 5
         coverage = np.random.rand(k)[None, None, :]
-        lo, hi = utils.beta_hpd_interval(a, b, coverage)
+        lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(lo.shape, (n, m, k))
         self.assertEqual(hi.shape, (n, m, k))
         self.assertTrue(np.allclose(
             beta.cdf(hi) - beta.cdf(lo),
             np.tile(coverage, (n, m, 1)),
         ))
-        ppf_lo, ppf_hi = utils.beta_ppf_interval(a, b, coverage)
-        self.assertTrue(np.all((hi - lo) - (ppf_hi - ppf_lo) < 1e-12))
-        self.assertTrue(np.any((ppf_hi - ppf_lo) - (hi - lo) > 1e-5))
+        equal_tailed_lo, equal_tailed_hi =\
+            utils.beta_equal_tailed_interval(a, b, coverage)
+        self.assertTrue(np.all(
+            (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12
+        ))
+        self.assertTrue(np.any(
+            (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5
+        ))
 
     def test_converges_for_short_intervals(self):
         coverage = 1e-8
         for a in [2., 5., 10.]:
             for b in [2., 5., 10.]:
                 beta = stats.beta(a, b)
-                lo, hi = utils.beta_hpd_interval(a, b, coverage)
+                lo, hi = utils.beta_highest_density_interval(a, b, coverage)
                 self.assertEqual(lo.shape, ())
                 self.assertEqual(hi.shape, ())
                 self.assertLess(lo, hi)
                 self.assertAlmostEqual(beta.cdf(hi) - beta.cdf(lo), coverage)
 
 
-class BetaPpfCoverageTestCase(unittest.TestCase):
-    """Test ersa.utils.beta_ppf_coverage."""
+class BetaEqualTailedCoverageTestCase(unittest.TestCase):
+    """Test ersa.utils.beta_equal_tailed_coverage."""
 
-    def test_beta_ppf_coverage(self):
+    def test_beta_equal_tailed_coverage(self):
         # Test when a and b are scalars.
         for a in [1., 2., 3.]:
             for b in [1., 2., 3.]:
                 # when x is a scalar.
                 for x in [0.25, 0.50, 0.75]:
-                    coverage = utils.beta_ppf_coverage(a, b, x)
-                    lo, hi = utils.beta_ppf_interval(a, b, coverage)
+                    coverage = utils.beta_equal_tailed_coverage(a, b, x)
+                    lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
                     self.assertEqual(coverage.shape, ())
                     self.assertTrue(np.all(
                         np.isclose(lo, x) | np.isclose(hi, x)
@@ -499,8 +546,8 @@ class BetaPpfCoverageTestCase(unittest.TestCase):
                 # when x is an array.
                 k = 5
                 x = np.random.rand(k)
-                coverage = utils.beta_ppf_coverage(a, b, x)
-                lo, hi = utils.beta_ppf_interval(a, b, coverage)
+                coverage = utils.beta_equal_tailed_coverage(a, b, x)
+                lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
                 self.assertEqual(coverage.shape, (k,))
                 self.assertTrue(np.all(
                     np.isclose(lo, x) | np.isclose(hi, x)
@@ -511,16 +558,16 @@ class BetaPpfCoverageTestCase(unittest.TestCase):
         b = np.arange(n + 1, 1, -1)
         #   when x is a scalar.
         for x in [0.25, 0.50, 0.75]:
-            coverage = utils.beta_ppf_coverage(a, b, x)
-            lo, hi = utils.beta_ppf_interval(a, b, coverage)
+            coverage = utils.beta_equal_tailed_coverage(a, b, x)
+            lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
             self.assertEqual(coverage.shape, (n,))
             self.assertTrue(np.all(
                 np.isclose(lo, x) | np.isclose(hi, x)
             ))
         #   when x is an array.
         x = np.random.rand(n)
-        coverage = utils.beta_ppf_coverage(a, b, x)
-        lo, hi = utils.beta_ppf_interval(a, b, coverage)
+        coverage = utils.beta_equal_tailed_coverage(a, b, x)
+        lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n,))
         self.assertTrue(np.all(
             np.isclose(lo, x) | np.isclose(hi, x)
@@ -531,16 +578,16 @@ class BetaPpfCoverageTestCase(unittest.TestCase):
         b = np.arange(n * m + 1, 1, -1).reshape(n, m)
         #   when x is a scalar.
         for x in [0.25, 0.50, 0.75]:
-            coverage = utils.beta_ppf_coverage(a, b, x)
-            lo, hi = utils.beta_ppf_interval(a, b, coverage)
+            coverage = utils.beta_equal_tailed_coverage(a, b, x)
+            lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
             self.assertEqual(coverage.shape, (n, m))
             self.assertTrue(np.all(
                 np.isclose(lo, x) | np.isclose(hi, x)
             ))
         #   when x is an array.
         x = np.random.rand(n, m)
-        coverage = utils.beta_ppf_coverage(a, b, x)
-        lo, hi = utils.beta_ppf_interval(a, b, coverage)
+        coverage = utils.beta_equal_tailed_coverage(a, b, x)
+        lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, m))
         self.assertTrue(np.all(
             np.isclose(lo, x) | np.isclose(hi, x)
@@ -551,16 +598,16 @@ class BetaPpfCoverageTestCase(unittest.TestCase):
         b = np.arange(m + 1, 1, -1).reshape(1, m)
         #   when x is a scalar.
         for x in [0.25, 0.50, 0.75]:
-            coverage = utils.beta_ppf_coverage(a, b, x)
-            lo, hi = utils.beta_ppf_interval(a, b, coverage)
+            coverage = utils.beta_equal_tailed_coverage(a, b, x)
+            lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
             self.assertEqual(coverage.shape, (n, m))
             self.assertTrue(np.all(
                 np.isclose(lo, x) | np.isclose(hi, x)
             ))
         #   when x is an array.
         x = np.random.rand(n, m)
-        coverage = utils.beta_ppf_coverage(a, b, x)
-        lo, hi = utils.beta_ppf_interval(a, b, coverage)
+        coverage = utils.beta_equal_tailed_coverage(a, b, x)
+        lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, m))
         self.assertTrue(np.all(
             np.isclose(lo, x) | np.isclose(hi, x)
@@ -572,8 +619,8 @@ class BetaPpfCoverageTestCase(unittest.TestCase):
         b = np.arange(n + 1, 1, -1)[:, None]
         k = 5
         x = np.random.rand(k)[None, :]
-        coverage = utils.beta_ppf_coverage(a, b, x)
-        lo, hi = utils.beta_ppf_interval(a, b, coverage)
+        coverage = utils.beta_equal_tailed_coverage(a, b, x)
+        lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, k))
         self.assertTrue(np.all(
             np.isclose(lo, x) | np.isclose(hi, x)
@@ -584,29 +631,29 @@ class BetaPpfCoverageTestCase(unittest.TestCase):
         b = np.arange(m + 1, 1, -1).reshape(1, m)[..., None]
         k = 5
         x = np.random.rand(k)[None, None, :]
-        coverage = utils.beta_ppf_coverage(a, b, x)
-        lo, hi = utils.beta_ppf_interval(a, b, coverage)
+        coverage = utils.beta_equal_tailed_coverage(a, b, x)
+        lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, m, k))
         self.assertTrue(np.all(
             np.isclose(lo, x) | np.isclose(hi, x)
         ))
 
 
-class BetaHpdCoverageTestCase(unittest.TestCase):
-    """Test ersa.utils.beta_hpd_coverage."""
+class BetaHighestDensityCoverageTestCase(unittest.TestCase):
+    """Test ersa.utils.beta_highest_density_coverage."""
 
     @pytest.mark.level(1)
-    def test_beta_hpd_coverage(self):
+    def test_beta_highest_density_coverage(self):
         # Test when a and b are scalars.
         for a in [1., 2., 3.]:
             for b in [1., 2., 3.]:
                 if a == 1. and b == 1.:
-                    # No HPD interval exists when a <= 1 and b <= 1.
+                    # No highest density interval exists when a <= 1 and b <= 1.
                     continue
                 # when x is a scalar.
                 for x in [0.25, 0.50, 0.75]:
-                    coverage = utils.beta_hpd_coverage(a, b, x)
-                    lo, hi = utils.beta_hpd_interval(a, b, coverage)
+                    coverage = utils.beta_highest_density_coverage(a, b, x)
+                    lo, hi = utils.beta_highest_density_interval(a, b, coverage)
                     self.assertEqual(coverage.shape, ())
                     self.assertTrue(np.all(
                         np.isclose(lo, x) | np.isclose(hi, x)
@@ -614,8 +661,8 @@ class BetaHpdCoverageTestCase(unittest.TestCase):
                 # when x is an array.
                 k = 5
                 x = np.random.rand(k)
-                coverage = utils.beta_hpd_coverage(a, b, x)
-                lo, hi = utils.beta_hpd_interval(a, b, coverage)
+                coverage = utils.beta_highest_density_coverage(a, b, x)
+                lo, hi = utils.beta_highest_density_interval(a, b, coverage)
                 self.assertEqual(coverage.shape, (k,))
                 self.assertTrue(np.all(
                     np.isclose(lo, x) | np.isclose(hi, x)
@@ -626,16 +673,16 @@ class BetaHpdCoverageTestCase(unittest.TestCase):
         b = np.arange(n + 1, 1, -1)
         #   when x is a scalar.
         for x in [0.25, 0.50, 0.75]:
-            coverage = utils.beta_hpd_coverage(a, b, x)
-            lo, hi = utils.beta_hpd_interval(a, b, coverage)
+            coverage = utils.beta_highest_density_coverage(a, b, x)
+            lo, hi = utils.beta_highest_density_interval(a, b, coverage)
             self.assertEqual(coverage.shape, (n,))
             self.assertTrue(np.all(
                 np.isclose(lo, x) | np.isclose(hi, x)
             ))
         #   when x is an array.
         x = np.random.rand(n)
-        coverage = utils.beta_hpd_coverage(a, b, x)
-        lo, hi = utils.beta_hpd_interval(a, b, coverage)
+        coverage = utils.beta_highest_density_coverage(a, b, x)
+        lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n,))
         self.assertTrue(np.all(
             np.isclose(lo, x) | np.isclose(hi, x)
@@ -646,16 +693,16 @@ class BetaHpdCoverageTestCase(unittest.TestCase):
         b = np.arange(n * m + 1, 1, -1).reshape(n, m)
         #   when x is a scalar.
         for x in [0.25, 0.50, 0.75]:
-            coverage = utils.beta_hpd_coverage(a, b, x)
-            lo, hi = utils.beta_hpd_interval(a, b, coverage)
+            coverage = utils.beta_highest_density_coverage(a, b, x)
+            lo, hi = utils.beta_highest_density_interval(a, b, coverage)
             self.assertEqual(coverage.shape, (n, m))
             self.assertTrue(np.all(
                 np.isclose(lo, x) | np.isclose(hi, x)
             ))
         #   when x is an array.
         x = np.random.rand(n, m)
-        coverage = utils.beta_hpd_coverage(a, b, x)
-        lo, hi = utils.beta_hpd_interval(a, b, coverage)
+        coverage = utils.beta_highest_density_coverage(a, b, x)
+        lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, m))
         self.assertTrue(np.all(
             np.isclose(lo, x) | np.isclose(hi, x)
@@ -666,16 +713,16 @@ class BetaHpdCoverageTestCase(unittest.TestCase):
         b = np.arange(m + 1, 1, -1).reshape(1, m)
         #   when x is a scalar.
         for x in [0.25, 0.50, 0.75]:
-            coverage = utils.beta_hpd_coverage(a, b, x)
-            lo, hi = utils.beta_hpd_interval(a, b, coverage)
+            coverage = utils.beta_highest_density_coverage(a, b, x)
+            lo, hi = utils.beta_highest_density_interval(a, b, coverage)
             self.assertEqual(coverage.shape, (n, m))
             self.assertTrue(np.all(
                 np.isclose(lo, x) | np.isclose(hi, x)
             ))
         #   when x is an array.
         x = np.random.rand(n, m)
-        coverage = utils.beta_hpd_coverage(a, b, x)
-        lo, hi = utils.beta_hpd_interval(a, b, coverage)
+        coverage = utils.beta_highest_density_coverage(a, b, x)
+        lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, m))
         self.assertTrue(np.all(
             np.isclose(lo, x) | np.isclose(hi, x)
@@ -687,8 +734,8 @@ class BetaHpdCoverageTestCase(unittest.TestCase):
         b = np.arange(n + 1, 1, -1)[:, None]
         k = 5
         x = np.random.rand(k)[None, :]
-        coverage = utils.beta_hpd_coverage(a, b, x)
-        lo, hi = utils.beta_hpd_interval(a, b, coverage)
+        coverage = utils.beta_highest_density_coverage(a, b, x)
+        lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, k))
         self.assertTrue(np.all(
             np.isclose(lo, x) | np.isclose(hi, x)
@@ -699,8 +746,8 @@ class BetaHpdCoverageTestCase(unittest.TestCase):
         b = np.arange(m + 1, 1, -1).reshape(1, m)[..., None]
         k = 5
         x = np.random.rand(k)[None, None, :]
-        coverage = utils.beta_hpd_coverage(a, b, x)
-        lo, hi = utils.beta_hpd_interval(a, b, coverage)
+        coverage = utils.beta_highest_density_coverage(a, b, x)
+        lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, m, k))
         self.assertTrue(np.all(
             np.isclose(lo, x) | np.isclose(hi, x)

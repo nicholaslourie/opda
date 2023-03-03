@@ -69,11 +69,11 @@ def dkw_epsilon(n, confidence):
     )
 
 
-def beta_ppf_interval(a, b, coverage):
+def beta_equal_tailed_interval(a, b, coverage):
     """Return an interval containing ``coverage`` of the probability.
 
     For the beta distribution with parameters ``a`` and ``b``, return
-    the interval about the median that contains ``coverage`` of the
+    the equal-tailed interval that contains ``coverage`` of the
     probability mass.
 
     Parameters
@@ -91,7 +91,7 @@ def beta_ppf_interval(a, b, coverage):
         A pair of floats or arrays of floats with the shape determined
         by broadcasting ``a``, ``b``, and ``coverage`` together. The
         first returned value gives the lower bound and the second the
-        upper bound for the intervals.
+        upper bound for the equal-tailed intervals.
     """
     a = np.array(a)
     b = np.array(b)
@@ -105,7 +105,7 @@ def beta_ppf_interval(a, b, coverage):
     return x, y
 
 
-def beta_hpd_interval(a, b, coverage, atol=1e-10):
+def beta_highest_density_interval(a, b, coverage, atol=1e-10):
     """Return an interval containing ``coverage`` of the probability.
 
     For the beta distribution with parameters ``a`` and ``b``, return
@@ -147,7 +147,8 @@ def beta_hpd_interval(a, b, coverage, atol=1e-10):
 
     if np.any((a <= 1.) & (b <= 1.)):
         raise ValueError(
-            'Either a or b must be greater than one to have an HPD interval.'
+            f'Either a ({a}) or b ({b}) must be greater than one to have'
+            f' a highest density interval.'
         )
 
     beta = stats.beta(a, b)
@@ -167,18 +168,18 @@ def beta_hpd_interval(a, b, coverage, atol=1e-10):
             break
     else:
         raise exceptions.OptimizationException(
-            'beta_hpd_interval failed to converge.'
+            'beta_highest_density_interval failed to converge.'
         )
 
     return x, y
 
 
-def beta_ppf_coverage(a, b, x):
+def beta_equal_tailed_coverage(a, b, x):
     """Return the coverage of the smallest interval containing ``x``.
 
     For the beta distribution with parameters ``a`` and ``b``, return
-    the coverage of the smallest ppf interval containing ``x``. See the
-    related function: ``beta_ppf_interval``.
+    the coverage of the smallest equal-tailed interval containing
+    ``x``. See the related function: ``beta_equal_tailed_interval``.
 
     Parameters
     ----------
@@ -187,15 +188,15 @@ def beta_ppf_coverage(a, b, x):
     b : float or array of floats, required
         The beta parameter for the beta distribution.
     x : float or array of floats, required
-        The points defining the minimal intervals whose coverage to
-        return.
+        The points defining the minimal equal-tailed intervals whose
+        coverage to return.
 
     Returns
     -------
     float or array of floats
         A float or array of floats with shape determined by broadcasting
         ``a``, ``b``, and ``x`` together. The values represent the
-        coverage of the minimal ppf interval containing the
+        coverage of the minimal equal-tailed interval containing the
         corresponding value from ``x``.
     """
     a = np.array(a)
@@ -207,12 +208,12 @@ def beta_ppf_coverage(a, b, x):
     return 2 * np.abs(0.5 - beta.cdf(x))
 
 
-def beta_hpd_coverage(a, b, x, atol=1e-10):
+def beta_highest_density_coverage(a, b, x, atol=1e-10):
     """Return the coverage of the smallest interval containing ``x``.
 
     For the beta distribution with parameters ``a`` and ``b``, return
-    the coverage of the smallest hpd interval containing ``x``. See the
-    related function: ``beta_hpd_interval``.
+    the coverage of the smallest highest density interval containing
+    ``x``. See the related function: ``beta_highest_density_interval``.
 
     Parameters
     ----------
@@ -229,10 +230,10 @@ def beta_hpd_coverage(a, b, x, atol=1e-10):
     float or array of floats
         A float or array of floats with shape determined by broadcasting
         ``a``, ``b``, and ``x`` together. The values represent the
-        coverage of the minimal hpd interval containing the
+        coverage of the minimal highest density interval containing the
         corresponding value from ``x``.
     """
-    # Use binary search to find the coverage of the HPD interval
+    # Use binary search to find the coverage of the highest density interval
     # containing x.
     a = np.array(a)
     b = np.array(b)
@@ -240,7 +241,8 @@ def beta_hpd_coverage(a, b, x, atol=1e-10):
 
     if np.any((a <= 1.) & (b <= 1.)):
         raise ValueError(
-            'Either a or b must be greater than one to have an HPD interval.'
+            f'Either a ({a}) or b ({b}) must be greater than one to have'
+            f' a highest density interval.'
         )
 
     beta = stats.beta(a, b)
@@ -265,7 +267,7 @@ def beta_hpd_coverage(a, b, x, atol=1e-10):
             break
     else:
         raise exceptions.OptimizationException(
-            'beta_hpd_coverage failed to converge.'
+            'beta_highest_density_coverage failed to converge.'
         )
 
     x, y = np.where(x_is_lower_end, x, y), np.where(x_is_lower_end, y, x)
