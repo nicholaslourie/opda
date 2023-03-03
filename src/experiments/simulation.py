@@ -146,6 +146,30 @@ class Simulation:
         func,
         bounds,
     ):
+        """Run and return the simulation.
+
+        Parameters
+        ----------
+        n_trials : int, required
+            The number of trials to simulate.
+        n_samples : int, required
+            The number of samples to take in the random search for each
+            trial.
+        n_dims : int, required
+            The number of dimensions that ``func`` expects in each data
+            point.
+        func : function, required
+            A broadcastable function mapping vectors of length
+            ``n_dims`` to scalars.
+        bounds : n_dims x 2 array of floats, required
+            Bounds on each dimension for the random search's uniform
+            sampling.
+
+        Returns
+        -------
+        Simulation
+            An object representing the simulation's results.
+        """
         bounds = np.array(bounds)
         if bounds.shape != (n_dims, 2):
             raise ValueError(
