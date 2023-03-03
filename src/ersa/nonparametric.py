@@ -55,12 +55,14 @@ def _beta_band_weights(n, confidence, kind, n_trials=100_000):
     # distribution). For example, see the following code snippet:
     #
     #     >>> import numpy as np
-    #     ... from ersa.utils import beta_hpd_interval
+    #     ... from ersa.utils import beta_highest_density_interval
     #     ...
     #     ... n_trials = 100_000
     #     ... quantiles = np.array([0.5, 0.75, 0.9, 0.95, 0.99, 0.999])
     #     ... ks = (quantiles * n_trials).astype(int)
-    #     ... lo, hi = beta_hpd_interval(ks, n_trials + 1 - ks, 0.999)
+    #     ... lo, hi = beta_highest_density_interval(
+    #     ...     ks, n_trials + 1 - ks, 0.999
+    #     ... )
     #     ... rel_err_lo = (1. - hi) / (1. - quantiles) - 1.
     #     ... rel_err_hi = (1. - lo) / (1. - quantiles) - 1.
     #     ... fmt_qnt = lambda q: f'{q: .3f}'
@@ -85,12 +87,12 @@ def _beta_band_weights(n, confidence, kind, n_trials=100_000):
     if kind == 'equal_tailed':
         interval = utils.beta_equal_tailed_interval
         coverage = utils.beta_equal_tailed_coverage
-    elif kind == 'hpd':
-        interval = utils.beta_hpd_interval
-        coverage = utils.beta_hpd_coverage
+    elif kind == 'highest_density':
+        interval = utils.beta_highest_density_interval
+        coverage = utils.beta_highest_density_coverage
     else:
         raise ValueError(
-            f'kind must be one of "equal_tailed" or "hpd",'
+            f'kind must be one of "equal_tailed" or "highest_density",'
             f' not {kind}.'
         )
 
@@ -514,7 +516,7 @@ class EmpiricalDistribution:
             The coverage or confidence level for the bands.
         method : str, optional (default='beta_equal_tailed')
             One of the strings 'dkw', 'ks', 'beta_equal_tailed', or
-            'beta_hpd'. The ``method`` parameter determines the kind of
+            'beta_highest_density'. The ``method`` parameter determines the kind of
             confidence band and thus its properties. See `Notes`_ for
             details on the different methods.
         a : float or None, optional (default=None)
@@ -533,7 +535,7 @@ class EmpiricalDistribution:
         Notes
         -----
         There are four built-in methods for generating confidence bands:
-        dkw, ks, beta_equal_tailed, and beta_hpd. All three methods provide
+        dkw, ks, beta_equal_tailed, and beta_highest_density. All three methods provide
         simultaneous confidence bands.
 
         The dkw method uses the Dvoretzky-Kiefer-Wolfowitz inequality
@@ -550,7 +552,7 @@ class EmpiricalDistribution:
         statistics, based on the beta distribution, until they hold
         simultaneously with exact coverage. These pointwise bands may
         either use the equal-tailed interval (beta_equal_tailed) or the highest
-        density interval (beta_hpd) from the beta distribution. The
+        density interval (beta_highest_density) from the beta distribution. The
         highest density interval yields the tightest bands; however, the
         equal-tailed intervals are almost the same size and
         significantly faster to compute. The beta bands do not have
@@ -584,14 +586,14 @@ class EmpiricalDistribution:
             ws_lo_cumsum, ws_hi_cumsum = _beta_band_weights(
                 n, confidence, kind='equal_tailed',
             )
-        elif method == 'beta_hpd':
+        elif method == 'beta_highest_density':
             ws_lo_cumsum, ws_hi_cumsum = _beta_band_weights(
-                n, confidence, kind='hpd',
+                n, confidence, kind='highest_density',
             )
         else:
             raise ValueError(
                 'method must be one of "dkw", "ks", "beta_equal_tailed",'
-                ' or "beta_hpd".'
+                ' or "beta_highest_density".'
             )
 
         ws_lo = np.diff(
