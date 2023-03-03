@@ -876,7 +876,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
     @pytest.mark.level(2)
     def test_confidence_bands(self):
         n = 10
-        for method in ['dkw', 'ks', 'beta_ppf', 'beta_hpd']:
+        for method in ['dkw', 'ks', 'beta_equal_tailed', 'beta_hpd']:
             for confidence in [0.25, 0.5, 0.75]:
                 ys = np.random.uniform(0, 1, size=n)
                 lo, dist, hi =\
@@ -1059,7 +1059,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 )
 
     @pytest.mark.level(3)
-    def test_beta_ppf_bands_has_correct_coverage(self):
+    def test_beta_equal_tailed_bands_has_correct_coverage(self):
         n_trials = 2_500
         dist = stats.norm(0., 1.)
         grid = np.linspace(-5., 5., num=10_000)
@@ -1070,7 +1070,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     ys = dist.rvs(size=n_samples)
                     lo, _, hi =\
                         nonparametric.EmpiricalDistribution.confidence_bands(
-                            ys, confidence, method='beta_ppf',
+                            ys, confidence, method='beta_equal_tailed',
                         )
                     covered.append(
                         np.all(lo.cdf(grid) <= dist.cdf(grid))

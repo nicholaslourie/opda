@@ -82,14 +82,17 @@ def _beta_band_weights(n, confidence, kind, n_trials=100_000):
     # samples, ``1 - confidence`` will be within about +/- 10% of the
     # true value, for typical usage (i.e., confidence up to 99%).
 
-    if kind == 'ppf':
-        interval = utils.beta_ppf_interval
-        coverage = utils.beta_ppf_coverage
+    if kind == 'equal_tailed':
+        interval = utils.beta_equal_tailed_interval
+        coverage = utils.beta_equal_tailed_coverage
     elif kind == 'hpd':
         interval = utils.beta_hpd_interval
         coverage = utils.beta_hpd_coverage
     else:
-        raise ValueError('kind must be one of "ppf" or "hpd".')
+        raise ValueError(
+            f'kind must be one of "equal_tailed" or "hpd",'
+            f' not {kind}.'
+        )
 
     ns = np.arange(1, n + 1)
     a = ns
@@ -489,7 +492,7 @@ class EmpiricalDistribution:
             cls,
             ys,
             confidence,
-            method = 'beta_ppf',
+            method = 'beta_equal_tailed',
             *,
             a = None,
             b = None,
@@ -509,8 +512,8 @@ class EmpiricalDistribution:
             The sample from the distribution.
         confidence : float, required
             The coverage or confidence level for the bands.
-        method : str, optional (default='beta_ppf')
-            One of the strings 'dkw', 'ks', 'beta_ppf', or
+        method : str, optional (default='beta_equal_tailed')
+            One of the strings 'dkw', 'ks', 'beta_equal_tailed', or
             'beta_hpd'. The ``method`` parameter determines the kind of
             confidence band and thus its properties. See `Notes`_ for
             details on the different methods.
@@ -530,7 +533,7 @@ class EmpiricalDistribution:
         Notes
         -----
         There are four built-in methods for generating confidence bands:
-        dkw, ks, beta_ppf, and beta_hpd. All three methods provide
+        dkw, ks, beta_equal_tailed, and beta_hpd. All three methods provide
         simultaneous confidence bands.
 
         The dkw method uses the Dvoretzky-Kiefer-Wolfowitz inequality
@@ -546,7 +549,7 @@ class EmpiricalDistribution:
         The beta methods expand pointwise confidence bands for the order
         statistics, based on the beta distribution, until they hold
         simultaneously with exact coverage. These pointwise bands may
-        either use the equal-tailed interval (beta_ppf) or the highest
+        either use the equal-tailed interval (beta_equal_tailed) or the highest
         density interval (beta_hpd) from the beta distribution. The
         highest density interval yields the tightest bands; however, the
         equal-tailed intervals are almost the same size and
@@ -577,9 +580,9 @@ class EmpiricalDistribution:
             ws_lo_cumsum, ws_hi_cumsum = _ks_band_weights(
                 n, confidence,
             )
-        elif method == 'beta_ppf':
+        elif method == 'beta_equal_tailed':
             ws_lo_cumsum, ws_hi_cumsum = _beta_band_weights(
-                n, confidence, kind='ppf',
+                n, confidence, kind='equal_tailed',
             )
         elif method == 'beta_hpd':
             ws_lo_cumsum, ws_hi_cumsum = _beta_band_weights(
@@ -587,8 +590,8 @@ class EmpiricalDistribution:
             )
         else:
             raise ValueError(
-                'method must be one of "dkw", "ks", "beta_ppf", or'
-                ' "beta_hpd".'
+                'method must be one of "dkw", "ks", "beta_equal_tailed",'
+                ' or "beta_hpd".'
             )
 
         ws_lo = np.diff(

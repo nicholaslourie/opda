@@ -69,11 +69,11 @@ def dkw_epsilon(n, confidence):
     )
 
 
-def beta_ppf_interval(a, b, coverage):
+def beta_equal_tailed_interval(a, b, coverage):
     """Return an interval containing ``coverage`` of the probability.
 
     For the beta distribution with parameters ``a`` and ``b``, return
-    the interval about the median that contains ``coverage`` of the
+    the equal-tailed interval that contains ``coverage`` of the
     probability mass.
 
     Parameters
@@ -91,7 +91,7 @@ def beta_ppf_interval(a, b, coverage):
         A pair of floats or arrays of floats with the shape determined
         by broadcasting ``a``, ``b``, and ``coverage`` together. The
         first returned value gives the lower bound and the second the
-        upper bound for the intervals.
+        upper bound for the equal-tailed intervals.
     """
     a = np.array(a)
     b = np.array(b)
@@ -173,12 +173,12 @@ def beta_hpd_interval(a, b, coverage, atol=1e-10):
     return x, y
 
 
-def beta_ppf_coverage(a, b, x):
+def beta_equal_tailed_coverage(a, b, x):
     """Return the coverage of the smallest interval containing ``x``.
 
     For the beta distribution with parameters ``a`` and ``b``, return
-    the coverage of the smallest ppf interval containing ``x``. See the
-    related function: ``beta_ppf_interval``.
+    the coverage of the smallest equal-tailed interval containing
+    ``x``. See the related function: ``beta_equal_tailed_interval``.
 
     Parameters
     ----------
@@ -187,15 +187,15 @@ def beta_ppf_coverage(a, b, x):
     b : float or array of floats, required
         The beta parameter for the beta distribution.
     x : float or array of floats, required
-        The points defining the minimal intervals whose coverage to
-        return.
+        The points defining the minimal equal-tailed intervals whose
+        coverage to return.
 
     Returns
     -------
     float or array of floats
         A float or array of floats with shape determined by broadcasting
         ``a``, ``b``, and ``x`` together. The values represent the
-        coverage of the minimal ppf interval containing the
+        coverage of the minimal equal-tailed interval containing the
         corresponding value from ``x``.
     """
     a = np.array(a)
