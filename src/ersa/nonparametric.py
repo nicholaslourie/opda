@@ -529,8 +529,8 @@ class EmpiricalDistribution:
 
         Notes
         -----
-        There are four built-in methods for generating confidence
-        bands: dkw, ks, beta_ppf, and beta_hpd. All three methods provide
+        There are four built-in methods for generating confidence bands:
+        dkw, ks, beta_ppf, and beta_hpd. All three methods provide
         simultaneous confidence bands.
 
         The dkw method uses the Dvoretzky-Kiefer-Wolfowitz inequality
