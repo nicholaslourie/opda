@@ -188,3 +188,67 @@ def plot_dist(
     plot_pdf(xs, name=name, ax=axes[1])
 
     return fig, axes
+
+
+def plot_distribution_approximation(
+        simulation,
+        approximating_distribution,
+        n,
+        *,
+        axes = None
+):
+    """Return a plot of the approximation to the max's distribution.
+
+    Return a plot that visualizes the Hessian-based asymptotic
+    approximation to the distribution of the maximum for the
+    simulation ``simulation``.
+
+    Parameters
+    ----------
+    simulation : Simulation, required
+        The simulation for which to visualize the approximation.
+    approximating_distribution : QuadraticDistribution, required
+        The distribution approximating the distribution of the maximum
+        in the simulation.
+    n : int, required
+        The number of samples from which to take the maximum.
+    axes : plt.Axes or None, optional (default=None)
+        Axes on which to make the plot, or ``None``. If ``None``, then
+        a figure and axes for the plot will be automatically
+        generated.
+
+    Returns
+    -------
+    plt.Figure, plt.Axes
+        The figure and axes on which the plot was made. If ``axes`` was
+        not ``None``, then the returned figure will be ``None``.
+    """
+    fig, axes = plot_dist(
+        simulation.yss_cummax[:, n-1],
+        name=f'Y_{{({n})}}',
+        axes=axes,
+    )
+
+    xlims = [ax.get_xlim() for ax in axes]
+    ylims = [ax.get_ylim() for ax in axes]
+
+    grid = np.linspace(simulation.y_min, simulation.y_max, num=10_000)
+    axes[0].plot(
+        grid,
+        approximating_distribution.cdf(grid) ** n,
+        label='Approximation',
+    )
+    axes[1].plot(
+        grid,
+        # d/dy (F(y)^n) = n F(y)^(n - 1) dF(y)
+        n * approximating_distribution.cdf(grid)**(n - 1)
+          * approximating_distribution.pdf(grid),
+        label='Approximation',
+    )
+
+    for ax, xlim, ylim in zip(axes, xlims, ylims):
+        ax.set_xlim(*xlim)
+        ax.set_ylim(*ylim)
+        ax.legend()
+
+    return fig, axes
