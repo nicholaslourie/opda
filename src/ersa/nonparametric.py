@@ -10,6 +10,14 @@ from ersa import utils
 
 # helper functions and classes
 
+def _normalize_pmf(ws):
+    return ws / np.sum(ws)
+
+
+def _normalize_cdf(ws_cumsum):
+    return ws_cumsum / ws_cumsum[-1]
+
+
 @functools.cache
 def _dkw_band_weights(n, confidence):
     ws_cumsum = (1. + np.arange(n)) / n
@@ -185,13 +193,10 @@ class EmpiricalDistribution:
 
         # Bind arguments to attributes.
         self.ys = ys
-        self.ws = np.clip(
-            ws / np.sum(ws)
+        self.ws = _normalize_pmf(
+            ws
             if ws is not None else
             np.ones_like(ys, dtype=float)
-            / np.sum(np.ones_like(ys, dtype=float)),
-            0.,
-            1.,
         )
         self.a = a if a is not None else -np.inf
         self.b = b if b is not None else np.inf
@@ -219,7 +224,7 @@ class EmpiricalDistribution:
             np.concatenate([prepend, self.ys, postpend]),
             np.concatenate([[0.] * len(prepend), self.ws, [0.] * len(postpend)]),
         )
-        self._ws_cumsum = np.clip(np.cumsum(self._ws), 0., 1.)
+        self._ws_cumsum = _normalize_cdf(np.cumsum(self._ws))
         self._ws_cumsum_prev = np.concatenate([[0.], self._ws_cumsum[:-1]])
 
     def sample(self, size):
