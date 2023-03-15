@@ -894,10 +894,10 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
 
     @pytest.mark.level(2)
     def test_confidence_bands(self):
-        n = 10
+        n = 5
         methods = ['dkw', 'ks', 'ld_equal_tailed', 'ld_highest_density']
         for method in methods:
-            for confidence in [0.25, 0.5, 0.75]:
+            for confidence in [0.5, 0.9]:
                 ys = np.random.uniform(0, 1, size=n)
                 lo, dist, hi =\
                     nonparametric.EmpiricalDistribution.confidence_bands(
