@@ -890,13 +890,13 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     nonparametric.EmpiricalDistribution(ys).cdf(ys).tolist(),
                 )
                 # Check bounded below by 0.
-                self.assertGreaterEqual(np.min(lo.cdf(ys)), 0. - 1e-15)
-                self.assertGreaterEqual(np.min(dist.cdf(ys)), 0. - 1e-15)
-                self.assertGreaterEqual(np.min(hi.cdf(ys)), 0. - 1e-15)
+                self.assertGreaterEqual(np.min(lo.cdf(ys)), 0.)
+                self.assertGreaterEqual(np.min(dist.cdf(ys)), 0.)
+                self.assertGreaterEqual(np.min(hi.cdf(ys)), 0.)
                 # Check bounded above by 1.
-                self.assertLessEqual(np.max(lo.cdf(ys)), 1. + 1e-15)
-                self.assertLessEqual(np.max(dist.cdf(ys)), 1. + 1e-15)
-                self.assertLessEqual(np.max(hi.cdf(ys)), 1. + 1e-15)
+                self.assertLessEqual(np.max(lo.cdf(ys)), 1.)
+                self.assertLessEqual(np.max(dist.cdf(ys)), 1.)
+                self.assertLessEqual(np.max(hi.cdf(ys)), 1.)
                 # Check bands are proper distance from the empirical CDF.
                 if method == 'dkw' or method == 'ks':
                     epsilon = (
