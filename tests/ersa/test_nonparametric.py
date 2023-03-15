@@ -945,6 +945,75 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 self.assertEqual(dist.ppf(1.), 0.)
                 self.assertEqual(dist.ppf(1. + 1e-12), 0.)
 
+    def test_quantile_tuning_curve_with_probability_mass_at_infinity(self):
+        for ys, n, expected in [
+                ([-np.inf, 100],                   1,  -np.inf),
+                ([-np.inf, 100],                   2,      100),
+                ([-np.inf, -10., 0., 10.,   100.], 1,        0),
+                ([  -100., -10., 0., 10., np.inf], 1,        0),
+                ([  -100., -10., 0., 10., np.inf], 4,   np.inf),
+                ([-np.inf, np.inf],                1,  -np.inf),
+                ([-np.inf, np.inf],                2,   np.inf),
+                ([-np.inf, 0., np.inf],            1,        0),
+                ([-np.inf, 0., np.inf],            2,   np.inf),
+        ]:
+            for use_weights in [False, True]:
+                ws = (
+                    np.ones_like(ys) / len(ys)
+                    if use_weights else
+                    None
+                )
+                dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+                # Test 0 < ns <= len(ys).
+                #   scalar
+                self.assertTrue(np.isclose(
+                    dist.quantile_tuning_curve(n),
+                    expected,
+                    equal_nan=True,
+                ))
+                #   1D array
+                self.assertTrue(np.allclose(
+                    dist.quantile_tuning_curve([n] * 10),
+                    expected,
+                    equal_nan=True,
+                ))
+                #   2D array
+                self.assertTrue(np.allclose(
+                    dist.quantile_tuning_curve([
+                        [n] * 10,
+                        [n] * 10,
+                    ]),
+                    expected,
+                    equal_nan=True,
+                ))
+                # Test ns > len(ys).
+                #   scalar
+                self.assertTrue(np.isclose(
+                    dist.quantile_tuning_curve(6),
+                    ys[-1],
+                    equal_nan=True,
+                ))
+                self.assertTrue(np.isclose(
+                    dist.quantile_tuning_curve(7),
+                    ys[-1],
+                    equal_nan=True,
+                ))
+                #   1D array
+                self.assertTrue(np.allclose(
+                    dist.quantile_tuning_curve([6, 7, 8]),
+                    ys[-1],
+                    equal_nan=True,
+                ))
+                #   2D array
+                self.assertTrue(np.allclose(
+                    dist.quantile_tuning_curve([
+                        [6, 7, 8],
+                        [9, 8, 7],
+                    ]),
+                    ys[-1],
+                    equal_nan=True,
+                ))
+
     def test_average_tuning_curve_with_probability_mass_at_infinity(self):
         for ys, expected in [
                 ([-np.inf, -10., 0., 10.,   100.], -np.inf),
