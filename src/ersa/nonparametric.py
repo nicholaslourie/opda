@@ -287,14 +287,21 @@ class EmpiricalDistribution:
         """Return the quantile at ``qs``.
 
         Since the empirical distribution is discrete, its exact
-        quantiles are ambiguous. We use the following common definition
-        of the quantile function, Q:
+        quantiles are ambiguous. We use the following definition of
+        the quantile function, Q:
 
         .. math::
 
-           Q(p) = \\inf \\{y\\in\\mathbb{R}\\mid p\\leq F(y)\\}
+           Q(p) = \\inf \\{y\\in[a, b]\\mid p\\leq F(y)\\}
 
-        where F is the cumulative distribution function.
+        where F is the cumulative distribution function and ``a`` and
+        ``b`` are the optional bounds provided for the distribution's
+        support. Note that this definition is different from the most
+        standard one in which ``y`` is quantified over the whole real
+        line; however, quantifying over the reals leads to
+        counterintuitive behavior at zero, which then always evaluates
+        to negative infinity. Instead, the above definition will have
+        zero evaluate to the lower bound on the support.
 
         Parameters
         ----------
@@ -314,7 +321,10 @@ class EmpiricalDistribution:
         # Compute the quantiles.
         qs = np.clip(qs, 0., 1.)
 
-        return self._ys[np.argmax(qs[..., None] <= self._ws_cumsum, axis=-1)]
+        return np.maximum(
+            self._ys[np.argmax(qs[..., None] <= self._ws_cumsum, axis=-1)],
+            self.a,
+        )
 
     def quantile_tuning_curve(self, ns, q=0.5):
         """Return the quantile tuning curve evaluated at ``ns``.

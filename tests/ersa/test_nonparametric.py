@@ -926,18 +926,24 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 self.assertEqual(dist.ppf(dist.cdf(ys)).tolist(), ys.tolist())
 
     def test_ppf_at_extreme_values(self):
-        # Test when support is infinite.
-        dist = nonparametric.EmpiricalDistribution([0.], ws=[1.])
-        self.assertEqual(dist.ppf(0. - 1e-12), -np.inf)
-        self.assertEqual(dist.ppf(0.), -np.inf)
-        self.assertEqual(dist.ppf(1.), 0.)
-        self.assertEqual(dist.ppf(1. + 1e-12), 0.)
-        # Test when support is finite.
-        dist = nonparametric.EmpiricalDistribution([0.], ws=[1.], a=-1., b=1.)
-        self.assertEqual(dist.ppf(0. - 1e-12), -np.inf)
-        self.assertEqual(dist.ppf(0.), -np.inf)
-        self.assertEqual(dist.ppf(1.), 0.)
-        self.assertEqual(dist.ppf(1. + 1e-12), 0.)
+        for has_ws in [False, True]:
+            for a, b in [[None, None], [None, 1.], [-1., None], [-1., 1.]]:
+                dist = nonparametric.EmpiricalDistribution(
+                    [0.],
+                    ws=[1.] if has_ws else None,
+                    a=a,
+                    b=b,
+                )
+                self.assertEqual(
+                    dist.ppf(0. - 1e-12),
+                    a if a is not None else -np.inf,
+                )
+                self.assertEqual(
+                    dist.ppf(0.),
+                    a if a is not None else -np.inf,
+                )
+                self.assertEqual(dist.ppf(1.), 0.)
+                self.assertEqual(dist.ppf(1. + 1e-12), 0.)
 
     def test_average_tuning_curve_with_probability_mass_at_infinity(self):
         for ys, expected in [
