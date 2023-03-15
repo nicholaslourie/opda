@@ -273,3 +273,88 @@ def beta_highest_density_coverage(a, b, x, atol=1e-10):
     x, y = np.where(x_is_lower_end, x, y), np.where(x_is_lower_end, y, x)
 
     return beta.cdf(y) - beta.cdf(x)
+
+
+def binomial_confidence_interval(n_successes, n_total, confidence):
+    """Return a confidence interval for the binomial distribution.
+
+    Given ``n_successes`` out of ``n_total``, return an equal-tailed
+    Clopper-Pearson confidence interval with coverage ``confidence``.
+
+    Parameters
+    ----------
+    n_successes : int or array of ints, required
+        An int or array of ints with each entry denoting the number of
+        successes in a sample. Must be broadcastable with ``n_total``.
+    n_total : int or array of ints, required
+        An int or array of ints with each entry denoting the total
+        number of observations in a sample. Must be broadcastable with
+       ``n_successes``.
+    confidence : float or array of floats, required
+        A float or array of floats between zero and one denoting the
+        desired confidence for each confidence interval. Must be
+        broadcastable with ``n_successes`` broadcasted with ``n_total``.
+
+    Returns
+    -------
+    array of floats, array of floats
+        A possibly scalar array of floats representing the lower
+        confidence bounds and a possibly scalar array of floats
+        representing the upper confidence bounds.
+
+    Notes
+    -----
+    The Clopper-Pearson interval does not account for the binomial
+    distribution's discreteness. This lack of correction causes
+    Clopper-Pearson intervals to be conservative. In addition, this
+    function implements an equal-tailed version of the Clopper-Pearson
+    interval which can be very conservative when the number of
+    successes is zero or the total number of observations.
+
+    References
+    ----------
+    Clopper, C. and Pearson, E. S., "The Use of Confidence or Fiducial
+    Limits Illustrated in the Case of the Binomial"
+    (1934). Biometrika. 26 (4): 404–413. doi:10.1093/biomet/26.4.404.
+    """
+    n_successes = np.array(n_successes)
+    n_total = np.array(n_total)
+    confidence = np.array(confidence)
+
+    if np.any(n_successes < 0):
+        raise ValueError(
+            f'n_successes ({n_successes}) must be greater than or equal'
+            f' to 0.'
+        )
+    if np.any(n_total < 1):
+        raise ValueError(
+            f'n_total ({n_total}) must be greater than or equal to 1.'
+        )
+    if np.any((confidence < 0.) | (confidence > 1.)):
+        raise ValueError(
+            f'confidence ({confidence}) must be between 0 and 1.'
+        )
+    if np.any(n_successes > n_total):
+        raise ValueError(
+            f'n_successes ({n_successes}) must be less than or equal to'
+            f' n_total ({n_total}).'
+        )
+
+    lo = np.where(
+        n_successes == 0,
+        0.,
+        stats.beta(
+            n_successes,
+            n_total - n_successes + 1,
+        ).ppf((1 - confidence)/2),
+    )
+    hi = np.where(
+        n_successes == n_total,
+        1.,
+        stats.beta(
+            n_successes + 1,
+            n_total - n_successes,
+        ).ppf(1 - (1 - confidence)/2),
+    )
+
+    return lo, hi

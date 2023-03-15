@@ -12,25 +12,6 @@ from ersa import nonparametric, utils
 class EmpiricalDistributionTestCase(unittest.TestCase):
     """Test ersa.nonparametric.EmpiricalDistribution."""
 
-    def _binomial_confidence_interval(
-            self,
-            n_successes,
-            n_trials,
-            confidence,
-    ):
-        # NOTE: This function computes the Clopper-Pearson confidence
-        # interval for the binomial distribution.
-        lo = stats.beta(
-            n_successes,
-            n_trials - n_successes + 1,
-        ).ppf((1 - confidence)/2)
-        hi = stats.beta(
-            n_successes + 1,
-            n_trials - n_successes,
-        ).ppf(1 - (1 - confidence)/2)
-
-        return lo, hi
-
     def test_sample(self):
         # Test without weights.
         #   when len(ys) == 1
@@ -1129,9 +1110,9 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                         & np.all(dist.cdf(grid) <= hi.cdf(grid))
                     )
 
-                _, hi = self._binomial_confidence_interval(
+                _, hi = utils.binomial_confidence_interval(
                     n_successes=np.sum(covered),
-                    n_trials=n_trials,
+                    n_total=n_trials,
                     confidence=0.999999,
                 )
                 self.assertGreater(hi, confidence)
@@ -1159,9 +1140,9 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                         & np.all(dist.cdf(grid) <= hi.cdf(grid))
                     )
 
-                lo, hi = self._binomial_confidence_interval(
+                lo, hi = utils.binomial_confidence_interval(
                     n_successes=np.sum(covered),
-                    n_trials=n_trials,
+                    n_total=n_trials,
                     confidence=0.999999,
                 )
                 self.assertLess(lo, confidence)
@@ -1190,9 +1171,9 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                         & np.all(dist.cdf(grid) <= hi.cdf(grid))
                     )
 
-                lo, hi = self._binomial_confidence_interval(
+                lo, hi = utils.binomial_confidence_interval(
                     n_successes=np.sum(covered),
-                    n_trials=n_trials,
+                    n_total=n_trials,
                     confidence=0.999999,
                 )
                 self.assertLess(lo, confidence)
@@ -1221,9 +1202,9 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                         & np.all(dist.cdf(grid) <= hi.cdf(grid))
                     )
 
-                lo, hi = self._binomial_confidence_interval(
+                lo, hi = utils.binomial_confidence_interval(
                     n_successes=np.sum(covered),
-                    n_trials=n_trials,
+                    n_total=n_trials,
                     confidence=0.999999,
                 )
                 self.assertLess(lo, confidence)
