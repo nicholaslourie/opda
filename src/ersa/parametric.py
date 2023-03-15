@@ -146,8 +146,8 @@ class QuadraticDistribution:
         else:  # concave
             ys = b - (b - a) * (1 - qs)**(1/c)
 
-        ys = np.where(qs > 1, b, ys)
-        ys = np.where(qs < 0, a, ys)
+        ys = np.where(qs >= 1, b, ys)
+        ys = np.where(qs <= 0, a, ys)
 
         return ys
 
