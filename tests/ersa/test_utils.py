@@ -752,3 +752,102 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
         self.assertTrue(np.all(
             np.isclose(lo, x) | np.isclose(hi, x)
         ))
+
+
+class BinomialConfidenceIntervalTestCase(unittest.TestCase):
+    """Test ersa.utils.binomial_confidence_interval."""
+
+    def test_binomial_confidence_interval(self):
+        for n_successes, n_total, confidence, (lo_expected, hi_expected) in [
+                # n_total == 1
+                ( 0,  1, 0.0, (0.0000, 0.5000)),
+                ( 0,  1, 0.5, (0.0000, 0.7500)),
+                ( 0,  1, 1.0, (0.0000, 1.0000)),
+                ( 1,  1, 0.0, (0.5000, 1.0000)),
+                ( 1,  1, 0.5, (0.2500, 1.0000)),
+                ( 1,  1, 1.0, (0.0000, 1.0000)),
+                # n_successes == 0
+                ( 0, 10, 0.0, (0.0000, 0.0670)),
+                ( 0, 10, 0.5, (0.0000, 0.1295)),
+                ( 0, 10, 1.0, (0.0000, 1.0000)),
+                # 0 < n_successes < n_total
+                ( 5, 10, 0.0, (0.4517, 0.5483)),
+                ( 5, 10, 0.5, (0.3507, 0.6493)),
+                ( 5, 10, 1.0, (0.0000, 1.0000)),
+                # n_successes == n_total
+                (10, 10, 0.0, (0.9330, 1.0000)),
+                (10, 10, 0.5, (0.8705, 1.0000)),
+                (10, 10, 1.0, (0.0000, 1.0000)),
+        ]:
+            lo_actual, hi_actual = utils.binomial_confidence_interval(
+                n_successes, n_total, confidence,
+            )
+            self.assertAlmostEqual(lo_actual, lo_expected, places=3)
+            self.assertAlmostEqual(hi_actual, hi_expected, places=3)
+
+    def test_binomial_confidence_interval_broadcasts(self):
+        # 1D array x scalar x scalar
+        lo, hi = utils.binomial_confidence_interval(
+            n_successes=[0, 5, 10],
+            n_total=10,
+            confidence=0.5,
+        )
+        self.assertTrue(np.allclose(
+            lo,
+            [0.0000, 0.3507, 0.8705],
+            atol=5e-4,
+        ))
+        self.assertTrue(np.allclose(
+            hi,
+            [0.1295, 0.6493, 1.0000],
+            atol=5e-4,
+        ))
+        # scalar x 1D array x scalar
+        lo, hi = utils.binomial_confidence_interval(
+            n_successes=0,
+            n_total=[1, 10],
+            confidence=0.5,
+        )
+        self.assertTrue(np.allclose(
+            lo,
+            [0.0000, 0.0000],
+            atol=5e-4,
+        ))
+        self.assertTrue(np.allclose(
+            hi,
+            [0.7500, 0.1295],
+            atol=5e-4,
+        ))
+        # scalar x scalar x 1D array
+        lo, hi = utils.binomial_confidence_interval(
+            n_successes=5,
+            n_total=10,
+            confidence=[0.0, 0.5, 1.0],
+        )
+        self.assertTrue(np.allclose(
+            lo,
+            [0.4517, 0.3507, 0.0000],
+            atol=5e-4,
+        ))
+        self.assertTrue(np.allclose(
+            hi,
+            [0.5483, 0.6493, 1.0000],
+            atol=5e-4,
+        ))
+
+    def test_binomial_confidence_interval_is_symmetric(self):
+        for n_successes, n_total in [
+                (  0,   1),
+                (  0, 100),
+                ( 25, 100),
+                ( 50, 100),
+        ]:
+            for confidence in [0.00, 0.25, 0.50, 0.75, 1.00]:
+                lo1, hi1 = utils.binomial_confidence_interval(
+                    n_successes, n_total, confidence,
+                )
+                lo2, hi2 = utils.binomial_confidence_interval(
+                    n_total - n_successes, n_total, confidence,
+                )
+                self.assertAlmostEqual(lo1, 1 - hi2)
+                self.assertAlmostEqual(hi1, 1 - lo2)

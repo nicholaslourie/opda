@@ -133,8 +133,12 @@ class QuadraticDistribution:
         array of floats
             The quantiles at ``qs``.
         """
+        # Validate the arguments.
         qs = np.array(qs)
+        if np.any((qs < 0. - 1e-10) | (qs > 1. + 1e-10)):
+            raise ValueError('qs must be between 0 and 1, inclusive.')
 
+        # Compute the quantiles.
         a, b, c = self.a, self.b, self.c
 
         if self.convex:
@@ -142,8 +146,8 @@ class QuadraticDistribution:
         else:  # concave
             ys = b - (b - a) * (1 - qs)**(1/c)
 
-        ys = np.where(qs > 1, b, ys)
-        ys = np.where(qs < 0, a, ys)
+        ys = np.where(qs >= 1, b, ys)
+        ys = np.where(qs <= 0, a, ys)
 
         return ys
 

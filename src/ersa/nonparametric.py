@@ -10,6 +10,14 @@ from ersa import utils
 
 # helper functions and classes
 
+def _normalize_pmf(ws):
+    return ws / np.sum(ws)
+
+
+def _normalize_cdf(ws_cumsum):
+    return ws_cumsum / ws_cumsum[-1]
+
+
 @functools.cache
 def _dkw_band_weights(n, confidence):
     ws_cumsum = (1. + np.arange(n)) / n
@@ -185,11 +193,10 @@ class EmpiricalDistribution:
 
         # Bind arguments to attributes.
         self.ys = ys
-        self.ws = (
-            ws / np.sum(ws)
+        self.ws = _normalize_pmf(
+            ws
             if ws is not None else
             np.ones_like(ys, dtype=float)
-            / np.sum(np.ones_like(ys, dtype=float))
         )
         self.a = a if a is not None else -np.inf
         self.b = b if b is not None else np.inf
@@ -217,7 +224,7 @@ class EmpiricalDistribution:
             np.concatenate([prepend, self.ys, postpend]),
             np.concatenate([[0.] * len(prepend), self.ws, [0.] * len(postpend)]),
         )
-        self._ws_cumsum = np.cumsum(self._ws)
+        self._ws_cumsum = _normalize_cdf(np.cumsum(self._ws))
         self._ws_cumsum_prev = np.concatenate([[0.], self._ws_cumsum[:-1]])
 
     def sample(self, size):
@@ -287,14 +294,21 @@ class EmpiricalDistribution:
         """Return the quantile at ``qs``.
 
         Since the empirical distribution is discrete, its exact
-        quantiles are ambiguous. We use the following common definition
-        of the quantile function, Q:
+        quantiles are ambiguous. We use the following definition of
+        the quantile function, Q:
 
         .. math::
 
-           Q(p) = \\inf \\{y\\in\\mathbb{R}\\mid p\\leq F(y)\\}
+           Q(p) = \\inf \\{y\\in[a, b]\\mid p\\leq F(y)\\}
 
-        where F is the cumulative distribution function.
+        where F is the cumulative distribution function and ``a`` and
+        ``b`` are the optional bounds provided for the distribution's
+        support. Note that this definition is different from the most
+        standard one in which ``y`` is quantified over the whole real
+        line; however, quantifying over the reals leads to
+        counterintuitive behavior at zero, which then always evaluates
+        to negative infinity. Instead, the above definition will have
+        zero evaluate to the lower bound on the support.
 
         Parameters
         ----------
@@ -314,7 +328,10 @@ class EmpiricalDistribution:
         # Compute the quantiles.
         qs = np.clip(qs, 0., 1.)
 
-        return self._ys[np.argmax(qs[..., None] <= self._ws_cumsum, axis=-1)]
+        return np.maximum(
+            self._ys[np.argmax(qs[..., None] <= self._ws_cumsum, axis=-1)],
+            self.a,
+        )
 
     def quantile_tuning_curve(self, ns, q=0.5):
         """Return the quantile tuning curve evaluated at ``ns``.

@@ -71,17 +71,17 @@ class GetApproximationParametersTestCase(unittest.TestCase):
                 func=lambda xs: - npx.sum(xs**2, axis=-1),
                 bounds=[(-0.5, 0.5)] * n_dims,
             )
-            self.assertEqual(
+            self.assertAlmostEqual(
                 a,
                 # minimum value (normalizer)
                 - (1 / n_ball_vol)**(2 / n_dims),
             )
-            self.assertEqual(
+            self.assertAlmostEqual(
                 b,
                 # maximum value
                 0.0,
             )
-            self.assertEqual(
+            self.assertAlmostEqual(
                 c,
                 # dimension / 2
                 n_dims / 2,

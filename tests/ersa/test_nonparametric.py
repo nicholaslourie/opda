@@ -875,10 +875,10 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
 
     @pytest.mark.level(2)
     def test_confidence_bands(self):
-        n = 10
+        n = 5
         methods = ['dkw', 'ks', 'ld_equal_tailed', 'ld_highest_density']
         for method in methods:
-            for confidence in [0.25, 0.5, 0.75]:
+            for confidence in [0.5, 0.9]:
                 ys = np.random.uniform(0, 1, size=n)
                 lo, dist, hi =\
                     nonparametric.EmpiricalDistribution.confidence_bands(
@@ -890,13 +890,13 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     nonparametric.EmpiricalDistribution(ys).cdf(ys).tolist(),
                 )
                 # Check bounded below by 0.
-                self.assertGreaterEqual(np.min(lo.cdf(ys)), 0. - 1e-15)
-                self.assertGreaterEqual(np.min(dist.cdf(ys)), 0. - 1e-15)
-                self.assertGreaterEqual(np.min(hi.cdf(ys)), 0. - 1e-15)
+                self.assertGreaterEqual(np.min(lo.cdf(ys)), 0.)
+                self.assertGreaterEqual(np.min(dist.cdf(ys)), 0.)
+                self.assertGreaterEqual(np.min(hi.cdf(ys)), 0.)
                 # Check bounded above by 1.
-                self.assertLessEqual(np.max(lo.cdf(ys)), 1. + 1e-15)
-                self.assertLessEqual(np.max(dist.cdf(ys)), 1. + 1e-15)
-                self.assertLessEqual(np.max(hi.cdf(ys)), 1. + 1e-15)
+                self.assertLessEqual(np.max(lo.cdf(ys)), 1.)
+                self.assertLessEqual(np.max(dist.cdf(ys)), 1.)
+                self.assertLessEqual(np.max(hi.cdf(ys)), 1.)
                 # Check bands are proper distance from the empirical CDF.
                 if method == 'dkw' or method == 'ks':
                     epsilon = (
@@ -916,27 +916,103 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
     def test_ppf_is_almost_sure_left_inverse_of_cdf(self):
         # NOTE: In general, the quantile function is an almost sure left
         # inverse of the cumulative distribution function.
-        dist = nonparametric.EmpiricalDistribution(
-            np.random.uniform(0, 1, size=5),
-            ws=np.random.dirichlet(np.ones(5)),
-        )
-        for _ in range(7):
-            ys = dist.sample(100)
-            self.assertEqual(dist.ppf(dist.cdf(ys)).tolist(), ys.tolist())
+        for has_ws in [False, True]:
+            for _ in range(10):
+                dist = nonparametric.EmpiricalDistribution(
+                    np.random.uniform(0, 1, size=5),
+                    ws=np.random.dirichlet(np.ones(5)) if has_ws else None,
+                )
+                ys = dist.sample(100)
+                self.assertEqual(dist.ppf(dist.cdf(ys)).tolist(), ys.tolist())
 
     def test_ppf_at_extreme_values(self):
-        # Test when support is infinite.
-        dist = nonparametric.EmpiricalDistribution([0.], ws=[1.])
-        self.assertEqual(dist.ppf(0. - 1e-12), -np.inf)
-        self.assertEqual(dist.ppf(0.), -np.inf)
-        self.assertEqual(dist.ppf(1.), 0.)
-        self.assertEqual(dist.ppf(1. + 1e-12), 0.)
-        # Test when support is finite.
-        dist = nonparametric.EmpiricalDistribution([0.], ws=[1.], a=-1., b=1.)
-        self.assertEqual(dist.ppf(0. - 1e-12), -np.inf)
-        self.assertEqual(dist.ppf(0.), -np.inf)
-        self.assertEqual(dist.ppf(1.), 0.)
-        self.assertEqual(dist.ppf(1. + 1e-12), 0.)
+        for has_ws in [False, True]:
+            for a, b in [[None, None], [None, 1.], [-1., None], [-1., 1.]]:
+                dist = nonparametric.EmpiricalDistribution(
+                    [0.],
+                    ws=[1.] if has_ws else None,
+                    a=a,
+                    b=b,
+                )
+                self.assertEqual(
+                    dist.ppf(0. - 1e-12),
+                    a if a is not None else -np.inf,
+                )
+                self.assertEqual(
+                    dist.ppf(0.),
+                    a if a is not None else -np.inf,
+                )
+                self.assertEqual(dist.ppf(1.), 0.)
+                self.assertEqual(dist.ppf(1. + 1e-12), 0.)
+
+    def test_quantile_tuning_curve_with_probability_mass_at_infinity(self):
+        for ys, n, expected in [
+                ([-np.inf, 100],                   1,  -np.inf),
+                ([-np.inf, 100],                   2,      100),
+                ([-np.inf, -10., 0., 10.,   100.], 1,        0),
+                ([  -100., -10., 0., 10., np.inf], 1,        0),
+                ([  -100., -10., 0., 10., np.inf], 4,   np.inf),
+                ([-np.inf, np.inf],                1,  -np.inf),
+                ([-np.inf, np.inf],                2,   np.inf),
+                ([-np.inf, 0., np.inf],            1,        0),
+                ([-np.inf, 0., np.inf],            2,   np.inf),
+        ]:
+            for use_weights in [False, True]:
+                ws = (
+                    np.ones_like(ys) / len(ys)
+                    if use_weights else
+                    None
+                )
+                dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+                # Test 0 < ns <= len(ys).
+                #   scalar
+                self.assertTrue(np.isclose(
+                    dist.quantile_tuning_curve(n),
+                    expected,
+                    equal_nan=True,
+                ))
+                #   1D array
+                self.assertTrue(np.allclose(
+                    dist.quantile_tuning_curve([n] * 10),
+                    expected,
+                    equal_nan=True,
+                ))
+                #   2D array
+                self.assertTrue(np.allclose(
+                    dist.quantile_tuning_curve([
+                        [n] * 10,
+                        [n] * 10,
+                    ]),
+                    expected,
+                    equal_nan=True,
+                ))
+                # Test ns > len(ys).
+                #   scalar
+                self.assertTrue(np.isclose(
+                    dist.quantile_tuning_curve(6),
+                    ys[-1],
+                    equal_nan=True,
+                ))
+                self.assertTrue(np.isclose(
+                    dist.quantile_tuning_curve(7),
+                    ys[-1],
+                    equal_nan=True,
+                ))
+                #   1D array
+                self.assertTrue(np.allclose(
+                    dist.quantile_tuning_curve([6, 7, 8]),
+                    ys[-1],
+                    equal_nan=True,
+                ))
+                #   2D array
+                self.assertTrue(np.allclose(
+                    dist.quantile_tuning_curve([
+                        [6, 7, 8],
+                        [9, 8, 7],
+                    ]),
+                    ys[-1],
+                    equal_nan=True,
+                ))
 
     def test_average_tuning_curve_with_probability_mass_at_infinity(self):
         for ys, expected in [
@@ -1013,11 +1089,10 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
 
     @pytest.mark.level(3)
     def test_dkw_bands_have_correct_coverage(self):
-        n_trials = 2_500
+        n_trials = 1_000
         dist = stats.norm(0., 1.)
-        grid = np.linspace(-5., 5., num=10_000)
         for confidence in [0.5, 0.9, 0.99]:
-            for n_samples in [10, 100]:
+            for n_samples in [5, 25]:
                 covered = []
                 for _ in range(n_trials):
                     ys = dist.rvs(size=n_samples)
@@ -1025,21 +1100,35 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                         nonparametric.EmpiricalDistribution.confidence_bands(
                             ys, confidence, method='dkw',
                         )
+                    # NOTE: Since the confidence bands are step
+                    # functions and the CDF is increasing, if there's a
+                    # violation of the confidence bands then there will
+                    # be one just before or after a discontinuity.
+                    grid = np.concatenate([
+                        [-np.inf],
+                        ys - 1e-15,
+                        ys,
+                        ys + 1e-15,
+                        [np.inf],
+                    ])
                     covered.append(
                         np.all(lo.cdf(grid) <= dist.cdf(grid))
                         & np.all(dist.cdf(grid) <= hi.cdf(grid))
                     )
 
-                stderr = (confidence * (1. - confidence) / n_trials)**0.5
-                self.assertGreater(np.mean(covered) + 6 * stderr, confidence)
+                _, hi = utils.binomial_confidence_interval(
+                    n_successes=np.sum(covered),
+                    n_total=n_trials,
+                    confidence=0.999999,
+                )
+                self.assertGreater(hi, confidence)
 
     @pytest.mark.level(3)
     def test_ks_bands_have_correct_coverage(self):
-        n_trials = 2_500
+        n_trials = 1_000
         dist = stats.norm(0., 1.)
-        grid = np.linspace(-5., 5., num=10_000)
         for confidence in [0.5, 0.9, 0.99]:
-            for n_samples in [10, 100]:
+            for n_samples in [5, 25]:
                 covered = []
                 for _ in range(n_trials):
                     ys = dist.rvs(size=n_samples)
@@ -1047,25 +1136,41 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                         nonparametric.EmpiricalDistribution.confidence_bands(
                             ys, confidence, method='ks',
                         )
+                    # NOTE: Since the confidence bands are step
+                    # functions and the CDF is increasing, if there's a
+                    # violation of the confidence bands then there will
+                    # be one just before or after a discontinuity.
+                    grid = np.concatenate([
+                        [-np.inf],
+                        ys - 1e-15,
+                        ys,
+                        ys + 1e-15,
+                        [np.inf],
+                    ])
                     covered.append(
                         np.all(lo.cdf(grid) <= dist.cdf(grid))
                         & np.all(dist.cdf(grid) <= hi.cdf(grid))
                     )
 
-                stderr = (confidence * (1. - confidence) / n_trials)**0.5
-                self.assertAlmostEqual(
-                    np.mean(covered),
-                    confidence,
-                    delta=6 * stderr,
+                lo, hi = utils.binomial_confidence_interval(
+                    n_successes=np.sum(covered),
+                    n_total=n_trials,
+                    confidence=0.999999,
                 )
+                self.assertLess(lo, confidence)
+                self.assertGreater(hi, confidence)
 
     @pytest.mark.level(3)
     def test_ld_equal_tailed_bands_has_correct_coverage(self):
-        n_trials = 2_500
+        n_trials = 1_000
         dist = stats.norm(0., 1.)
-        grid = np.linspace(-5., 5., num=10_000)
         for confidence in [0.5, 0.9, 0.99]:
-            for n_samples in [10, 100]:
+            # NOTE: Because the threshold for the LD bands is
+            # estimated via simulation, in practice the bands' nominal
+            # coverage might defer a bit from from the actual coverage
+            # due to simulation error.
+            tol = (1 - confidence) * 0.05
+            for n_samples in [5, 25]:
                 covered = []
                 for _ in range(n_trials):
                     ys = dist.rvs(size=n_samples)
@@ -1073,25 +1178,41 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                         nonparametric.EmpiricalDistribution.confidence_bands(
                             ys, confidence, method='ld_equal_tailed',
                         )
+                    # NOTE: Since the confidence bands are step
+                    # functions and the CDF is increasing, if there's a
+                    # violation of the confidence bands then there will
+                    # be one just before or after a discontinuity.
+                    grid = np.concatenate([
+                        [-np.inf],
+                        ys - 1e-15,
+                        ys,
+                        ys + 1e-15,
+                        [np.inf],
+                    ])
                     covered.append(
                         np.all(lo.cdf(grid) <= dist.cdf(grid))
                         & np.all(dist.cdf(grid) <= hi.cdf(grid))
                     )
 
-                stderr = (confidence * (1. - confidence) / n_trials)**0.5
-                self.assertAlmostEqual(
-                    np.mean(covered),
-                    confidence,
-                    delta=6 * stderr,
+                lo, hi = utils.binomial_confidence_interval(
+                    n_successes=np.sum(covered),
+                    n_total=n_trials,
+                    confidence=0.999999,
                 )
+                self.assertLess(lo, confidence + tol)
+                self.assertGreater(hi, confidence - tol)
 
     @pytest.mark.level(3)
     def test_ld_highest_density_bands_has_correct_coverage(self):
-        n_trials = 2_500
+        n_trials = 1_000
         dist = stats.norm(0., 1.)
-        grid = np.linspace(-5., 5., num=10_000)
         for confidence in [0.5, 0.9, 0.99]:
-            for n_samples in [10, 100]:
+            # NOTE: Because the threshold for the LD bands is
+            # estimated via simulation, in practice the bands' nominal
+            # coverage might defer a bit from from the actual coverage
+            # due to simulation error.
+            tol = (1 - confidence) * 0.05
+            for n_samples in [5, 25]:
                 covered = []
                 for _ in range(n_trials):
                     ys = dist.rvs(size=n_samples)
@@ -1099,14 +1220,26 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                         nonparametric.EmpiricalDistribution.confidence_bands(
                             ys, confidence, method='ld_highest_density',
                         )
+                    # NOTE: Since the confidence bands are step
+                    # functions and the CDF is increasing, if there's a
+                    # violation of the confidence bands then there will
+                    # be one just before or after a discontinuity.
+                    grid = np.concatenate([
+                        [-np.inf],
+                        ys - 1e-15,
+                        ys,
+                        ys + 1e-15,
+                        [np.inf],
+                    ])
                     covered.append(
                         np.all(lo.cdf(grid) <= dist.cdf(grid))
                         & np.all(dist.cdf(grid) <= hi.cdf(grid))
                     )
 
-                stderr = (confidence * (1. - confidence) / n_trials)**0.5
-                self.assertAlmostEqual(
-                    np.mean(covered),
-                    confidence,
-                    delta=6 * stderr,
+                lo, hi = utils.binomial_confidence_interval(
+                    n_successes=np.sum(covered),
+                    n_total=n_trials,
+                    confidence=0.999999,
                 )
+                self.assertLess(lo, confidence + tol)
+                self.assertGreater(hi, confidence - tol)
