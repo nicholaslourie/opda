@@ -1090,7 +1090,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
     @pytest.mark.level(3)
     def test_dkw_bands_have_correct_coverage(self):
         n_trials = 1_000
-        dist = stats.uniform(0., 1.)
+        dist = stats.norm(0., 1.)
         for confidence in [0.5, 0.9, 0.99]:
             for n_samples in [5, 25]:
                 covered = []
@@ -1104,7 +1104,13 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     # functions and the CDF is increasing, if there's a
                     # violation of the confidence bands then there will
                     # be one just before or after a discontinuity.
-                    grid = np.concatenate([ys - 1e-15, ys])
+                    grid = np.concatenate([
+                        [-np.inf],
+                        ys - 1e-15,
+                        ys,
+                        ys + 1e-15,
+                        [np.inf],
+                    ])
                     covered.append(
                         np.all(lo.cdf(grid) <= dist.cdf(grid))
                         & np.all(dist.cdf(grid) <= hi.cdf(grid))
@@ -1120,7 +1126,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
     @pytest.mark.level(3)
     def test_ks_bands_have_correct_coverage(self):
         n_trials = 1_000
-        dist = stats.uniform(0., 1.)
+        dist = stats.norm(0., 1.)
         for confidence in [0.5, 0.9, 0.99]:
             for n_samples in [5, 25]:
                 covered = []
@@ -1134,7 +1140,13 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     # functions and the CDF is increasing, if there's a
                     # violation of the confidence bands then there will
                     # be one just before or after a discontinuity.
-                    grid = np.concatenate([ys - 1e-15, ys])
+                    grid = np.concatenate([
+                        [-np.inf],
+                        ys - 1e-15,
+                        ys,
+                        ys + 1e-15,
+                        [np.inf],
+                    ])
                     covered.append(
                         np.all(lo.cdf(grid) <= dist.cdf(grid))
                         & np.all(dist.cdf(grid) <= hi.cdf(grid))
@@ -1151,8 +1163,13 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
     @pytest.mark.level(3)
     def test_ld_equal_tailed_bands_has_correct_coverage(self):
         n_trials = 1_000
-        dist = stats.uniform(0., 1.)
+        dist = stats.norm(0., 1.)
         for confidence in [0.5, 0.9, 0.99]:
+            # NOTE: Because the threshold for the LD bands is
+            # estimated via simulation, in practice the bands' nominal
+            # coverage might defer a bit from from the actual coverage
+            # due to simulation error.
+            tol = (1 - confidence) * 0.05
             for n_samples in [5, 25]:
                 covered = []
                 for _ in range(n_trials):
@@ -1165,7 +1182,13 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     # functions and the CDF is increasing, if there's a
                     # violation of the confidence bands then there will
                     # be one just before or after a discontinuity.
-                    grid = np.concatenate([ys - 1e-15, ys])
+                    grid = np.concatenate([
+                        [-np.inf],
+                        ys - 1e-15,
+                        ys,
+                        ys + 1e-15,
+                        [np.inf],
+                    ])
                     covered.append(
                         np.all(lo.cdf(grid) <= dist.cdf(grid))
                         & np.all(dist.cdf(grid) <= hi.cdf(grid))
@@ -1176,14 +1199,19 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     n_total=n_trials,
                     confidence=0.999999,
                 )
-                self.assertLess(lo, confidence)
-                self.assertGreater(hi, confidence)
+                self.assertLess(lo, confidence + tol)
+                self.assertGreater(hi, confidence - tol)
 
     @pytest.mark.level(3)
     def test_ld_highest_density_bands_has_correct_coverage(self):
         n_trials = 1_000
-        dist = stats.uniform(0., 1.)
+        dist = stats.norm(0., 1.)
         for confidence in [0.5, 0.9, 0.99]:
+            # NOTE: Because the threshold for the LD bands is
+            # estimated via simulation, in practice the bands' nominal
+            # coverage might defer a bit from from the actual coverage
+            # due to simulation error.
+            tol = (1 - confidence) * 0.05
             for n_samples in [5, 25]:
                 covered = []
                 for _ in range(n_trials):
@@ -1196,7 +1224,13 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     # functions and the CDF is increasing, if there's a
                     # violation of the confidence bands then there will
                     # be one just before or after a discontinuity.
-                    grid = np.concatenate([ys - 1e-15, ys])
+                    grid = np.concatenate([
+                        [-np.inf],
+                        ys - 1e-15,
+                        ys,
+                        ys + 1e-15,
+                        [np.inf],
+                    ])
                     covered.append(
                         np.all(lo.cdf(grid) <= dist.cdf(grid))
                         & np.all(dist.cdf(grid) <= hi.cdf(grid))
@@ -1207,5 +1241,5 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     n_total=n_trials,
                     confidence=0.999999,
                 )
-                self.assertLess(lo, confidence)
-                self.assertGreater(hi, confidence)
+                self.assertLess(lo, confidence + tol)
+                self.assertGreater(hi, confidence - tol)
