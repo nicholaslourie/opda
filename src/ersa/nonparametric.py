@@ -1,6 +1,7 @@
 """Nonparametric ERSA."""
 
 import functools
+import warnings
 
 import numpy as np
 from scipy import special, stats
@@ -134,14 +135,12 @@ class EmpiricalDistribution:
     Parameters
     ----------
     ys : 1D array of floats, required
-        The sample for which to create an empirical distribution. Each
-        value in the sample should be unique. Use the ``ws`` argument to
-        handle duplicate values.
+        The sample for which to create an empirical distribution.
     ws : 1D array of floats or None, optional (default=None)
         Weights, or the probability masses, to assign to each value in
-        the sample. Weights must be non-negative and sum to 1. ``ws``
-        should have the same shape as ``ys``. If ``None``, then each
-        sample will be assigned equal weight.
+        the sample, ``ys``. Weights must be non-negative and sum to 1.
+        ``ws`` should have the same shape as ``ys``. If ``None``, then
+        each sample will be assigned equal weight.
     a : float or None, optional (default=None)
         The minimum of the support of the underlying distribution. If
         ``None``, then it will be set to ``-np.inf``.
@@ -163,11 +162,6 @@ class EmpiricalDistribution:
             raise ValueError(f'ys must be a 1D array, not {len(ys.shape)}D.')
         if len(ys) == 0:
             raise ValueError('ys must be non-empty.')
-        if len(np.unique(ys)) != len(ys):
-            raise ValueError(
-                'The values of ys must be unique.'
-                ' Use the ws argument to handle repeats.'
-            )
 
         if ws is not None:
             ws = np.array(ws)
@@ -193,39 +187,55 @@ class EmpiricalDistribution:
 
         # Bind arguments to attributes.
         self.ys = ys
-        self.ws = _normalize_pmf(
-            ws
-            if ws is not None else
-            np.ones_like(ys, dtype=float)
-        )
-        self.a = a if a is not None else -np.inf
-        self.b = b if b is not None else np.inf
+        self.ws = ws
+        self.a = a
+        self.b = b
 
-        # Initialize other useful attributes.
-        self._has_ws = ws is not None
+        # Handle default values for bounds.
+        _a = a if a is not None else -np.inf
+        _b = b if b is not None else np.inf
+
+        # Handle duplicate values in ys and default value for ws.
+        if self.ws is None:
+            _ys, _ws = np.unique(self.ys, return_counts=True)
+            _ws = _normalize_pmf(_ws)
+        else:
+            _ys, locations = np.unique(self.ys, return_inverse=True)
+            _ws = np.bincount(locations, weights=self.ws)
+            _ws = _normalize_pmf(_ws)
+
+        # Handle bounds on the distribution's support.
+        #   lower bound
+        prepend = []
+        if -np.inf != _a:
+            prepend.append(-np.inf)
+        if _a not in _ys:
+            prepend.append(_a)
+        #   upper bound
+        postpend = []
+        if _b not in _ys:
+            postpend.append(_b)
+        if np.inf != _b:
+            postpend.append(np.inf)
+
+        self._ys, self._ws = utils.sort_by_first(
+            np.concatenate([prepend, _ys, postpend]),
+            np.concatenate([[0.] * len(prepend), _ws, [0.] * len(postpend)]),
+        )
+        self._a = _a
+        self._b = _b
+
+        # Initialize useful attributes.
+        self._ws_cumsum = _normalize_cdf(np.cumsum(self._ws))
+        self._ws_cumsum_prev = np.concatenate([[0.], self._ws_cumsum[:-1]])
+
+        self._has_ws = self.ws is not None
 
         self._n = len(self.ys)
         self._ns = np.arange(1, self._n + 1)
 
         self._original_ys_cummax = np.maximum.accumulate(self.ys)
         self._original_ys_sorted = np.sort(self.ys)
-
-        prepend = []
-        if -np.inf != self.a:
-            prepend.append(-np.inf)
-        if self.a not in self.ys:
-            prepend.append(self.a)
-        postpend = []
-        if self.b not in self.ys:
-            postpend.append(self.b)
-        if np.inf != self.b:
-            postpend.append(np.inf)
-        self._ys, self._ws = utils.sort_by_first(
-            np.concatenate([prepend, self.ys, postpend]),
-            np.concatenate([[0.] * len(prepend), self.ws, [0.] * len(postpend)]),
-        )
-        self._ws_cumsum = _normalize_cdf(np.cumsum(self._ws))
-        self._ws_cumsum_prev = np.concatenate([[0.], self._ws_cumsum[:-1]])
 
     def sample(self, size):
         """Return a sample from the empirical distribution.
@@ -330,7 +340,7 @@ class EmpiricalDistribution:
 
         return np.maximum(
             self._ys[np.argmax(qs[..., None] <= self._ws_cumsum, axis=-1)],
-            self.a,
+            self._a,
         )
 
     def quantile_tuning_curve(self, ns, q=0.5):
@@ -552,30 +562,35 @@ class EmpiricalDistribution:
         Notes
         -----
         There are four built-in methods for generating confidence bands:
-        dkw, ks, ld_equal_tailed, and ld_highest_density. All three methods provide
-        simultaneous confidence bands.
+        dkw, ks, ld_equal_tailed, and ld_highest_density. All three
+        methods provide simultaneous confidence bands.
 
         The dkw method uses the Dvoretzky-Kiefer-Wolfowitz inequality
-        which is fast to compute but overly conservative.
+        which is fast to compute but fairly conservative for smaller
+        samples.
 
         The ks method inverts the Kolmogorov-Smirnov test to provide a
         confidence band with exact coverage and which is uniformly
         spaced above and below the empirical cumulative
-        distribution. Because the band has uniform width, it is much
-        looser at the ends than in the middle, and most violations of
-        the confidence band tend to occur near the median.
+        distribution. Because the band has uniform width, it is
+        relatively looser at the ends than in the middle, and most
+        violations of the confidence band tend to occur near the
+        median. The Kolmogorov-Smirnov bands require that the underlying
+        distribution is continuous to achieve exact coverage.
 
         The ld (Learned-Miller-DeStefano) methods expand pointwise
         confidence bands for the order statistics, based on the beta
         distribution, until they hold simultaneously with exact
-        coverage. These pointwise bands may either use the
-        equal-tailed interval (ld_equal_tailed) or the highest density
-        interval (ld_highest_density) from the beta distribution. The
-        highest density interval yields the tightest bands; however,
-        the equal-tailed intervals are almost the same size and
+        coverage. These pointwise bands may either use the equal-tailed
+        interval (ld_equal_tailed) or the highest density interval
+        (ld_highest_density) from the beta distribution. The highest
+        density interval yields the tightest bands; however, the
+        equal-tailed intervals are almost the same size and
         significantly faster to compute. The ld bands do not have
         uniform width and are tighter near the end points. They're
-        violated equally often across the whole range. See "A
+        violated equally often across the whole range. The
+        Learned-Miller-DeStefano bands require that the underlying
+        distribution is continuous to achieve exact coverage. See "A
         Probabilistic Upper Bound on Differential Entropy"
         (Learned-Miller and DeStefano, 2008) for details.
 
@@ -585,6 +600,19 @@ class EmpiricalDistribution:
         Bound on Differential Entropy" (2008). IEEE TRANSACTIONS ON
         INFORMATION THEORY. 732.
         """
+        if (
+                len(np.unique(ys)) != len(ys)
+                and method in ['ks', 'ld_equal_tailed', 'ld_highest_density']
+        ):
+            warnings.warn(
+                f'Duplicates detected in ys. confidence_bands with the'
+                f' ks, ld_equal_tailed, or ld_highest_density methods'
+                f' requires the underlying distribution to be continuous'
+                f' in order to achieve exact coverage.',
+                RuntimeWarning,
+                stacklevel=2,
+            )
+
         a = a if a is not None else -np.inf
         b = b if b is not None else np.inf
 
