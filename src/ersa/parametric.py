@@ -29,6 +29,7 @@ class QuadraticDistribution:
             a,
             b,
             c,
+            *,
             convex=False,
     ):
         self.a = a
