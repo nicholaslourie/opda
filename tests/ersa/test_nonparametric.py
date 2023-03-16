@@ -1,6 +1,7 @@
 """Tests for ersa.nonparametric"""
 
 import unittest
+import warnings
 
 import numpy as np
 import pytest
@@ -31,6 +32,13 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         _, freqs = np.unique(dist.sample(2_500), return_counts=True)
         freqs = freqs / 2_500.
         self.assertTrue(np.allclose(freqs, [0.2] * 5, atol=0.05))
+        #   when ys has duplicates
+        ys = [-42., -42., 1., 100., 1_000]
+        dist = nonparametric.EmpiricalDistribution(ys)
+        _, freqs = np.unique(dist.sample(2_500), return_counts=True)
+        freqs = freqs / 2_500.
+        self.assertTrue(np.isclose(freqs[0], 0.4, atol=0.05))
+        self.assertTrue(np.allclose(freqs[1:], [0.2] * 3, atol=0.05))
         #   when shape is 2D
         ys = [-42., 1., 42., 100., 1_000.]
         dist = nonparametric.EmpiricalDistribution(ys)
@@ -59,6 +67,14 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         _, freqs = np.unique(dist.sample(2_500), return_counts=True)
         freqs = freqs / 2_500.
         self.assertTrue(np.allclose(freqs, ws, atol=0.05))
+        #   when ys has duplicates
+        ys = [-42., -42., 1., 100., 1_000.]
+        ws = [0.1, 0.2, 0.3, 0.15, 0.25]
+        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+        _, freqs = np.unique(dist.sample(2_500), return_counts=True)
+        freqs = freqs / 2_500.
+        self.assertTrue(np.isclose(freqs[0], np.sum(ws[:2]), atol=0.05))
+        self.assertTrue(np.allclose(freqs[1:], ws[2:], atol=0.05))
         #   when shape is 2D
         ys = [-42., 1., 42., 100., 1_000.]
         ws = [0.1, 0.2, 0.3, 0.15, 0.25]
@@ -91,6 +107,17 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         self.assertEqual(
             dist.pmf([0., 1., 42., -1.]).tolist(),
             [0., 0.2, 0.2, 0.],
+        )
+        #   when ys has duplicates
+        ys = [-42., -42., 1., 100., 1_000.]
+        dist = nonparametric.EmpiricalDistribution(ys)
+        self.assertEqual(
+            dist.pmf(ys).tolist(),
+            [0.4, 0.4, 0.2, 0.2, 0.2],
+        )
+        self.assertEqual(
+            dist.pmf([0., 1., -42., -1.]).tolist(),
+            [0., 0.2, 0.4, 0.],
         )
         #   when shape is 2D
         ys = [-42., 1., 42., 100., 1_000.]
@@ -126,6 +153,18 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         self.assertEqual(
             dist.pmf([0., 1., 42., -1.]).tolist(),
             [0., 0.2, 0.3, 0.],
+        )
+        #   when ys has duplicates
+        ys = [-42., -42., 1., 100., 1_000.]
+        ws = [0.1, 0.1, 0.4, 0.15, 0.25]
+        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+        self.assertEqual(
+            dist.pmf(ys).tolist(),
+            [0.2, 0.2, 0.4, 0.15, 0.25],
+        )
+        self.assertEqual(
+            dist.pmf([0., 1., -42., -1.]).tolist(),
+            [0., 0.4, 0.2, 0.],
         )
         #   when shape is 2D
         ys = [-42., 1., 42., 100., 1_000.]
@@ -166,6 +205,17 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         self.assertTrue(np.allclose(
             dist.cdf([-50, 0., 1., 42., 10_000.]),
             [0., 0.2, 0.4, 0.6, 1.],
+        ))
+        #   when ys has duplicates
+        ys = [-42., -42., 1., 100., 1_000.]
+        dist = nonparametric.EmpiricalDistribution(ys)
+        self.assertTrue(np.allclose(
+            dist.cdf(ys),
+            [0.4, 0.4, 0.6, 0.8, 1.0],
+        ))
+        self.assertTrue(np.allclose(
+            dist.cdf([-50, 0., 1., 42., 10_000.]),
+            [0., 0.4, 0.6, 0.6, 1.],
         ))
         #   when shape is 2D
         ys = [-42., 1., 42., 100., 1_000.]
@@ -208,6 +258,18 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             dist.cdf([-50, 0., 1., 42., 10_000.]),
             [0., 0.1, 0.3, 0.6, 1.],
         ))
+        #   when ys has duplicates
+        ys = [-42., -42., 1., 100., 1_000.]
+        ws = [0.1, 0.1, 0.4, 0.15, 0.25]
+        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+        self.assertTrue(np.allclose(
+            dist.cdf(ys),
+            [0.2, 0.2, 0.6, 0.75, 1.],
+        ))
+        self.assertTrue(np.allclose(
+            dist.cdf([-50, 0., 1., 42., 10_000.]),
+            [0., 0.2, 0.6, 0.6, 1.],
+        ))
         #   when shape is 2D
         ys = [-42., 1., 42., 100., 1_000.]
         ws = [0.1, 0.2, 0.3, 0.15, 0.25]
@@ -246,6 +308,17 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         self.assertEqual(
             dist.ppf([0., 0.25, 1., 0.4]).tolist(),
             [-np.inf, 1., 1_000, 1.],
+        )
+        #   when ys has duplicates
+        ys = [-42., -42., 1., 100., 1_000.]
+        dist = nonparametric.EmpiricalDistribution(ys)
+        self.assertEqual(
+            dist.ppf([0.4, 0.4, 0.6, 0.8, 1.]).tolist(),
+            ys,
+        )
+        self.assertEqual(
+            dist.ppf([0., 0.25, 1., 0.5]).tolist(),
+            [-np.inf, -42., 1_000, 1.],
         )
         #   when shape is 2D
         ys = [-42., 1., 42., 100., 1_000.]
@@ -287,6 +360,18 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             dist.ppf([0., 0.1, 1., 0.4]).tolist(),
             [-np.inf, -42., 1_000, 42.],
         )
+        #   when ys has duplicates
+        ys = [-42., -42., 1., 100., 1_000.]
+        ws = [0.1, 0.1, 0.4, 0.15, 0.25]
+        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+        self.assertEqual(
+            dist.ppf([0.2, 0.2, 0.6, 0.75, 1.]).tolist(),
+            ys,
+        )
+        self.assertEqual(
+            dist.ppf([0., 0.2, 1., 0.6]).tolist(),
+            [-np.inf, -42., 1_000, 1.],
+        )
         #   when shape is 2D
         ys = [-42., 1., 42., 100., 1_000.]
         ws = [0.1, 0.2, 0.3, 0.15, 0.25]
@@ -299,10 +384,11 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
     def test_quantile_tuning_curve(self):
         for quantile in [0.25, 0.5, 0.75]:
             for use_weights in [False, True]:
+                # Test when len(ys) == 1.
                 ys = [42.]
                 ws = [1.] if use_weights else None
                 dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-                # Test when len(ys) == 1.
+
                 self.assertEqual(
                     dist.quantile_tuning_curve(1, q=quantile),
                     42.,
@@ -326,6 +412,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     ],
                 )
 
+                # Test when len(ys) > 1.
                 ys = [0., 50., 25., 100., 75.]
                 ws = (
                     np.random.dirichlet(np.ones_like(ys))
@@ -342,8 +429,9 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     method='inverted_cdf',
                     axis=0,
                 )
-                # Test 0 < ns <= len(ys).
-                #   scalar
+
+                #   Test 0 < ns <= len(ys).
+                #     scalar
                 self.assertAlmostEqual(
                     dist.quantile_tuning_curve(1, q=quantile),
                     curve[0],
@@ -359,7 +447,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     curve[4],
                     delta=25.,
                 )
-                #   1D array
+                #     1D array
                 self.assertTrue(np.allclose(
                     dist.quantile_tuning_curve([1, 2, 3, 4, 5], q=quantile),
                     curve[:5],
@@ -370,7 +458,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     [curve[1], curve[3], curve[0], curve[2], curve[4]],
                     atol=25.,
                 ))
-                #   2D array
+                #     2D array
                 self.assertTrue(np.allclose(
                     dist.quantile_tuning_curve([
                         [1, 2, 3, 4, 5],
@@ -382,8 +470,8 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     ],
                     atol=25.,
                 ))
-                # Test ns > len(ys).
-                #   scalar
+                #   Test ns > len(ys).
+                #     scalar
                 self.assertAlmostEqual(
                     dist.quantile_tuning_curve(6, q=quantile),
                     curve[5],
@@ -394,13 +482,13 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     curve[6],
                     delta=25.,
                 )
-                #   1D array
+                #     1D array
                 self.assertTrue(np.allclose(
                     dist.quantile_tuning_curve([1, 2, 7], q=quantile),
                     [curve[0], curve[1], curve[6]],
                     atol=25.,
                 ))
-                #   2D array
+                #     2D array
                 self.assertTrue(np.allclose(
                     dist.quantile_tuning_curve([
                         [1, 2, 7],
@@ -412,7 +500,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     ],
                     atol=25.,
                 ))
-                # Test ns <= 0.
+                #   Test ns <= 0.
                 with self.assertRaises(ValueError):
                     dist.quantile_tuning_curve(0, q=quantile)
                 with self.assertRaises(ValueError):
@@ -430,12 +518,100 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     dist.quantile_tuning_curve([[-2], [1]], q=quantile)
 
+                # Test when ys has duplicates.
+                ys = [0., 0., 50., 0., 100.]
+                ws = (
+                    np.random.dirichlet(np.ones_like(ys))
+                    if use_weights else
+                    None
+                )
+                dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+                curve = np.quantile(
+                    np.maximum.accumulate(
+                        np.random.choice(ys, p=ws, size=(10_000, 7), replace=True),
+                        axis=1,
+                    ),
+                    quantile,
+                    method='inverted_cdf',
+                    axis=0,
+                )
+                #   Test 0 < ns <= len(ys).
+                #     scalar
+                self.assertAlmostEqual(
+                    dist.quantile_tuning_curve(1, q=quantile),
+                    curve[0],
+                    delta=25.,
+                )
+                self.assertAlmostEqual(
+                    dist.quantile_tuning_curve(3, q=quantile),
+                    curve[2],
+                    delta=25.,
+                )
+                self.assertAlmostEqual(
+                    dist.quantile_tuning_curve(5, q=quantile),
+                    curve[4],
+                    delta=25.,
+                )
+                #     1D array
+                self.assertTrue(np.allclose(
+                    dist.quantile_tuning_curve([1, 2, 3, 4, 5], q=quantile),
+                    curve[:5],
+                    atol=25.,
+                ))
+                self.assertTrue(np.allclose(
+                    dist.quantile_tuning_curve([2, 4, 1, 3, 5], q=quantile),
+                    [curve[1], curve[3], curve[0], curve[2], curve[4]],
+                    atol=25.,
+                ))
+                #     2D array
+                self.assertTrue(np.allclose(
+                    dist.quantile_tuning_curve([
+                        [1, 2, 3, 4, 5],
+                        [2, 4, 1, 3, 5],
+                    ], q=quantile),
+                    [
+                        curve[:5],
+                        [curve[1], curve[3], curve[0], curve[2], curve[4]],
+                    ],
+                    atol=25.,
+                ))
+                #   Test ns > len(ys).
+                #     scalar
+                self.assertAlmostEqual(
+                    dist.quantile_tuning_curve(6, q=quantile),
+                    curve[5],
+                    delta=25.,
+                )
+                self.assertAlmostEqual(
+                    dist.quantile_tuning_curve(7, q=quantile),
+                    curve[6],
+                    delta=25.,
+                )
+                #     1D array
+                self.assertTrue(np.allclose(
+                    dist.quantile_tuning_curve([1, 2, 7], q=quantile),
+                    [curve[0], curve[1], curve[6]],
+                    atol=25.,
+                ))
+                #     2D array
+                self.assertTrue(np.allclose(
+                    dist.quantile_tuning_curve([
+                        [1, 2, 7],
+                        [6, 2, 1],
+                    ], q=quantile),
+                    [
+                        [curve[0], curve[1], curve[6]],
+                        [curve[5], curve[1], curve[0]],
+                    ],
+                    atol=25.,
+                ))
+
     def test_average_tuning_curve(self):
         for use_weights in [False, True]:
+            # Test when len(ys) == 1.
             ys = [42.]
             ws = [1.] if use_weights else None
             dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-            # Test when len(ys) == 1.
             self.assertEqual(dist.average_tuning_curve(1), 42.)
             self.assertEqual(dist.average_tuning_curve(10), 42.)
             self.assertEqual(
@@ -453,6 +629,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 ],
             )
 
+            # Test when len(ys) > 1.
             ys = [0., 50., 25., 100., 75.]
             ws = np.random.dirichlet(np.ones_like(ys)) if use_weights else None
             dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
@@ -463,8 +640,8 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 ),
                 axis=0,
             )
-            # Test 0 < ns <= len(ys).
-            #   scalar
+            #   Test 0 < ns <= len(ys).
+            #     scalar
             self.assertAlmostEqual(
                 dist.average_tuning_curve(1),
                 curve[0],
@@ -480,7 +657,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 curve[4],
                 delta=5.,
             )
-            #   1D array
+            #     1D array
             self.assertTrue(np.allclose(
                 dist.average_tuning_curve([1, 2, 3, 4, 5]),
                 curve[:5],
@@ -491,7 +668,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 [curve[1], curve[3], curve[0], curve[2], curve[4]],
                 atol=5.,
             ))
-            #   2D array
+            #     2D array
             self.assertTrue(np.allclose(
                 dist.average_tuning_curve([
                     [1, 2, 3, 4, 5],
@@ -503,8 +680,8 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 ],
                 atol=5.,
             ))
-            # Test ns > len(ys).
-            #   scalar
+            #   Test ns > len(ys).
+            #     scalar
             self.assertAlmostEqual(
                 dist.average_tuning_curve(6),
                 curve[5],
@@ -515,13 +692,13 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 curve[6],
                 delta=5.,
             )
-            #   1D array
+            #     1D array
             self.assertTrue(np.allclose(
                 dist.average_tuning_curve([1, 2, 7]),
                 [curve[0], curve[1], curve[6]],
                 atol=5.,
             ))
-            #   2D array
+            #     2D array
             self.assertTrue(np.allclose(
                 dist.average_tuning_curve([
                     [1, 2, 7],
@@ -533,7 +710,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 ],
                 atol=5.,
             ))
-            # Test ns <= 0.
+            #   Test ns <= 0.
             with self.assertRaises(ValueError):
                 dist.average_tuning_curve(0)
             with self.assertRaises(ValueError):
@@ -551,10 +728,97 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             with self.assertRaises(ValueError):
                 dist.average_tuning_curve([[-2], [1]])
 
+            # Test when ys has duplicates.
+            ys = [0., 0., 50., 0., 100.]
+            ws = (
+                np.random.dirichlet(np.ones_like(ys))
+                if use_weights else
+                None
+            )
+            dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+            curve = np.mean(
+                np.maximum.accumulate(
+                    np.random.choice(ys, p=ws, size=(2_500, 7), replace=True),
+                    axis=1,
+                ),
+                axis=0,
+            )
+            #   Test 0 < ns <= len(ys).
+            #     scalar
+            self.assertAlmostEqual(
+                dist.average_tuning_curve(1),
+                curve[0],
+                delta=5.,
+            )
+            self.assertAlmostEqual(
+                dist.average_tuning_curve(3),
+                curve[2],
+                delta=5.,
+            )
+            self.assertAlmostEqual(
+                dist.average_tuning_curve(5),
+                curve[4],
+                delta=5.,
+            )
+            #     1D array
+            self.assertTrue(np.allclose(
+                dist.average_tuning_curve([1, 2, 3, 4, 5]),
+                curve[:5],
+                atol=5.,
+            ))
+            self.assertTrue(np.allclose(
+                dist.average_tuning_curve([2, 4, 1, 3, 5]),
+                [curve[1], curve[3], curve[0], curve[2], curve[4]],
+                atol=5.,
+            ))
+            #     2D array
+            self.assertTrue(np.allclose(
+                dist.average_tuning_curve([
+                    [1, 2, 3, 4, 5],
+                    [2, 4, 1, 3, 5],
+                ]),
+                [
+                    curve[:5],
+                    [curve[1], curve[3], curve[0], curve[2], curve[4]],
+                ],
+                atol=5.,
+            ))
+            #   Test ns > len(ys).
+            #     scalar
+            self.assertAlmostEqual(
+                dist.average_tuning_curve(6),
+                curve[5],
+                delta=5.,
+            )
+            self.assertAlmostEqual(
+                dist.average_tuning_curve(7),
+                curve[6],
+                delta=5.,
+            )
+            #     1D array
+            self.assertTrue(np.allclose(
+                dist.average_tuning_curve([1, 2, 7]),
+                [curve[0], curve[1], curve[6]],
+                atol=5.,
+            ))
+            #     2D array
+            self.assertTrue(np.allclose(
+                dist.average_tuning_curve([
+                    [1, 2, 7],
+                    [6, 2, 1],
+                ]),
+                [
+                    [curve[0], curve[1], curve[6]],
+                    [curve[5], curve[1], curve[0]],
+                ],
+                atol=5.,
+            ))
+
     def test_naive_tuning_curve(self):
+        # Test when len(ys) == 1.
         ys = [42.]
         dist = nonparametric.EmpiricalDistribution(ys)
-        # Test when len(ys) == 1.
+
         self.assertEqual(dist.naive_tuning_curve(1), 42.)
         self.assertEqual(dist.naive_tuning_curve(10), 42.)
         self.assertEqual(
@@ -572,14 +836,15 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             ],
         )
 
+        # Test when len(ys) > 1.
         ys = [0., 50., 25., 100., 75.]
         dist = nonparametric.EmpiricalDistribution(ys)
-        # Test 0 < ns <= len(ys).
-        #   scalar
+        #   Test 0 < ns <= len(ys).
+        #     scalar
         self.assertEqual(dist.naive_tuning_curve(1), 0.)
         self.assertEqual(dist.naive_tuning_curve(3), 50.)
         self.assertEqual(dist.naive_tuning_curve(5), 100.)
-        #   1D array
+        #     1D array
         self.assertEqual(
             dist.naive_tuning_curve([1, 2, 3, 4, 5]).tolist(),
             [0., 50., 50., 100., 100.],
@@ -588,7 +853,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             dist.naive_tuning_curve([2, 4, 1, 3, 5]).tolist(),
             [50., 100., 0., 50., 100.],
         )
-        #   2D array
+        #     2D array
         self.assertEqual(
             dist.naive_tuning_curve([
                 [1, 2, 3, 4, 5],
@@ -599,16 +864,16 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 [50., 100., 0., 50., 100.],
             ],
         )
-        # Test ns > len(ys).
-        #   scalar
+        #   Test ns > len(ys).
+        #     scalar
         self.assertEqual(dist.naive_tuning_curve(6), 100.)
         self.assertEqual(dist.naive_tuning_curve(10), 100.)
-        #   1D array
+        #     1D array
         self.assertEqual(
             dist.naive_tuning_curve([1, 2, 10]).tolist(),
             [0., 50., 100.],
         )
-        #   2D array
+        #     2D array
         self.assertEqual(
             dist.naive_tuning_curve([
                 [1, 2, 10],
@@ -619,7 +884,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 [100., 50., 0.],
             ],
         )
-        # Test ns <= 0.
+        #   Test ns <= 0.
         with self.assertRaises(ValueError):
             dist.naive_tuning_curve(0)
         with self.assertRaises(ValueError):
@@ -637,10 +902,62 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         with self.assertRaises(ValueError):
             dist.naive_tuning_curve([[-2], [1]])
 
+        # Test when ys has duplicates.
+        ys = [0., 0., 50., 0., 100.]
+        dist = nonparametric.EmpiricalDistribution(ys)
+        #   Test 0 < ns <= len(ys).
+        #     scalar
+        self.assertEqual(dist.naive_tuning_curve(1), 0.)
+        self.assertEqual(dist.naive_tuning_curve(2), 0.)
+        self.assertEqual(dist.naive_tuning_curve(3), 50.)
+        self.assertEqual(dist.naive_tuning_curve(4), 50.)
+        self.assertEqual(dist.naive_tuning_curve(5), 100.)
+        #     1D array
+        self.assertEqual(
+            dist.naive_tuning_curve([1, 2, 3, 4, 5]).tolist(),
+            [0., 0., 50., 50., 100.],
+        )
+        self.assertEqual(
+            dist.naive_tuning_curve([2, 4, 1, 3, 5]).tolist(),
+            [0., 50., 0., 50., 100.],
+        )
+        #     2D array
+        self.assertEqual(
+            dist.naive_tuning_curve([
+                [1, 2, 3, 4, 5],
+                [2, 4, 1, 3, 5],
+            ]).tolist(),
+            [
+                [0., 0., 50., 50., 100.],
+                [0., 50., 0., 50., 100.],
+            ],
+        )
+        #   Test ns > len(ys).
+        #     scalar
+        self.assertEqual(dist.naive_tuning_curve(6), 100.)
+        self.assertEqual(dist.naive_tuning_curve(10), 100.)
+        #     1D array
+        self.assertEqual(
+            dist.naive_tuning_curve([1, 2, 10]).tolist(),
+            [0., 0., 100.],
+        )
+        #     2D array
+        self.assertEqual(
+            dist.naive_tuning_curve([
+                [1, 2, 10],
+                [10, 2, 1],
+            ]).tolist(),
+            [
+                [0., 0., 100.],
+                [100., 0., 0.],
+            ],
+        )
+
+        # Test when ws != None.
         ys = [-1, 0, 1]
         ws = [0.1, 0.5, 0.4]
         dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-        # Test when ws != None.
+
         with self.assertRaises(ValueError):
             dist.naive_tuning_curve(1)
         with self.assertRaises(ValueError):
@@ -651,9 +968,10 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             dist.naive_tuning_curve([[2], [1]])
 
     def test_v_tuning_curve(self):
+        # Test when len(ys) == 1.
         ys = [42.]
         dist = nonparametric.EmpiricalDistribution(ys)
-        # Test when len(ys) == 1.
+
         self.assertEqual(dist.v_tuning_curve(1), 42.)
         self.assertEqual(dist.v_tuning_curve(10), 42.)
         self.assertEqual(
@@ -671,6 +989,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             ],
         )
 
+        # Test when len(ys) > 1.
         ys = [0., 50., 25., 100., 75.]
         dist = nonparametric.EmpiricalDistribution(ys)
         curve = np.mean(
@@ -680,12 +999,12 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             ),
             axis=0,
         )
-        # Test 0 < ns <= len(ys).
-        #   scalar
+        #   Test 0 < ns <= len(ys).
+        #     scalar
         self.assertAlmostEqual(dist.v_tuning_curve(1), curve[0], delta=5.)
         self.assertAlmostEqual(dist.v_tuning_curve(3), curve[2], delta=5.)
         self.assertAlmostEqual(dist.v_tuning_curve(5), curve[4], delta=5.)
-        #   1D array
+        #     1D array
         self.assertTrue(np.allclose(
             dist.v_tuning_curve([1, 2, 3, 4, 5]),
             curve[:5],
@@ -696,7 +1015,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             [curve[1], curve[3], curve[0], curve[2], curve[4]],
             atol=5.,
         ))
-        #   2D array
+        #     2D array
         self.assertTrue(np.allclose(
             dist.v_tuning_curve([
                 [1, 2, 3, 4, 5],
@@ -708,17 +1027,17 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             ],
             atol=5.,
         ))
-        # Test ns > len(ys).
-        #   scalar
+        #   Test ns > len(ys).
+        #     scalar
         self.assertAlmostEqual(dist.v_tuning_curve(6), curve[5], delta=5.)
         self.assertAlmostEqual(dist.v_tuning_curve(7), curve[6], delta=5.)
-        #   1D array
+        #     1D array
         self.assertTrue(np.allclose(
             dist.v_tuning_curve([1, 2, 7]),
             [curve[0], curve[1], curve[6]],
             atol=5.,
         ))
-        #   2D array
+        #     2D array
         self.assertTrue(np.allclose(
             dist.v_tuning_curve([
                 [1, 2, 7],
@@ -730,7 +1049,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             ],
             atol=5.,
         ))
-        # Test ns <= 0.
+        #   Test ns <= 0.
         with self.assertRaises(ValueError):
             dist.v_tuning_curve(0)
         with self.assertRaises(ValueError):
@@ -748,10 +1067,72 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         with self.assertRaises(ValueError):
             dist.v_tuning_curve([[-2], [1]])
 
+        # Test when ys has duplicates.
+        ys = [0., 0., 50., 0., 100.]
+        dist = nonparametric.EmpiricalDistribution(ys)
+        curve = np.mean(
+            np.maximum.accumulate(
+                np.random.choice(ys, size=(2_500, 7), replace=True),
+                axis=1,
+            ),
+            axis=0,
+        )
+        #   Test 0 < ns <= len(ys).
+        #     scalar
+        self.assertAlmostEqual(dist.v_tuning_curve(1), curve[0], delta=5.)
+        self.assertAlmostEqual(dist.v_tuning_curve(3), curve[2], delta=5.)
+        self.assertAlmostEqual(dist.v_tuning_curve(5), curve[4], delta=5.)
+        #     1D array
+        self.assertTrue(np.allclose(
+            dist.v_tuning_curve([1, 2, 3, 4, 5]),
+            curve[:5],
+            atol=5.,
+        ))
+        self.assertTrue(np.allclose(
+            dist.v_tuning_curve([2, 4, 1, 3, 5]),
+            [curve[1], curve[3], curve[0], curve[2], curve[4]],
+            atol=5.,
+        ))
+        #     2D array
+        self.assertTrue(np.allclose(
+            dist.v_tuning_curve([
+                [1, 2, 3, 4, 5],
+                [2, 4, 1, 3, 5],
+            ]),
+            [
+                curve[:5],
+                [curve[1], curve[3], curve[0], curve[2], curve[4]],
+            ],
+            atol=5.,
+        ))
+        #   Test ns > len(ys).
+        #     scalar
+        self.assertAlmostEqual(dist.v_tuning_curve(6), curve[5], delta=5.)
+        self.assertAlmostEqual(dist.v_tuning_curve(7), curve[6], delta=5.)
+        #     1D array
+        self.assertTrue(np.allclose(
+            dist.v_tuning_curve([1, 2, 7]),
+            [curve[0], curve[1], curve[6]],
+            atol=5.,
+        ))
+        #     2D array
+        self.assertTrue(np.allclose(
+            dist.v_tuning_curve([
+                [1, 2, 7],
+                [6, 2, 1],
+            ]),
+            [
+                [curve[0], curve[1], curve[6]],
+                [curve[5], curve[1], curve[0]],
+            ],
+            atol=5.,
+        ))
+
+        # Test when ws != None.
         ys = [-1, 0, 1]
         ws = [0.1, 0.5, 0.4]
         dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-        # Test when ws != None.
+
         with self.assertRaises(ValueError):
             dist.v_tuning_curve(1)
         with self.assertRaises(ValueError):
@@ -762,9 +1143,10 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             dist.v_tuning_curve([[2], [1]])
 
     def test_u_tuning_curve(self):
+        # Test when len(ys) == 1.
         ys = [42.]
         dist = nonparametric.EmpiricalDistribution(ys)
-        # Test when len(ys) == 1.
+
         self.assertEqual(dist.u_tuning_curve(1), 42.)
         self.assertEqual(dist.u_tuning_curve(10), 42.)
         self.assertEqual(
@@ -782,6 +1164,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             ],
         )
 
+        # Test when len(ys) > 1.
         ys = [0., 50., 25., 100., 75.]
         dist = nonparametric.EmpiricalDistribution(ys)
         curve = np.mean(
@@ -792,12 +1175,12 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             ),
             axis=0,
         )
-        # Test 0 < ns <= len(ys).
-        #   scalar
+        #   Test 0 < ns <= len(ys).
+        #     scalar
         self.assertAlmostEqual(dist.u_tuning_curve(1), curve[0], delta=5.)
         self.assertAlmostEqual(dist.u_tuning_curve(3), curve[2], delta=5.)
         self.assertAlmostEqual(dist.u_tuning_curve(5), curve[4], delta=5.)
-        #   1D array
+        #     1D array
         self.assertTrue(np.allclose(
             dist.u_tuning_curve([1, 2, 3, 4, 5]),
             curve,
@@ -808,7 +1191,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             [curve[1], curve[3], curve[0], curve[2], curve[4]],
             atol=5.,
         ))
-        #   2D array
+        #     2D array
         self.assertTrue(np.allclose(
             dist.u_tuning_curve([
                 [1, 2, 3, 4, 5],
@@ -820,17 +1203,17 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             ],
             atol=5.,
         ))
-        # Test ns > len(ys).
-        #   scalar
+        #   Test ns > len(ys).
+        #     scalar
         self.assertAlmostEqual(dist.u_tuning_curve(6), curve[4], delta=5.)
         self.assertAlmostEqual(dist.u_tuning_curve(7), curve[4], delta=5.)
-        #   1D array
+        #     1D array
         self.assertTrue(np.allclose(
             dist.u_tuning_curve([1, 2, 7]),
             [curve[0], curve[1], curve[4]],
             atol=5.,
         ))
-        #   2D array
+        #     2D array
         self.assertTrue(np.allclose(
             dist.u_tuning_curve([
                 [1, 2, 7],
@@ -842,7 +1225,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             ],
             atol=5.,
         ))
-        # Test ns <= 0.
+        #   Test ns <= 0.
         with self.assertRaises(ValueError):
             dist.u_tuning_curve(0)
         with self.assertRaises(ValueError):
@@ -860,10 +1243,73 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         with self.assertRaises(ValueError):
             dist.u_tuning_curve([[-2], [1]])
 
+        # Test when ys has duplicates.
+        ys = [0., 0., 50., 0., 100.]
+        dist = nonparametric.EmpiricalDistribution(ys)
+        curve = np.mean(
+            np.maximum.accumulate(
+                # Sort random numbers to batch sampling without replacement.
+                np.array(ys)[np.argsort(np.random.rand(2_500, 5), axis=1)],
+                axis=1,
+            ),
+            axis=0,
+        )
+        #   Test 0 < ns <= len(ys).
+        #     scalar
+        self.assertAlmostEqual(dist.u_tuning_curve(1), curve[0], delta=5.)
+        self.assertAlmostEqual(dist.u_tuning_curve(3), curve[2], delta=5.)
+        self.assertAlmostEqual(dist.u_tuning_curve(5), curve[4], delta=5.)
+        #     1D array
+        self.assertTrue(np.allclose(
+            dist.u_tuning_curve([1, 2, 3, 4, 5]),
+            curve,
+            atol=5.,
+        ))
+        self.assertTrue(np.allclose(
+            dist.u_tuning_curve([2, 4, 1, 3, 5]),
+            [curve[1], curve[3], curve[0], curve[2], curve[4]],
+            atol=5.,
+        ))
+        #     2D array
+        self.assertTrue(np.allclose(
+            dist.u_tuning_curve([
+                [1, 2, 3, 4, 5],
+                [2, 4, 1, 3, 5],
+            ]),
+            [
+                curve,
+                [curve[1], curve[3], curve[0], curve[2], curve[4]],
+            ],
+            atol=5.,
+        ))
+        #   Test ns > len(ys).
+        #     scalar
+        self.assertAlmostEqual(dist.u_tuning_curve(6), curve[4], delta=5.)
+        self.assertAlmostEqual(dist.u_tuning_curve(7), curve[4], delta=5.)
+        #     1D array
+        self.assertTrue(np.allclose(
+            dist.u_tuning_curve([1, 2, 7]),
+            [curve[0], curve[1], curve[4]],
+            atol=5.,
+        ))
+        #     2D array
+        self.assertTrue(np.allclose(
+            dist.u_tuning_curve([
+                [1, 2, 7],
+                [6, 2, 1],
+            ]),
+            [
+                [curve[0], curve[1], curve[4]],
+                [curve[4], curve[1], curve[0]],
+            ],
+            atol=5.,
+        ))
+
+        # Test when ws != None.
         ys = [-1, 0, 1]
         ws = [0.1, 0.5, 0.4]
         dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-        # Test when ws != None.
+
         with self.assertRaises(ValueError):
             dist.u_tuning_curve(1)
         with self.assertRaises(ValueError):
@@ -879,39 +1325,52 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         methods = ['dkw', 'ks', 'ld_equal_tailed', 'ld_highest_density']
         for method in methods:
             for confidence in [0.5, 0.9]:
-                ys = np.random.uniform(0, 1, size=n)
-                lo, dist, hi =\
-                    nonparametric.EmpiricalDistribution.confidence_bands(
-                        ys, confidence, method=method,
+                for has_duplicates in [False, True]:
+                    if has_duplicates:
+                        ys = np.random.uniform(0, 1, size=n)
+                        ys = np.concatenate([ys[:n-n//3], ys[:n//3]])
+                        with warnings.catch_warnings():
+                            warnings.simplefilter('ignore', RuntimeWarning)
+                            lo, dist, hi =\
+                                nonparametric.EmpiricalDistribution\
+                                .confidence_bands(
+                                    ys, confidence, method=method,
+                                )
+                    else:
+                        ys = np.random.uniform(0, 1, size=n)
+                        lo, dist, hi =\
+                            nonparametric.EmpiricalDistribution\
+                            .confidence_bands(
+                                ys, confidence, method=method,
+                            )
+                    # Check that dist is the empirical distribution.
+                    self.assertEqual(
+                        dist.cdf(ys).tolist(),
+                        nonparametric.EmpiricalDistribution(ys).cdf(ys).tolist(),
                     )
-                # Check that dist is the empirical distribution.
-                self.assertEqual(
-                    dist.cdf(ys).tolist(),
-                    nonparametric.EmpiricalDistribution(ys).cdf(ys).tolist(),
-                )
-                # Check bounded below by 0.
-                self.assertGreaterEqual(np.min(lo.cdf(ys)), 0.)
-                self.assertGreaterEqual(np.min(dist.cdf(ys)), 0.)
-                self.assertGreaterEqual(np.min(hi.cdf(ys)), 0.)
-                # Check bounded above by 1.
-                self.assertLessEqual(np.max(lo.cdf(ys)), 1.)
-                self.assertLessEqual(np.max(dist.cdf(ys)), 1.)
-                self.assertLessEqual(np.max(hi.cdf(ys)), 1.)
-                # Check bands are proper distance from the empirical CDF.
-                if method == 'dkw' or method == 'ks':
-                    epsilon = (
-                        utils.dkw_epsilon(n, confidence)
-                        if method == 'dkw' else
-                        stats.kstwo(n).ppf(confidence)
-                    )
-                    self.assertTrue(np.allclose(
-                        (dist.cdf(ys) - lo.cdf(ys))[dist.cdf(ys) > epsilon],
-                        epsilon,
-                    ))
-                    self.assertTrue(np.allclose(
-                        (hi.cdf(ys) - dist.cdf(ys))[1. - dist.cdf(ys) > epsilon],
-                        epsilon,
-                    ))
+                    # Check bounded below by 0.
+                    self.assertGreaterEqual(np.min(lo.cdf(ys)), 0.)
+                    self.assertGreaterEqual(np.min(dist.cdf(ys)), 0.)
+                    self.assertGreaterEqual(np.min(hi.cdf(ys)), 0.)
+                    # Check bounded above by 1.
+                    self.assertLessEqual(np.max(lo.cdf(ys)), 1.)
+                    self.assertLessEqual(np.max(dist.cdf(ys)), 1.)
+                    self.assertLessEqual(np.max(hi.cdf(ys)), 1.)
+                    # Check bands are proper distance from the empirical CDF.
+                    if method == 'dkw' or method == 'ks':
+                        epsilon = (
+                            utils.dkw_epsilon(n, confidence)
+                            if method == 'dkw' else
+                            stats.kstwo(n).ppf(confidence)
+                        )
+                        self.assertTrue(np.allclose(
+                            (dist.cdf(ys) - lo.cdf(ys))[dist.cdf(ys) > epsilon],
+                            epsilon,
+                        ))
+                        self.assertTrue(np.allclose(
+                            (hi.cdf(ys) - dist.cdf(ys))[1. - dist.cdf(ys) > epsilon],
+                            epsilon,
+                        ))
 
     def test_ppf_is_almost_sure_left_inverse_of_cdf(self):
         # NOTE: In general, the quantile function is an almost sure left
