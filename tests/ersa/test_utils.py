@@ -310,6 +310,30 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
             < 1e-10
         ))
 
+    def test_on_small_confidences(self):
+        for coverage in [1e-8, 1e-12, 1e-16]:
+            for a in [1., 5., 10.]:
+                for b in [1., 5., 10.]:
+                    beta = stats.beta(a, b)
+                    lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
+                    self.assertEqual(lo.shape, ())
+                    self.assertEqual(hi.shape, ())
+                    self.assertLessEqual(lo, hi)
+                    self.assertAlmostEqual(beta.cdf(hi) - beta.cdf(lo), coverage)
+
+    def test_on_zero_coverage(self):
+        for a in [1., 5., 10.]:
+            for b in [1., 5., 10.]:
+                beta = stats.beta(a, b)
+                lo, hi = utils.beta_equal_tailed_interval(a, b, 0.)
+                self.assertEqual(lo.shape, ())
+                self.assertEqual(hi.shape, ())
+                self.assertLessEqual(lo, hi)
+                self.assertAlmostEqual(lo, hi)
+                self.assertAlmostEqual(beta.cdf(lo), 0.5)
+                self.assertAlmostEqual(beta.cdf(hi), 0.5)
+                self.assertAlmostEqual(beta.cdf(hi) - beta.cdf(lo), 0.)
+
 
 class BetaHighestDensityIntervalTestCase(unittest.TestCase):
     """Test ersa.utils.beta_highest_density_interval."""
@@ -516,16 +540,37 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
             (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5
         ))
 
-    def test_converges_for_short_intervals(self):
-        coverage = 1e-8
-        for a in [2., 5., 10.]:
-            for b in [2., 5., 10.]:
+    def test_on_small_confidences(self):
+        for coverage in [1e-8, 1e-12, 1e-16]:
+            for a in [1., 5., 10.]:
+                for b in [1., 5., 10.]:
+                    if a == 1 and b == 1:
+                        # No highest density interval exists when
+                        # a <= 1 and b <= 1.
+                        continue
+                    beta = stats.beta(a, b)
+                    lo, hi = utils.beta_highest_density_interval(a, b, coverage)
+                    self.assertEqual(lo.shape, ())
+                    self.assertEqual(hi.shape, ())
+                    self.assertLessEqual(lo, hi)
+                    self.assertAlmostEqual(beta.cdf(hi) - beta.cdf(lo), coverage)
+
+    def test_on_zero_coverage(self):
+        for a in [1., 5., 10.]:
+            for b in [1., 5., 10.]:
+                if a == 1 and b == 1:
+                    # No highest density interval exists when a <= 1 and b <= 1.
+                    continue
+                mode = (a - 1) / (a + b - 2)
                 beta = stats.beta(a, b)
-                lo, hi = utils.beta_highest_density_interval(a, b, coverage)
+                lo, hi = utils.beta_highest_density_interval(a, b, 0.)
                 self.assertEqual(lo.shape, ())
                 self.assertEqual(hi.shape, ())
-                self.assertLess(lo, hi)
-                self.assertAlmostEqual(beta.cdf(hi) - beta.cdf(lo), coverage)
+                self.assertLessEqual(lo, hi)
+                self.assertAlmostEqual(lo, hi)
+                self.assertAlmostEqual(lo, mode)
+                self.assertAlmostEqual(hi, mode)
+                self.assertAlmostEqual(beta.cdf(hi) - beta.cdf(lo), 0.)
 
 
 class BetaEqualTailedCoverageTestCase(unittest.TestCase):
@@ -637,6 +682,65 @@ class BetaEqualTailedCoverageTestCase(unittest.TestCase):
         self.assertTrue(np.all(
             np.isclose(lo, x) | np.isclose(hi, x)
         ))
+
+    def test_when_interval_has_large_coverage(self):
+        for a in [1., 5., 10.]:
+            for b in [1., 5., 10.]:
+                for x_less_than_median in [False, True]:
+                    for eps in [1e-8, 1e-12, 1e-16]:
+                        x = (
+                            eps
+                            if x_less_than_median else
+                            1. - eps
+                        )
+                        coverage = utils.beta_equal_tailed_coverage(a, b, x)
+                        lo, hi =\
+                            utils.beta_equal_tailed_interval(a, b, coverage)
+                        self.assertEqual(coverage.shape, ())
+                        self.assertAlmostEqual(
+                            x,
+                            lo if x_less_than_median else hi,
+                        )
+
+    def test_when_x_is_on_the_boundary(self):
+        for a in [1., 5., 10.]:
+            for b in [1., 5., 10.]:
+                for x_less_than_median in [False, True]:
+                    x = 0. if x_less_than_median else 1.
+                    coverage = utils.beta_equal_tailed_coverage(a, b, x)
+                    self.assertEqual(coverage.shape, ())
+                    self.assertAlmostEqual(coverage, 1.)
+
+    def test_when_interval_has_small_coverage(self):
+        for a in [1., 5., 10.]:
+            for b in [1., 5., 10.]:
+                median = stats.beta(a, b).ppf(0.5)
+                for x_less_than_median in [False, True]:
+                    for eps in [1e-8, 1e-12, 1e-16]:
+                        x = np.clip(
+                            median - eps
+                            if x_less_than_median else
+                            median + eps,
+                            0.,
+                            1.,
+                        )
+                        coverage = utils.beta_equal_tailed_coverage(a, b, x)
+                        lo, hi =\
+                            utils.beta_equal_tailed_interval(a, b, coverage)
+                        self.assertEqual(coverage.shape, ())
+                        self.assertAlmostEqual(
+                            x,
+                            lo if x_less_than_median else hi,
+                        )
+
+    def test_when_interval_has_zero_coverage(self):
+        for a in [1., 5., 10.]:
+            for b in [1., 5., 10.]:
+                # Set x equal to the median.
+                x = stats.beta(a, b).ppf(0.5)
+                coverage = utils.beta_equal_tailed_coverage(a, b, x)
+                self.assertEqual(coverage.shape, ())
+                self.assertAlmostEqual(coverage, 0.)
 
 
 class BetaHighestDensityCoverageTestCase(unittest.TestCase):
@@ -752,6 +856,81 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
         self.assertTrue(np.all(
             np.isclose(lo, x) | np.isclose(hi, x)
         ))
+
+    def test_when_interval_has_large_coverage(self):
+        for a in [1., 5., 10.]:
+            for b in [1., 5., 10.]:
+                if a == 1 and b == 1:
+                    # No highest density interval exists when a <= 1 and b <= 1.
+                    continue
+                for x_less_than_mode in [False, True]:
+                    for eps in [1e-8, 1e-12, 1e-16]:
+                        x = (
+                            eps
+                            if x_less_than_mode else
+                            1. - eps
+                        )
+                        coverage = utils.beta_highest_density_coverage(a, b, x)
+                        lo, hi =\
+                            utils.beta_highest_density_interval(a, b, coverage)
+                        self.assertEqual(coverage.shape, ())
+                        self.assertAlmostEqual(
+                            x,
+                            lo if x_less_than_mode else hi,
+                        )
+
+    def test_when_x_is_on_the_boundary(self):
+        for a in [1., 5., 10.]:
+            for b in [1., 5., 10.]:
+                if a == 1 and b == 1:
+                    # No highest density interval exists when a <= 1 and b <= 1.
+                    continue
+                mode = (a - 1) / (a + b - 2)
+                for x_less_than_mode in [False, True]:
+                    x = 0. if x_less_than_mode else 1.
+                    coverage = utils.beta_highest_density_coverage(a, b, x)
+                    self.assertEqual(coverage.shape, ())
+                    self.assertAlmostEqual(
+                        coverage,
+                        1. if x != mode else 0.,
+                    )
+
+    def test_when_interval_has_small_coverage(self):
+        for a in [1., 5., 10.]:
+            for b in [1., 5., 10.]:
+                if a == 1 and b == 1:
+                    # No highest density interval exists when a <= 1 and b <= 1.
+                    continue
+                mode = (a - 1) / (a + b - 2)
+                for x_less_than_mode in [False, True]:
+                    for eps in [1e-8, 1e-12, 1e-16]:
+                        x = np.clip(
+                            mode - eps
+                            if x_less_than_mode else
+                            mode + eps,
+                            0.,
+                            1.,
+                        )
+                        coverage = utils.beta_highest_density_coverage(a, b, x)
+                        lo, hi =\
+                            utils.beta_highest_density_interval(a, b, coverage)
+                        self.assertEqual(coverage.shape, ())
+                        self.assertAlmostEqual(
+                            x,
+                            lo if x_less_than_mode else hi,
+                        )
+
+    def test_when_interval_has_zero_coverage(self):
+        for a in [1., 5., 10.]:
+            for b in [1., 5., 10.]:
+                if a == 1 and b == 1:
+                    # No highest density interval exists when a <= 1 and b <= 1.
+                    continue
+                # Set x equal to the mode.
+                x = (a - 1) / (a + b - 2)
+                coverage = utils.beta_highest_density_coverage(a, b, x)
+                self.assertEqual(coverage.shape, ())
+                self.assertAlmostEqual(coverage, 0.)
 
 
 class BinomialConfidenceIntervalTestCase(unittest.TestCase):
