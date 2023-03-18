@@ -127,6 +127,8 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
                         beta.cdf(hi) - beta.cdf(lo),
                         coverage,
                     )
+                    self.assertLess(lo, beta.ppf(0.5))
+                    self.assertGreater(hi, beta.ppf(0.5))
                     self.assertAlmostEqual(beta.cdf(lo), (1. - coverage) / 2.)
                     self.assertAlmostEqual(beta.cdf(hi), (1. + coverage) / 2.)
                 # when coverage is an array.
@@ -138,6 +140,9 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
                 self.assertTrue(np.allclose(
                     beta.cdf(hi) - beta.cdf(lo),
                     coverage,
+                ))
+                self.assertTrue(np.all(
+                    (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5))
                 ))
                 self.assertTrue(np.all(
                     np.abs(beta.cdf(lo) - (1. - coverage) / 2.)
@@ -162,6 +167,9 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
                 < 1e-10
             ))
             self.assertTrue(np.all(
+                (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5))
+            ))
+            self.assertTrue(np.all(
                 np.abs(beta.cdf(lo) - (1. - coverage) / 2.)
                 < 1e-10
             ))
@@ -177,6 +185,9 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
         self.assertTrue(np.allclose(
             beta.cdf(hi) - beta.cdf(lo),
             coverage,
+        ))
+        self.assertTrue(np.all(
+            (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5))
         ))
         self.assertTrue(np.all(
             np.abs(beta.cdf(lo) - (1. - coverage) / 2.)
@@ -201,6 +212,9 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
                 < 1e-10
             ))
             self.assertTrue(np.all(
+                (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5))
+            ))
+            self.assertTrue(np.all(
                 np.abs(beta.cdf(lo) - (1. - coverage) / 2.)
                 < 1e-10
             ))
@@ -216,6 +230,9 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
         self.assertTrue(np.allclose(
             beta.cdf(hi) - beta.cdf(lo),
             coverage,
+        ))
+        self.assertTrue(np.all(
+            (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5))
         ))
         self.assertTrue(np.all(
             np.abs(beta.cdf(lo) - (1. - coverage) / 2.)
@@ -240,6 +257,9 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
                 < 1e-10
             ))
             self.assertTrue(np.all(
+                (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5))
+            ))
+            self.assertTrue(np.all(
                 np.abs(beta.cdf(lo) - (1. - coverage) / 2.)
                 < 1e-10
             ))
@@ -255,6 +275,9 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
         self.assertTrue(np.allclose(
             beta.cdf(hi) - beta.cdf(lo),
             coverage,
+        ))
+        self.assertTrue(np.all(
+            (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5))
         ))
         self.assertTrue(np.all(
             np.abs(beta.cdf(lo) - (1. - coverage) / 2.)
@@ -280,6 +303,9 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
             np.tile(coverage, (n, 1))
         ))
         self.assertTrue(np.all(
+            (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5))
+        ))
+        self.assertTrue(np.all(
             np.abs(beta.cdf(lo) - (1. - coverage) / 2.)
             < 1e-10
         ))
@@ -302,6 +328,9 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
             np.tile(coverage, (n, m, 1))
         ))
         self.assertTrue(np.all(
+            (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5))
+        ))
+        self.assertTrue(np.all(
             np.abs(beta.cdf(lo) - (1. - coverage) / 2.)
             < 1e-10
         ))
@@ -320,6 +349,8 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
                     self.assertEqual(hi.shape, ())
                     self.assertLessEqual(lo, hi)
                     self.assertAlmostEqual(beta.cdf(hi) - beta.cdf(lo), coverage)
+                    self.assertLessEqual(lo, beta.ppf(0.5))
+                    self.assertGreaterEqual(hi, beta.ppf(0.5))
 
     def test_on_zero_coverage(self):
         for a in [1., 5., 10.]:
@@ -346,6 +377,7 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
                 if a == 1. and b == 1.:
                     # No highest density interval exists when a <= 1 and b <= 1.
                     continue
+                mode = (a - 1) / (a + b - 2)
                 beta = stats.beta(a, b)
                 # when coverage is a scalar.
                 for coverage in [0.25, 0.50, 0.75]:
@@ -356,6 +388,8 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
                         beta.cdf(hi) - beta.cdf(lo),
                         coverage,
                     )
+                    self.assertLessEqual(lo, mode)
+                    self.assertGreaterEqual(hi, mode)
                     equal_tailed_lo, equal_tailed_hi =\
                         utils.beta_equal_tailed_interval(a, b, coverage)
                     self.assertLess(
@@ -372,6 +406,9 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
                     beta.cdf(hi) - beta.cdf(lo),
                     coverage,
                 ))
+                self.assertTrue(np.all(
+                    (lo <= mode) & (hi >= mode)
+                ))
                 equal_tailed_lo, equal_tailed_hi =\
                     utils.beta_equal_tailed_interval(a, b, coverage)
                 self.assertTrue(np.all(
@@ -381,6 +418,7 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
         n = 10
         a = np.arange(1, n + 1)
         b = np.arange(n + 1, 1, -1)
+        mode = (a - 1) / (a + b - 2)
         beta = stats.beta(a, b)
         #   when coverage is a scalar.
         for coverage in [0.25, 0.50, 0.75]:
@@ -390,6 +428,9 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
             self.assertTrue(np.all(
                 np.abs((beta.cdf(hi) - beta.cdf(lo)) - coverage)
                 < 1e-10
+            ))
+            self.assertTrue(np.all(
+                (lo <= mode) & (hi >= mode)
             ))
             equal_tailed_lo, equal_tailed_hi =\
                 utils.beta_equal_tailed_interval(a, b, coverage)
@@ -408,6 +449,9 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
             beta.cdf(hi) - beta.cdf(lo),
             coverage,
         ))
+        self.assertTrue(np.all(
+            (lo <= mode) & (hi >= mode)
+        ))
         equal_tailed_lo, equal_tailed_hi =\
             utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertTrue(np.all(
@@ -420,6 +464,7 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
         n, m = 5, 2
         a = np.arange(1, n * m + 1).reshape(n, m)
         b = np.arange(n * m + 1, 1, -1).reshape(n, m)
+        mode = (a - 1) / (a + b - 2)
         beta = stats.beta(a, b)
         #   when coverage is a scalar.
         for coverage in [0.25, 0.50, 0.75]:
@@ -429,6 +474,9 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
             self.assertTrue(np.all(
                 np.abs((beta.cdf(hi) - beta.cdf(lo)) - coverage)
                 < 1e-10
+            ))
+            self.assertTrue(np.all(
+                (lo <= mode) & (hi >= mode)
             ))
             equal_tailed_lo, equal_tailed_hi =\
                 utils.beta_equal_tailed_interval(a, b, coverage)
@@ -446,6 +494,9 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
         self.assertTrue(np.allclose(
             beta.cdf(hi) - beta.cdf(lo),
             coverage,
+        ))
+        self.assertTrue(np.all(
+            (lo <= mode) & (hi >= mode)
         ))
         equal_tailed_lo, equal_tailed_hi =\
             utils.beta_equal_tailed_interval(a, b, coverage)
@@ -459,6 +510,7 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
         n, m = 5, 2
         a = np.arange(1, n + 1).reshape(n, 1)
         b = np.arange(m + 1, 1, -1).reshape(1, m)
+        mode = (a - 1) / (a + b - 2)
         beta = stats.beta(a, b)
         #   when coverage is a scalar.
         for coverage in [0.25, 0.50, 0.75]:
@@ -468,6 +520,9 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
             self.assertTrue(np.all(
                 np.abs((beta.cdf(hi) - beta.cdf(lo)) - coverage)
                 < 1e-10
+            ))
+            self.assertTrue(np.all(
+                (lo <= mode) & (hi >= mode)
             ))
             equal_tailed_lo, equal_tailed_hi =\
                 utils.beta_equal_tailed_interval(a, b, coverage)
@@ -485,6 +540,9 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
         self.assertTrue(np.allclose(
             beta.cdf(hi) - beta.cdf(lo),
             coverage,
+        ))
+        self.assertTrue(np.all(
+            (lo <= mode) & (hi >= mode)
         ))
         equal_tailed_lo, equal_tailed_hi =\
             utils.beta_equal_tailed_interval(a, b, coverage)
@@ -499,6 +557,7 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
         n = 10
         a = np.arange(1, n + 1)[:, None]
         b = np.arange(n + 1, 1, -1)[:, None]
+        mode = (a - 1) / (a + b - 2)
         beta = stats.beta(a, b)
         k = 5
         coverage = np.random.rand(k)[None, :]
@@ -508,6 +567,9 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
         self.assertTrue(np.allclose(
             beta.cdf(hi) - beta.cdf(lo),
             np.tile(coverage, (n, 1)),
+        ))
+        self.assertTrue(np.all(
+            (lo <= mode) & (hi >= mode)
         ))
         equal_tailed_lo, equal_tailed_hi =\
             utils.beta_equal_tailed_interval(a, b, coverage)
@@ -521,6 +583,7 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
         n, m = 3, 2
         a = np.arange(1, n + 1).reshape(n, 1)[..., None]
         b = np.arange(m + 1, 1, -1).reshape(1, m)[..., None]
+        mode = (a - 1) / (a + b - 2)
         beta = stats.beta(a, b)
         k = 5
         coverage = np.random.rand(k)[None, None, :]
@@ -530,6 +593,9 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
         self.assertTrue(np.allclose(
             beta.cdf(hi) - beta.cdf(lo),
             np.tile(coverage, (n, m, 1)),
+        ))
+        self.assertTrue(np.all(
+            (lo <= mode) & (hi >= mode)
         ))
         equal_tailed_lo, equal_tailed_hi =\
             utils.beta_equal_tailed_interval(a, b, coverage)
@@ -548,12 +614,15 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
                         # No highest density interval exists when
                         # a <= 1 and b <= 1.
                         continue
+                    mode = (a - 1) / (a + b - 2)
                     beta = stats.beta(a, b)
                     lo, hi = utils.beta_highest_density_interval(a, b, coverage)
                     self.assertEqual(lo.shape, ())
                     self.assertEqual(hi.shape, ())
                     self.assertLessEqual(lo, hi)
                     self.assertAlmostEqual(beta.cdf(hi) - beta.cdf(lo), coverage)
+                    self.assertLessEqual(lo, mode)
+                    self.assertGreaterEqual(hi, mode)
 
     def test_on_zero_coverage(self):
         for a in [1., 5., 10.]:
