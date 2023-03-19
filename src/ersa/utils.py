@@ -166,7 +166,7 @@ def beta_highest_density_interval(a, b, coverage, atol=1e-10):
         # limit) can fall below x (the lower confidence limit) when
         # computed as above due to discretization/rounding errors, so
         # fix that below.
-        y = np.where(y <= x, x, y)
+        y = np.clip(y, x, 1.)
 
         if np.all(x_hi - x_lo < atol):
             break
