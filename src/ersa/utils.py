@@ -153,8 +153,9 @@ def beta_highest_density_interval(a, b, coverage, atol=1e-10):
 
     beta = stats.beta(a, b)
 
+    mode = np.clip((a - 1) / (a + b - 2), 0., 1.)
+
     # Initialize bounds.
-    mode = (a - 1) / (a + b - 2)
     x_lo = beta.ppf(np.maximum(beta.cdf(mode) - coverage, 0.))
     x_hi = np.minimum(mode, beta.ppf(1. - coverage))
     # Binary search for the lower endpoint.
