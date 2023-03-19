@@ -153,19 +153,40 @@ def beta_highest_density_interval(a, b, coverage, atol=1e-10):
 
     beta = stats.beta(a, b)
 
+    mode = np.clip((a - 1) / (a + b - 2), 0., 1.)
+
     # Initialize bounds.
-    x_lo = np.where(b <= 1., beta.ppf(1. - coverage), 0.)
-    x_hi = np.where(a <= 1., 0., beta.ppf(1. - coverage))
+    x_lo = beta.ppf(np.maximum(beta.cdf(mode) - coverage, 0.))
+    x_hi = np.minimum(mode, beta.ppf(1. - coverage))
     # Binary search for the lower endpoint.
-    for _ in range(1_000):
+    for _ in range(100):
         x = (x_lo + x_hi) / 2.
         y = beta.ppf(np.clip(beta.cdf(x) + coverage, 0., 1.))
-
-        x_lo = np.where(beta.pdf(x) < beta.pdf(y), x, x_lo)
-        x_hi = np.where(beta.pdf(x) >= beta.pdf(y), x, x_hi)
+        # NOTE: For small values of coverage, y (the upper confidence
+        # limit) can fall below x (the lower confidence limit) when
+        # computed as above due to discretization/rounding errors, so
+        # fix that below.
+        y = np.clip(y, x, 1.)
 
         if np.all(x_hi - x_lo < atol):
             break
+
+        # NOTE: Inline the unnormalized beta density rather than using
+        # scipy.stats.beta.pdf because:
+        #   * scipy.stats.beta.pdf is not monotonic from the
+        #     boundaries to the mode. This bug causes the binary
+        #     search to fail for small coverages.
+        #   * The unnormalized version is significantly faster to
+        #     compute.
+        # In addition, raise the density to the 1/(b-1) power. This
+        # transformation is monotonic, so it doesn't affect the points at
+        # which the density is equal; however, it means we can avoid using
+        # an expensive power operation on the large arrays.
+        x_pdf = x**((a-1)/(b-1)) * (1-x)
+        y_pdf = y**((a-1)/(b-1)) * (1-y)
+
+        x_lo = np.where(x_pdf <= y_pdf, x, x_lo)
+        x_hi = np.where(x_pdf >= y_pdf, x, x_hi)
     else:
         raise exceptions.OptimizationException(
             'beta_highest_density_interval failed to converge.'
@@ -247,24 +268,36 @@ def beta_highest_density_coverage(a, b, x, atol=1e-10):
 
     beta = stats.beta(a, b)
 
-    mode = (a - 1) / (a + b - 2)
-    mode = np.where(a <= 1., 0., mode)
-    mode = np.where(b <= 1., 1., mode)
+    mode = np.clip((a - 1) / (a + b - 2), 0., 1.)
     x_is_lower_end = x < mode
+    # NOTE: Inline the unnormalized beta density rather than using
+    # scipy.stats.beta.pdf because:
+    #   * scipy.stats.beta.pdf is not monotonic from the
+    #     boundaries to the mode. This bug causes the binary
+    #     search to fail for small coverages.
+    #   * The unnormalized version is significantly faster to
+    #     compute.
+    # In addition, raise the density to the 1/(b-1) power. This
+    # transformation is monotonic, so it doesn't affect the points at
+    # which the density is equal; however, it means we can avoid using
+    # a power operation on the large array of y's, which makes the
+    # function significantly faster.
+    x_pdf = x**((a-1)/(b-1)) * (1-x)
 
     # Initialize bounds.
     y_lo = np.where(x_is_lower_end, mode, 0.)
     y_hi = np.where(x_is_lower_end, 1., mode)
     # Binary search for the other end.
-    for _ in range(1_000):
+    for _ in range(100):
         y = (y_lo + y_hi) / 2.
-
-        x_is_lower_pdf = beta.pdf(x) < beta.pdf(y)
-        y_lo = np.where(x_is_lower_end == x_is_lower_pdf, y, y_lo)
-        y_hi = np.where(x_is_lower_end != x_is_lower_pdf, y, y_hi)
 
         if np.all(y_hi - y_lo < atol):
             break
+
+        y_is_lo = x_is_lower_end == (x_pdf < y**((a-1)/(b-1)) * (1-y))
+
+        y_lo = np.where(y_is_lo, y, y_lo)
+        y_hi = np.where(~y_is_lo, y, y_hi)
     else:
         raise exceptions.OptimizationException(
             'beta_highest_density_coverage failed to converge.'

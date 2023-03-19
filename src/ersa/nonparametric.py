@@ -106,16 +106,16 @@ def _ld_band_weights(n, confidence, kind, n_trials=100_000):
         )
 
     ns = np.arange(1, n + 1)
-    a = ns
-    b = n + 1 - ns
 
     # Compute the critical value of the test statistic.
-    ts = np.random.rand(n_trials, n)
-    ts.sort(kind='quicksort', axis=-1)
-    ts = np.max(coverage(a, b, ts), axis=-1)
+    us = np.random.rand(n_trials, n)
+    us.sort(kind='quicksort', axis=-1)
+    ts = 0.
+    for i, (a, b) in enumerate(zip(ns, n + 1 - ns)):
+        ts = np.maximum(ts, coverage(a, b, us[:, i]))
     critical_value = np.quantile(ts, confidence)
 
-    lo, hi = interval(a, b, critical_value)
+    lo, hi = interval(ns, n + 1 - ns, critical_value)
     # NOTE: If the j'th order statistic is the largest one smaller than
     # x, then the lower bound for the j'th and the upper bound for the
     # j+1'th provide the bounds for the CDF at x.
