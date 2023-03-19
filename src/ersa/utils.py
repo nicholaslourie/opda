@@ -159,7 +159,7 @@ def beta_highest_density_interval(a, b, coverage, atol=1e-10):
     x_lo = beta.ppf(np.maximum(beta.cdf(mode) - coverage, 0.))
     x_hi = np.minimum(mode, beta.ppf(1. - coverage))
     # Binary search for the lower endpoint.
-    for _ in range(1_000):
+    for _ in range(100):
         x = (x_lo + x_hi) / 2.
         y = beta.ppf(np.clip(beta.cdf(x) + coverage, 0., 1.))
         # NOTE: For small values of coverage, y (the upper confidence
@@ -288,7 +288,7 @@ def beta_highest_density_coverage(a, b, x, atol=1e-10):
     y_lo = np.where(x_is_lower_end, mode, 0.)
     y_hi = np.where(x_is_lower_end, 1., mode)
     # Binary search for the other end.
-    for _ in range(1_000):
+    for _ in range(100):
         y = (y_lo + y_hi) / 2.
 
         if np.all(y_hi - y_lo < atol):
