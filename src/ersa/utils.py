@@ -178,17 +178,15 @@ def beta_highest_density_interval(a, b, coverage, atol=1e-10):
         #     search to fail for small coverages.
         #   * The unnormalized version is significantly faster to
         #     compute.
-        ##
-        x_lo = np.where(
-            x**(a-1) * (1-x)**(b-1) <= y**(a-1) * (1-y)**(b-1),
-            x,
-            x_lo,
-        )
-        x_hi = np.where(
-            x**(a-1) * (1-x)**(b-1) >= y**(a-1) * (1-y)**(b-1),
-            x,
-            x_hi,
-        )
+        # In addition, raise the density to the 1/(b-1) power. This
+        # transformation is monotonic, so it doesn't affect the points at
+        # which the density is equal; however, it means we can avoid using
+        # an expensive power operation on the large arrays.
+        x_pdf = x**((a-1)/(b-1)) * (1-x)
+        y_pdf = y**((a-1)/(b-1)) * (1-y)
+
+        x_lo = np.where(x_pdf <= y_pdf, x, x_lo)
+        x_hi = np.where(x_pdf >= y_pdf, x, x_hi)
     else:
         raise exceptions.OptimizationException(
             'beta_highest_density_interval failed to converge.'
