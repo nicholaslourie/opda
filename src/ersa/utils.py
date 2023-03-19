@@ -269,10 +269,21 @@ def beta_highest_density_coverage(a, b, x, atol=1e-10):
 
     beta = stats.beta(a, b)
 
-    mode = (a - 1) / (a + b - 2)
-    mode = np.where(a <= 1., 0., mode)
-    mode = np.where(b <= 1., 1., mode)
+    mode = np.clip((a - 1) / (a + b - 2), 0., 1.)
     x_is_lower_end = x < mode
+    # NOTE: Inline the unnormalized beta density rather than using
+    # scipy.stats.beta.pdf because:
+    #   * scipy.stats.beta.pdf is not monotonic from the
+    #     boundaries to the mode. This bug causes the binary
+    #     search to fail for small coverages.
+    #   * The unnormalized version is significantly faster to
+    #     compute.
+    # In addition, raise the density to the 1/(b-1) power. This
+    # transformation is monotonic, so it doesn't affect the points at
+    # which the density is equal; however, it means we can avoid using
+    # a power operation on the large array of y's, which makes the
+    # function significantly faster.
+    x_pdf = x**((a-1)/(b-1)) * (1-x)
 
     # Initialize bounds.
     y_lo = np.where(x_is_lower_end, mode, 0.)
@@ -283,17 +294,11 @@ def beta_highest_density_coverage(a, b, x, atol=1e-10):
 
         if np.all(y_hi - y_lo < atol):
             break
-        # NOTE: Inline the unnormalized beta density rather than using
-        # scipy.stats.beta.pdf because:
-        #   * scipy.stats.beta.pdf is not monotonic from the
-        #     boundaries to the mode. This bug causes the binary
-        #     search to fail for small coverages.
-        #   * The unnormalized version is significantly faster to
-        #     compute.
-        ##
-        x_is_lower_pdf = x**(a-1) * (1-x)**(b-1) < y**(a-1) * (1-y)**(b-1)
-        y_lo = np.where(x_is_lower_end == x_is_lower_pdf, y, y_lo)
-        y_hi = np.where(x_is_lower_end != x_is_lower_pdf, y, y_hi)
+
+        y_is_lo = x_is_lower_end == (x_pdf < y**((a-1)/(b-1)) * (1-y))
+
+        y_lo = np.where(y_is_lo, y, y_lo)
+        y_hi = np.where(~y_is_lo, y, y_hi)
     else:
         raise exceptions.OptimizationException(
             'beta_highest_density_coverage failed to converge.'
