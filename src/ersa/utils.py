@@ -182,8 +182,9 @@ def beta_highest_density_interval(a, b, coverage, atol=1e-10):
         # transformation is monotonic, so it doesn't affect the points at
         # which the density is equal; however, it means we can avoid using
         # an expensive power operation on the large arrays.
-        x_pdf = x**((a-1)/(b-1)) * (1-x)
-        y_pdf = y**((a-1)/(b-1)) * (1-y)
+        with np.errstate(divide='ignore'):
+            x_pdf = x**((a-1)/(b-1)) * (1-x)
+            y_pdf = y**((a-1)/(b-1)) * (1-y)
 
         x_lo = np.where(x_pdf <= y_pdf, x, x_lo)
         x_hi = np.where(x_pdf >= y_pdf, x, x_hi)
@@ -282,7 +283,8 @@ def beta_highest_density_coverage(a, b, x, atol=1e-10):
     # which the density is equal; however, it means we can avoid using
     # a power operation on the large array of y's, which makes the
     # function significantly faster.
-    x_pdf = x**((a-1)/(b-1)) * (1-x)
+    with np.errstate(divide='ignore'):
+        x_pdf = x**((a-1)/(b-1)) * (1-x)
 
     # Initialize bounds.
     y_lo = np.where(x_is_lower_end, mode, 0.)
@@ -294,7 +296,8 @@ def beta_highest_density_coverage(a, b, x, atol=1e-10):
         if np.all(y_hi - y_lo < atol):
             break
 
-        y_is_lo = x_is_lower_end == (x_pdf < y**((a-1)/(b-1)) * (1-y))
+        with np.errstate(divide='ignore'):
+            y_is_lo = x_is_lower_end == (x_pdf < y**((a-1)/(b-1)) * (1-y))
 
         y_lo = np.where(y_is_lo, y, y_lo)
         y_hi = np.where(~y_is_lo, y, y_hi)

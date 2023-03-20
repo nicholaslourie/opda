@@ -1,6 +1,7 @@
 """Nonparametric ERSA."""
 
 import functools
+import multiprocessing
 import warnings
 
 import numpy as np
@@ -40,7 +41,7 @@ def _ks_band_weights(n, confidence):
 
 
 @functools.cache
-def _ld_band_weights(n, confidence, kind, n_trials=100_000):
+def _ld_band_weights(n, confidence, kind, n_trials=100_000, n_jobs=None):
     # NOTE: For i.i.d. samples, the i'th order statistic's quantile is
     # beta(i, n + 1 - i) distributed. Thus, an interval covering
     # ``confidence`` probability from the beta(i, n + 1 - i)
@@ -110,9 +111,17 @@ def _ld_band_weights(n, confidence, kind, n_trials=100_000):
     # Compute the critical value of the test statistic.
     us = np.random.rand(n_trials, n)
     us.sort(kind='quicksort', axis=-1)
-    ts = 0.
-    for i, (a, b) in enumerate(zip(ns, n + 1 - ns)):
-        ts = np.maximum(ts, coverage(a, b, us[:, i]))
+    if n_jobs == 1:
+        ts = 0.
+        for i, (a, b) in enumerate(zip(ns, n + 1 - ns)):
+            ts = np.maximum(ts, coverage(a, b, us[:, i]))
+    else:
+        with multiprocessing.Pool(processes=n_jobs) as pool:
+            ts = pool.starmap(
+                coverage,
+                ((a, b, us[:, i]) for i, (a, b) in enumerate(zip(ns, n+1-ns))),
+            )
+            ts = np.max(np.stack(ts, axis=1), axis=1)
     critical_value = np.quantile(ts, confidence)
 
     lo, hi = interval(ns, n + 1 - ns, critical_value)
@@ -521,10 +530,11 @@ class EmpiricalDistribution:
             cls,
             ys,
             confidence,
-            method = 'ld_equal_tailed',
             *,
+            method = 'ld_highest_density',
             a = None,
             b = None,
+            n_jobs = None,
     ):
         """Return confidence bands for the CDF.
 
@@ -541,7 +551,7 @@ class EmpiricalDistribution:
             The sample from the distribution.
         confidence : float, required
             The coverage or confidence level for the bands.
-        method : str, optional (default='ld_equal_tailed')
+        method : str, optional (default='ld_highest_density')
             One of the strings 'dkw', 'ks', 'ld_equal_tailed', or
             'ld_highest_density'. The ``method`` parameter determines the kind of
             confidence band and thus its properties. See `Notes`_ for
@@ -552,6 +562,14 @@ class EmpiricalDistribution:
         b : float or None, optional (default=None)
             The maximum of the support of the underlying distribution.
             If ``None``, then it will be set to ``np.inf``.
+        n_jobs : int or None, optional (default=None)
+            Set the maximum number of parallel processes to use when
+            constructing the confidence bands. If ``None`` then
+            ``n_jobs`` will be set to the number of CPUs returned by
+            ``os.cpu_count``. Only some methods (e.g.
+            ``'ld_highest_density'``) can leverage parallel
+            computation. If the method can't use parallelism, it'll
+            just use the current process instead.
 
         Returns
         -------
@@ -630,11 +648,11 @@ class EmpiricalDistribution:
             )
         elif method == 'ld_equal_tailed':
             ws_lo_cumsum, ws_hi_cumsum = _ld_band_weights(
-                n, confidence, kind='equal_tailed',
+                n, confidence, kind='equal_tailed', n_jobs=n_jobs,
             )
         elif method == 'ld_highest_density':
             ws_lo_cumsum, ws_hi_cumsum = _ld_band_weights(
-                n, confidence, kind='highest_density',
+                n, confidence, kind='highest_density', n_jobs=n_jobs,
             )
         else:
             raise ValueError(
