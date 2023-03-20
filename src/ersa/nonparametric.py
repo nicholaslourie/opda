@@ -531,7 +531,7 @@ class EmpiricalDistribution:
             ys,
             confidence,
             *,
-            method = 'ld_equal_tailed',
+            method = 'ld_highest_density',
             a = None,
             b = None,
             n_jobs = None,
@@ -551,7 +551,7 @@ class EmpiricalDistribution:
             The sample from the distribution.
         confidence : float, required
             The coverage or confidence level for the bands.
-        method : str, optional (default='ld_equal_tailed')
+        method : str, optional (default='ld_highest_density')
             One of the strings 'dkw', 'ks', 'ld_equal_tailed', or
             'ld_highest_density'. The ``method`` parameter determines the kind of
             confidence band and thus its properties. See `Notes`_ for
