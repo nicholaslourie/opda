@@ -38,7 +38,7 @@ def plot_random_search(
         not ``None``, then the returned figure will be ``None``.
     """
     if ax is None:
-        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 5))
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(11, 5))
     else:
         fig = None
 
@@ -100,7 +100,7 @@ def plot_cdf(
         not ``None``, then the returned figure will be ``None``.
     """
     if ax is None:
-        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 10))
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(6, 5))
     else:
         fig = None
 
@@ -141,7 +141,7 @@ def plot_pdf(
         not ``None``, then the returned figure will be ``None``.
     """
     if ax is None:
-        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 10))
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(6, 5))
     else:
         fig = None
 
