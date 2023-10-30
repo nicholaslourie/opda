@@ -321,11 +321,11 @@ def plot_tuning_curve_approximation(
         ax.legend()
 
     axes[0].set_xlabel('$n$')
-    axes[0].set_ylabel('$G_{0.5}(n)$')
+    axes[0].set_ylabel('$\\tau_m(n)$')
     axes[0].set_title('Median Tuning Curve')
 
     axes[1].set_xlabel('$n$')
-    axes[1].set_ylabel('$G_{av}(n)$')
+    axes[1].set_ylabel('$\\tau_e(n)$')
     axes[1].set_title('Expected Tuning Curve')
 
     return fig, axes
