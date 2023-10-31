@@ -1,0 +1,18 @@
+#######################
+# ERSA Default Styles #
+#######################
+
+### font size ###
+
+font.size        : 12
+xtick.labelsize  : 11
+ytick.labelsize  : 11
+axes.labelsize   : 14
+axes.titlesize   : 14
+legend.fontsize  : 11
+figure.titlesize : 14
+
+### grid style ###
+
+axes.grid        : True
+grid.linestyle   : ":"

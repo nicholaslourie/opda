@@ -1,6 +1,8 @@
 """Visualizations"""
 
-from matplotlib import pyplot as plt
+import colorsys
+
+from matplotlib import colors, pyplot as plt
 import numpy as np
 
 
@@ -36,7 +38,7 @@ def plot_random_search(
         not ``None``, then the returned figure will be ``None``.
     """
     if ax is None:
-        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 5))
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(11, 5))
     else:
         fig = None
 
@@ -98,7 +100,7 @@ def plot_cdf(
         not ``None``, then the returned figure will be ``None``.
     """
     if ax is None:
-        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 10))
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(6, 5))
     else:
         fig = None
 
@@ -139,7 +141,7 @@ def plot_pdf(
         not ``None``, then the returned figure will be ``None``.
     """
     if ax is None:
-        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 10))
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(6, 5))
     else:
         fig = None
 
@@ -319,11 +321,36 @@ def plot_tuning_curve_approximation(
         ax.legend()
 
     axes[0].set_xlabel('$n$')
-    axes[0].set_ylabel('$G_{0.5}(n)$')
+    axes[0].set_ylabel('$\\tau_m(n)$')
     axes[0].set_title('Median Tuning Curve')
 
     axes[1].set_xlabel('$n$')
-    axes[1].set_ylabel('$G_{av}(n)$')
+    axes[1].set_ylabel('$\\tau_e(n)$')
     axes[1].set_title('Expected Tuning Curve')
 
     return fig, axes
+
+
+def color_with_lightness(c, lightness):
+    """Return a new color by changing the lightness.
+
+    Parameters
+    ----------
+    c : str or tuple of float, required
+        A value that can be interpreted as a matplotlib color, like a
+        color name, hex string, or tuple of floats. See the matplotlib
+        documentation on `specifying colors
+        <https://matplotlib.org/stable/tutorials/colors/colors.html>`_.
+    lightness : float, required
+        A float between 0 and 1 specifying the lightness for the new
+        color in the Hue-Saturation-Lightness color space.
+
+    Returns
+    -------
+    tuple of floats
+        A tuple of the RGB channel values on a scale from 0 to 1.
+    """
+    hue, _, saturation = colorsys.rgb_to_hls(
+        *colors.to_rgb(c),
+    )
+    return colorsys.hls_to_rgb(hue, lightness, saturation)
