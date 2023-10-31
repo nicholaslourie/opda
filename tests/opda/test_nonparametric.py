@@ -1,4 +1,4 @@
-"""Tests for ersa.nonparametric"""
+"""Tests for opda.nonparametric"""
 
 import unittest
 import warnings
@@ -7,11 +7,11 @@ import numpy as np
 import pytest
 from scipy import stats
 
-from ersa import nonparametric, utils
+from opda import nonparametric, utils
 
 
 class EmpiricalDistributionTestCase(unittest.TestCase):
-    """Test ersa.nonparametric.EmpiricalDistribution."""
+    """Test opda.nonparametric.EmpiricalDistribution."""
 
     def test_sample(self):
         # Test without weights.

@@ -1,14 +1,14 @@
-"""Tests for ersa.parametric"""
+"""Tests for opda.parametric"""
 
 import unittest
 
 import numpy as np
 
-from ersa import parametric
+from opda import parametric
 
 
 class QuadraticDistributionTestCase(unittest.TestCase):
-    """Test ersa.parametric.QuadraticDistribution."""
+    """Test opda.parametric.QuadraticDistribution."""
 
     def test_sample(self):
         a, b = 0., 1.

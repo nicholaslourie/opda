@@ -1,1 +1,1 @@
-"""Code supporting experiments for ERSA"""
+"""Code supporting experiments for OPDA"""

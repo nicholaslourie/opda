@@ -1,30 +1,37 @@
-=========================================
-ERSA: Extrapolated Random Search Analysis
-=========================================
-A method for analyzing and extrapolating random search.
+=============================
+opda: Optimal Design Analysis
+=============================
+A framework for the design and analysis of deep learning experiments.
 
-This repository compiles code and resources related to ERSA
-(Extrapolated Random Search Analaysis). ERSA analyzes and extrapolates
-random search, answering questions such as:
+This repository compiles code and resources related to *optimal design
+analysis* (OPDA). Optimal design analysis combines an empirical theory
+of deep learning with statistical analyses to answer questions such as:
 
-1. How difficult is this function to optimize?
-2. What score can you expect after a given number of iterations of
-   random search?
-3. What's the best possible score you could achieve?
+  1. Does a change actually improve performance when you account for
+     hyperparameter tuning?
+  2. What aspects of the data or existing hyperparameters does a new
+     hyperparameter interact with?
+  3. What is the best possible score a model can achieve with perfectly
+     tuned hyperparameters?
 
-A major application of ERSA is understanding how performance improves as
-you tune a machine learning model's hyper-parameters.
+This toolkit provides everything you need to get started with optimal
+design analysis. Jump to the section most relevant to you:
+
+  - `Setup <#setup>`_
+  - `Usage <#usage>`_
+  - `Development <#development>`_
 
 
 Setup
 =====
-Check you have a virtual environment with Python 3.9 installed.
+Check you have a virtual environment with Python 3.9 or above
+installed.
 
 1. Clone the repo:
 
    .. code:: bash
 
-      $ git clone git@github.com:nalourie/ersa.git
+      $ git clone git@github.com:nalourie/opda.git
 
 2. Install the package with ``pip``:
 
@@ -42,12 +49,12 @@ documentation for a function or class:
 
 .. code:: bash
 
-   >>> from ersa.parametric import QuadraticDistribution
+   >>> from opda.nonparametric import EmpiricalDistribution
    >>> help(QuadraticDistribution)
-   Help on class QuadraticDistribution in module ersa.parametric:
+   Help on class EmpiricalDistribution in module opda.nonparametric:
    ...
 
-See ``ersa.parametric`` for parametric and ``ersa.nonparametric`` for
+See ``opda.parametric`` for parametric and ``opda.nonparametric`` for
 nonparametric analyses.
 
 

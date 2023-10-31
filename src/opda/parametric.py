@@ -1,4 +1,4 @@
-"""Parametric ERSA."""
+"""Parametric OPDA."""
 
 import numpy as np
 from scipy import special
@@ -7,7 +7,7 @@ from scipy import special
 class QuadraticDistribution:
     """The Quadratic distribution.
 
-    The fundamental result behind ERSA is that the best score from a
+    The fundamental result behind OPDA is that the best score from a
     random search of a smooth function asymptotically approaches the
     Quadratic distribution.
 

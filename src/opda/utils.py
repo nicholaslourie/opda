@@ -3,7 +3,7 @@
 import numpy as np
 from scipy import stats
 
-from ersa import exceptions
+from opda import exceptions
 
 
 def sort_by_first(*args):
