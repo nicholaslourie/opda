@@ -1,4 +1,4 @@
-"""Nonparametric ERSA."""
+"""Nonparametric OPDA."""
 
 import functools
 import multiprocessing
@@ -7,7 +7,7 @@ import warnings
 import numpy as np
 from scipy import special, stats
 
-from ersa import utils
+from opda import utils
 
 
 # helper functions and classes
@@ -65,7 +65,7 @@ def _ld_band_weights(n, confidence, kind, n_trials=100_000, n_jobs=None):
     # distribution). For example, see the following code snippet:
     #
     #     >>> import numpy as np
-    #     ... from ersa.utils import beta_highest_density_interval
+    #     ... from opda.utils import beta_highest_density_interval
     #     ...
     #     ... n_trials = 100_000
     #     ... quantiles = np.array([0.5, 0.75, 0.9, 0.95, 0.99, 0.999])

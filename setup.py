@@ -3,22 +3,24 @@
 from setuptools import setup
 
 setup(
-    name='ersa',
+    name='opda',
     version='0.0.0',
-    description='A method for analyzing and extrapolating random search.',
+    description='A framework for the design and analysis of deep learning'
+                ' experiments.',
     long_description=open('README.rst', 'r').read(),
-    url='https://github.com/nalourie/ersa',
+    url='https://github.com/nalourie/opda',
     author='Nicholas Lourie',
     author_email='dev@nicholaslourie.com',
-    keywords='ersa extrapolated random search analysis hyper-parameter'
-             ' tuning artificial intelligence ai machine learning ml',
+    keywords='opda optimal design analysis hyperparameter hyper-parameter'
+             ' tuning machine learning ml deep learning dl'
+             ' artificial intelligence ai',
     classifiers=[
         'Programming Language :: Python :: 3.9',
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering :: Artificial Intelligence'
     ],
     license='',
-    packages=['ersa', 'experiments'],
+    packages=['opda', 'experiments'],
     package_dir={'': 'src'},
     scripts=[],
     install_requires=[ln.strip() for ln in open('requirements.txt', 'r')],

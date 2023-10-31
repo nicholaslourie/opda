@@ -1,4 +1,4 @@
-"""Tests for ersa.utils"""
+"""Tests for opda.utils"""
 
 import unittest
 
@@ -6,11 +6,11 @@ import numpy as np
 import pytest
 from scipy import stats
 
-from ersa import utils
+from opda import utils
 
 
 class SortByFirstTestCase(unittest.TestCase):
-    """Test ersa.utils.sort_by_first."""
+    """Test opda.utils.sort_by_first."""
 
     def test_sort_by_first(self):
         tolist = lambda a: a.tolist()
@@ -101,7 +101,7 @@ class SortByFirstTestCase(unittest.TestCase):
 
 
 class DkwEpsilonTestCase(unittest.TestCase):
-    """Test ersa.utils.dkw_epsilon."""
+    """Test opda.utils.dkw_epsilon."""
 
     def test_dkw_epsilon(self):
         self.assertEqual(utils.dkw_epsilon(2, 1. - 2./np.e), 0.5)
@@ -111,7 +111,7 @@ class DkwEpsilonTestCase(unittest.TestCase):
 
 
 class BetaEqualTailedIntervalTestCase(unittest.TestCase):
-    """Test ersa.utils.beta_equal_tailed_interval."""
+    """Test opda.utils.beta_equal_tailed_interval."""
 
     def test_beta_equal_tailed_interval(self):
         # Test when a and b are scalars.
@@ -367,7 +367,7 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
 
 
 class BetaHighestDensityIntervalTestCase(unittest.TestCase):
-    """Test ersa.utils.beta_highest_density_interval."""
+    """Test opda.utils.beta_highest_density_interval."""
 
     @pytest.mark.level(1)
     def test_beta_highest_density_interval(self):
@@ -643,7 +643,7 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
 
 
 class BetaEqualTailedCoverageTestCase(unittest.TestCase):
-    """Test ersa.utils.beta_equal_tailed_coverage."""
+    """Test opda.utils.beta_equal_tailed_coverage."""
 
     def test_beta_equal_tailed_coverage(self):
         # Test when a and b are scalars.
@@ -813,7 +813,7 @@ class BetaEqualTailedCoverageTestCase(unittest.TestCase):
 
 
 class BetaHighestDensityCoverageTestCase(unittest.TestCase):
-    """Test ersa.utils.beta_highest_density_coverage."""
+    """Test opda.utils.beta_highest_density_coverage."""
 
     @pytest.mark.level(1)
     def test_beta_highest_density_coverage(self):
@@ -1003,7 +1003,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
 
 
 class BinomialConfidenceIntervalTestCase(unittest.TestCase):
-    """Test ersa.utils.binomial_confidence_interval."""
+    """Test opda.utils.binomial_confidence_interval."""
 
     def test_binomial_confidence_interval(self):
         for n_successes, n_total, confidence, (lo_expected, hi_expected) in [
