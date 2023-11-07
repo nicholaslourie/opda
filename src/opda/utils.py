@@ -158,8 +158,16 @@ def beta_highest_density_interval(a, b, coverage, atol=1e-10):
     # Initialize bounds.
     x_lo = beta.ppf(np.maximum(beta.cdf(mode) - coverage, 0.))
     x_hi = np.minimum(mode, beta.ppf(1. - coverage))
+
     # Binary search for the lower endpoint.
-    for _ in range(100):
+    # NOTE: Each iteration cuts the bracket's length in half, so run
+    # enough iterations so that max(x_hi - x_lo) / 2**n_iter < atol.
+    n_iter = int(np.ceil(
+        # Even when the maximum bracket length is below atol, run at
+        # least 1 iteration in order to compute the midpoint and y.
+        np.log2(max(2, np.max(x_hi - x_lo) / atol))
+    ))
+    for _ in range(n_iter):
         x = (x_lo + x_hi) / 2.
         y = beta.ppf(np.clip(beta.cdf(x) + coverage, 0., 1.))
         # NOTE: For small values of coverage, y (the upper confidence
@@ -167,9 +175,6 @@ def beta_highest_density_interval(a, b, coverage, atol=1e-10):
         # computed as above due to discretization/rounding errors, so
         # fix that below.
         y = np.clip(y, x, 1.)
-
-        if np.all(x_hi - x_lo < atol):
-            break
 
         # NOTE: Inline the unnormalized beta density rather than using
         # scipy.stats.beta.pdf because:
@@ -188,10 +193,6 @@ def beta_highest_density_interval(a, b, coverage, atol=1e-10):
 
         x_lo = np.where(x_pdf <= y_pdf, x, x_lo)
         x_hi = np.where(x_pdf >= y_pdf, x, x_hi)
-    else:
-        raise exceptions.OptimizationException(
-            'beta_highest_density_interval failed to converge.'
-        )
 
     return x, y
 
@@ -289,22 +290,24 @@ def beta_highest_density_coverage(a, b, x, atol=1e-10):
     # Initialize bounds.
     y_lo = np.where(x_is_lower_end, mode, 0.)
     y_hi = np.where(x_is_lower_end, 1., mode)
-    # Binary search for the other end.
-    for _ in range(100):
-        y = (y_lo + y_hi) / 2.
 
-        if np.all(y_hi - y_lo < atol):
-            break
+    # Binary search for the other end.
+    # NOTE: Each iteration cuts the bracket's length in half, so run
+    # enough iterations so that max(y_hi - y_lo) / 2**n_iter < atol.
+    n_iter = int(np.ceil(
+        # Even when the maximum bracket length is below atol, run at
+        # least 1 iteration in order to compute the midpoint and figure
+        # out if x or y is the lower end.
+        np.log2(max(2, np.max(y_hi - y_lo) / atol))
+    ))
+    for _ in range(n_iter):
+        y = (y_lo + y_hi) / 2.
 
         with np.errstate(divide='ignore'):
             y_is_lo = x_is_lower_end == (x_pdf < y**((a-1)/(b-1)) * (1-y))
 
         y_lo = np.where(y_is_lo, y, y_lo)
         y_hi = np.where(~y_is_lo, y, y_hi)
-    else:
-        raise exceptions.OptimizationException(
-            'beta_highest_density_coverage failed to converge.'
-        )
 
     x, y = np.where(x_is_lower_end, x, y), np.where(x_is_lower_end, y, x)
 
