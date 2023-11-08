@@ -9,7 +9,10 @@ class QuadraticDistribution:
 
     When using random search to optimize a deterministic smooth
     function, the best score asymptotically approaches a quadratic
-    distribution.
+    distribution. In particular, if the search distribution is a
+    continuous distribution and the function is well-approximated by a
+    second-order Taylor expansion near the optimum, then the tail of the
+    score distribution will approach a quadratic distribution.
 
     Parameters
     ----------
