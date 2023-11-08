@@ -261,6 +261,31 @@ class QuadraticDistributionTestCase(unittest.TestCase):
                     atol=0.075,
                 ))
 
+                # Test when n is non-integral.
+                #   scalar
+                for n in range(1, 6):
+                    self.assertLess(
+                        dist.average_tuning_curve(n - 0.5),
+                        dist.average_tuning_curve(n),
+                    )
+                    self.assertEqual(
+                        dist.average_tuning_curve([n - 0.5]).tolist(),
+                        [dist.average_tuning_curve(n - 0.5)],
+                    )
+                #   1D array
+                self.assertTrue(np.all(
+                    dist.average_tuning_curve(np.arange(1, 6) - 0.5)
+                    < dist.average_tuning_curve(np.arange(1, 6))
+                ))
+                #   2D array
+                self.assertTrue(np.all(
+                    dist.average_tuning_curve(
+                        np.arange(1, 11).reshape(5, 2) - 0.5
+                    ) < dist.average_tuning_curve(
+                        np.arange(1, 11).reshape(5, 2)
+                    )
+                ))
+
                 # Test ns <= 0.
                 with self.assertRaises(ValueError):
                     dist.average_tuning_curve(0)
