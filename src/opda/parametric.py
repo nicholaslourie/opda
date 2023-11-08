@@ -167,10 +167,10 @@ class QuadraticDistribution:
         array of floats
             The quantile tuning curve evaluated at ``ns``.
         """
+        # Validate the arguments.
         ns = np.array(ns)
-
-        if np.any(ns < 0):
-            raise ValueError('ns must be non-negative.')
+        if np.any(ns <= 0):
+            raise ValueError('ns must be positive.')
 
         a, b, c = self.a, self.b, self.c
 
