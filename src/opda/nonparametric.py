@@ -361,8 +361,8 @@ class EmpiricalDistribution:
 
         Parameters
         ----------
-        ns : array of ints, required
-            The integers at which to evaluate the tuning curve.
+        ns : array of positive floats, required
+            The points at which to evaluate the tuning curve.
         q : float, optional (default=0.5)
             The quantile at which to evaluate the tuning curve.
 

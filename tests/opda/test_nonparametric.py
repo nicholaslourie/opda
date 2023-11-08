@@ -606,6 +606,44 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     atol=25.,
                 ))
 
+                # Test when n is non-integral.
+                ys = [0., 50., 25., 100., 75.]
+                ws = (
+                    np.random.dirichlet(np.ones_like(ys))
+                    if use_weights else
+                    None
+                )
+                dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+                #   scalar
+                #     0 < ns <= len(ys)
+                self.assertAlmostEqual(
+                    dist.quantile_tuning_curve(0.5, q=quantile),
+                    dist.quantile_tuning_curve(1, q=quantile**(1/0.5)),
+                )
+                #     ns > len(ys)
+                self.assertAlmostEqual(
+                    dist.quantile_tuning_curve(10.5, q=quantile),
+                    dist.quantile_tuning_curve(1, q=quantile**(1/10.5)),
+                )
+                #   1D array
+                #     0 < ns <= len(ys) and ns > len(ys)
+                self.assertTrue(np.allclose(
+                    dist.quantile_tuning_curve([0.5, 10.5], q=quantile),
+                    dist.quantile_tuning_curve([1, 21], q=quantile**2),
+                ))
+                #   2D array
+                #     0 < ns <= len(ys) and ns > len(ys)
+                self.assertTrue(np.allclose(
+                    dist.quantile_tuning_curve([
+                        [0.5, 10.5, 2.5],
+                        [2.5,  3.5, 0.5],
+                    ], q=quantile),
+                    dist.quantile_tuning_curve([
+                        [1, 21, 5],
+                        [5,  7, 1],
+                    ], q=quantile**2),
+                ))
+
     def test_average_tuning_curve(self):
         for use_weights in [False, True]:
             # Test when len(ys) == 1.
