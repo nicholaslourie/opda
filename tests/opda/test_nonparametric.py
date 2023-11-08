@@ -979,6 +979,21 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 [100., 50., 0.],
             ],
         )
+        #   Test non-integer ns.
+        for n in range(1, 11):
+            self.assertEqual(
+                dist.naive_tuning_curve(int(n)),
+                dist.naive_tuning_curve(float(n)),
+            )
+        for n in [0.5, 1.5, 10.5]:
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve(n)
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve([n])
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve([n, 1])
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve([[n], [1]])
         #   Test ns <= 0.
         with self.assertRaises(ValueError):
             dist.naive_tuning_curve(0)
