@@ -157,6 +157,48 @@ class QuadraticDistributionTestCase(unittest.TestCase):
                     atol=0.075,
                 ))
 
+                # Test when n is non-integral.
+                #   scalar
+                for n in range(1, 6):
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(n/10., q=0.5**(1/10)),
+                        curve[n-1],
+                        delta=0.075,
+                    )
+                    self.assertEqual(
+                        dist.quantile_tuning_curve(
+                            [n/10],
+                            q=0.5**(1/10),
+                        ).tolist(),
+                        [dist.quantile_tuning_curve(n/10., q=0.5**(1/10))],
+                    )
+                #   1D array
+                self.assertTrue(np.allclose(
+                    dist.quantile_tuning_curve(
+                        [0.1, 0.2, 0.3, 0.4, 0.5],
+                        q=0.5**(1/10),
+                    ),
+                    curve,
+                    atol=0.075,
+                ))
+                self.assertTrue(np.allclose(
+                    dist.quantile_tuning_curve([0.3, 0.1, 0.5], q=0.5**(1/10)),
+                    [curve[2], curve[0], curve[4]],
+                    atol=0.075,
+                ))
+                #   2D array
+                self.assertTrue(np.allclose(
+                    dist.quantile_tuning_curve([
+                        [0.1, 0.2, 0.3],
+                        [0.3, 0.1, 0.5],
+                    ], q=0.5**(1/10)),
+                    [
+                        [curve[0], curve[1], curve[2]],
+                        [curve[2], curve[0], curve[4]],
+                    ],
+                    atol=0.075,
+                ))
+
                 # Test ns <= 0.
                 with self.assertRaises(ValueError):
                     dist.quantile_tuning_curve(0, q=0.5)
