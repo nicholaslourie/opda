@@ -7,19 +7,19 @@ This repository compiles code and resources related to *optimal design
 analysis* (OPDA). Optimal design analysis combines an empirical theory
 of deep learning with statistical analyses to answer questions such as:
 
-  1. Does a change actually improve performance when you account for
-     hyperparameter tuning?
-  2. What aspects of the data or existing hyperparameters does a new
-     hyperparameter interact with?
-  3. What is the best possible score a model can achieve with perfectly
-     tuned hyperparameters?
+1. Does a change actually improve performance when you account for
+   hyperparameter tuning?
+2. What aspects of the data or existing hyperparameters does a new
+   hyperparameter interact with?
+3. What is the best possible score a model can achieve with perfectly
+   tuned hyperparameters?
 
 This toolkit provides everything you need to get started with optimal
 design analysis. Jump to the section most relevant to you:
 
-  - `Setup <#setup>`_
-  - `Usage <#usage>`_
-  - `Development <#development>`_
+- `Setup <#setup>`_
+- `Usage <#usage>`_
+- `Development <#development>`_
 
 
 Setup

@@ -7,9 +7,9 @@ from scipy import special
 class QuadraticDistribution:
     """The Quadratic distribution.
 
-    The fundamental result behind OPDA is that the best score from a
-    random search of a smooth function asymptotically approaches the
-    Quadratic distribution.
+    When using random search to optimize a deterministic smooth
+    function, the best score asymptotically approaches a quadratic
+    distribution.
 
     Parameters
     ----------
