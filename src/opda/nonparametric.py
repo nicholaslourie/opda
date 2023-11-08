@@ -500,14 +500,14 @@ class EmpiricalDistribution:
 
         Parameters
         ----------
-        ns : array of ints, required
-            The values at which to evaluate the u tuning curve. The
-            values must be positive integers.
+        ns : array of positive ints, required
+            The values at which to evaluate the u statistic tuning curve
+            estimate.
 
         Returns
         -------
         array of floats
-            The values of the u tuning curve estimate.
+            The values of the u statistic tuning curve estimate.
         """
         # Validate the instance and arguments.
         if self._has_ws:
@@ -516,8 +516,11 @@ class EmpiricalDistribution:
             )
 
         ns = np.array(ns)
+        if not np.all(ns % 1 == 0):
+            raise ValueError('ns must only contain integers.')
         if np.any(ns <= 0):
             raise ValueError('ns must be positive.')
+        ns = ns.astype(int)
 
         # Compute the u statistic tuning curve estimate.
         ns = np.clip(ns, None, self._n)
