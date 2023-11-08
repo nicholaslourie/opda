@@ -157,8 +157,8 @@ class QuadraticDistribution:
 
         Parameters
         ----------
-        ns : array of ints, required
-            The integers at which to evaluate the tuning curve.
+        ns : array of positive floats, required
+            The points at which to evaluate the tuning curve.
         q : float, optional (default=0.5)
             The quantile at which to evaluate the tuning curve.
 
@@ -167,10 +167,10 @@ class QuadraticDistribution:
         array of floats
             The quantile tuning curve evaluated at ``ns``.
         """
+        # Validate the arguments.
         ns = np.array(ns)
-
-        if np.any(ns < 0):
-            raise ValueError('ns must be non-negative.')
+        if np.any(ns <= 0):
+            raise ValueError('ns must be positive.')
 
         a, b, c = self.a, self.b, self.c
 
@@ -186,18 +186,18 @@ class QuadraticDistribution:
 
         Parameters
         ----------
-        ns : array of ints, required
-            The integers at which to evaluate the tuning curve.
+        ns : array of positive floats, required
+            The points at which to evaluate the tuning curve.
 
         Returns
         -------
         array of floats
             The average tuning curve evaluated at ``ns``.
         """
+        # Validate the arguments.
         ns = np.array(ns)
-
-        if np.any(ns < 0):
-            raise ValueError('ns must be non-negative')
+        if np.any(ns <= 0):
+            raise ValueError('ns must be positive.')
 
         a, b, c = self.a, self.b, self.c
 

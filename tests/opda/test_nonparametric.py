@@ -606,6 +606,44 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     atol=25.,
                 ))
 
+                # Test when n is non-integral.
+                ys = [0., 50., 25., 100., 75.]
+                ws = (
+                    np.random.dirichlet(np.ones_like(ys))
+                    if use_weights else
+                    None
+                )
+                dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+                #   scalar
+                #     0 < ns <= len(ys)
+                self.assertAlmostEqual(
+                    dist.quantile_tuning_curve(0.5, q=quantile),
+                    dist.quantile_tuning_curve(1, q=quantile**(1/0.5)),
+                )
+                #     ns > len(ys)
+                self.assertAlmostEqual(
+                    dist.quantile_tuning_curve(10.5, q=quantile),
+                    dist.quantile_tuning_curve(1, q=quantile**(1/10.5)),
+                )
+                #   1D array
+                #     0 < ns <= len(ys) and ns > len(ys)
+                self.assertTrue(np.allclose(
+                    dist.quantile_tuning_curve([0.5, 10.5], q=quantile),
+                    dist.quantile_tuning_curve([1, 21], q=quantile**2),
+                ))
+                #   2D array
+                #     0 < ns <= len(ys) and ns > len(ys)
+                self.assertTrue(np.allclose(
+                    dist.quantile_tuning_curve([
+                        [0.5, 10.5, 2.5],
+                        [2.5,  3.5, 0.5],
+                    ], q=quantile),
+                    dist.quantile_tuning_curve([
+                        [1, 21, 5],
+                        [5,  7, 1],
+                    ], q=quantile**2),
+                ))
+
     def test_average_tuning_curve(self):
         for use_weights in [False, True]:
             # Test when len(ys) == 1.
@@ -814,6 +852,63 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 atol=5.,
             ))
 
+            # Test when n is non-integral.
+            n_trials = 10_000
+            ys = [0., 50., 25., 100., 75.]
+            ws = (
+                np.random.dirichlet(np.ones_like(ys))
+                if use_weights else
+                None
+            )
+            dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+            # Generate ground truth values along the tuning curve.
+            ys_sorted, ws_sorted = utils.sort_by_first(
+                ys,
+                ws if ws is not None else np.ones_like(ys) / len(ys),
+            )
+            ws_sorted_cumsum = np.cumsum(ws_sorted)
+            # NOTE: Make sure to include 0 < ns <= len(ys) and ns > len(ys).
+            ns = np.arange(10) + 0.5
+            ts = np.mean([
+                np.random.choice(
+                    ys_sorted,
+                    p=(
+                        ws_sorted_cumsum**n
+                        - np.concatenate([[0], ws_sorted_cumsum[:-1]**n])
+                    ),
+                    size=n_trials,
+                )
+                for n in ns
+            ], axis=1)
+            # Compute a bound on the standard error for our ground truth.
+            err = 6 * (
+                0.25 * (np.max(ys) - np.min(ys))**2  # Popoviciu's inequality
+                / n_trials                           # divided by sample size
+            )
+            #   scalar
+            for n, t in zip(ns, ts):
+                self.assertAlmostEqual(
+                    dist.average_tuning_curve(n), t, delta=err,
+                )
+            #   1D array
+            self.assertTrue(np.allclose(
+                dist.average_tuning_curve([ns[0], ns[-1]]),
+                np.array([ts[0], ts[-1]]),
+                atol=err,
+            ))
+            #   2D array
+            self.assertTrue(np.allclose(
+                dist.average_tuning_curve([
+                    [ ns[0], ns[3], ns[-1]],
+                    [ns[-1], ns[0],  ns[3]],
+                ]),
+                np.array([
+                    [ ts[0], ts[3], ts[-1]],
+                    [ts[-1], ts[0],  ts[3]],
+                ]),
+                atol=err,
+            ))
+
     def test_naive_tuning_curve(self):
         # Test when len(ys) == 1.
         ys = [42.]
@@ -884,6 +979,21 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 [100., 50., 0.],
             ],
         )
+        #   Test non-integer ns.
+        for n in range(1, 11):
+            self.assertEqual(
+                dist.naive_tuning_curve(int(n)),
+                dist.naive_tuning_curve(float(n)),
+            )
+        for n in [0.5, 1.5, 10.5]:
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve(n)
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve([n])
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve([n, 1])
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve([[n], [1]])
         #   Test ns <= 0.
         with self.assertRaises(ValueError):
             dist.naive_tuning_curve(0)
@@ -1049,6 +1159,21 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             ],
             atol=5.,
         ))
+        #   Test non-integer ns.
+        for n in range(1, 11):
+            self.assertEqual(
+                dist.v_tuning_curve(int(n)),
+                dist.v_tuning_curve(float(n)),
+            )
+        for n in [0.5, 1.5, 10.5]:
+            with self.assertRaises(ValueError):
+                dist.v_tuning_curve(n)
+            with self.assertRaises(ValueError):
+                dist.v_tuning_curve([n])
+            with self.assertRaises(ValueError):
+                dist.v_tuning_curve([n, 1])
+            with self.assertRaises(ValueError):
+                dist.v_tuning_curve([[n], [1]])
         #   Test ns <= 0.
         with self.assertRaises(ValueError):
             dist.v_tuning_curve(0)
@@ -1225,6 +1350,21 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             ],
             atol=5.,
         ))
+        #   Test non-integer ns.
+        for n in range(1, 11):
+            self.assertEqual(
+                dist.u_tuning_curve(int(n)),
+                dist.u_tuning_curve(float(n)),
+            )
+        for n in [0.5, 1.5, 10.5]:
+            with self.assertRaises(ValueError):
+                dist.u_tuning_curve(n)
+            with self.assertRaises(ValueError):
+                dist.u_tuning_curve([n])
+            with self.assertRaises(ValueError):
+                dist.u_tuning_curve([n, 1])
+            with self.assertRaises(ValueError):
+                dist.u_tuning_curve([[n], [1]])
         #   Test ns <= 0.
         with self.assertRaises(ValueError):
             dist.u_tuning_curve(0)
