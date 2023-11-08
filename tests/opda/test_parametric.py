@@ -116,11 +116,64 @@ class QuadraticDistributionTestCase(unittest.TestCase):
             for convex in [False, True]:
                 dist = parametric.QuadraticDistribution(a, b, c)
                 yss = dist.sample((2_000, 5))
+                curve = np.median(np.maximum.accumulate(yss, axis=1), axis=0)
+
+                # Test when n is integral.
+                #   scalar
+                for n in range(1, 6):
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(n, q=0.5),
+                        curve[n-1],
+                        delta=0.075,
+                    )
+                    self.assertEqual(
+                        dist.quantile_tuning_curve(
+                            [n],
+                            q=0.5,
+                        ).tolist(),
+                        [dist.quantile_tuning_curve(n, q=0.5)],
+                    )
+                #   1D array
                 self.assertTrue(np.allclose(
-                    np.median(np.maximum.accumulate(yss, axis=1), axis=0),
-                    dist.quantile_tuning_curve(list(range(1, 6)), 0.5),
+                    dist.quantile_tuning_curve([1, 2, 3, 4, 5], q=0.5),
+                    curve,
                     atol=0.075,
                 ))
+                self.assertTrue(np.allclose(
+                    dist.quantile_tuning_curve([3, 1, 5], q=0.5),
+                    [curve[2], curve[0], curve[4]],
+                    atol=0.075,
+                ))
+                #   2D array
+                self.assertTrue(np.allclose(
+                    dist.quantile_tuning_curve([
+                        [1, 2, 3],
+                        [3, 1, 5],
+                    ], q=0.5),
+                    [
+                        [curve[0], curve[1], curve[2]],
+                        [curve[2], curve[0], curve[4]],
+                    ],
+                    atol=0.075,
+                ))
+
+                # Test ns <= 0.
+                with self.assertRaises(ValueError):
+                    dist.quantile_tuning_curve(0, q=0.5)
+                with self.assertRaises(ValueError):
+                    dist.quantile_tuning_curve(-1, q=0.5)
+                with self.assertRaises(ValueError):
+                    dist.quantile_tuning_curve([0], q=0.5)
+                with self.assertRaises(ValueError):
+                    dist.quantile_tuning_curve([-2], q=0.5)
+                with self.assertRaises(ValueError):
+                    dist.quantile_tuning_curve([0, 1], q=0.5)
+                with self.assertRaises(ValueError):
+                    dist.quantile_tuning_curve([-2, 1], q=0.5)
+                with self.assertRaises(ValueError):
+                    dist.quantile_tuning_curve([[0], [1]], q=0.5)
+                with self.assertRaises(ValueError):
+                    dist.quantile_tuning_curve([[-2], [1]], q=0.5)
 
     def test_average_tuning_curve(self):
         a, b = 0., 1.
