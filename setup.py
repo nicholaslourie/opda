@@ -19,7 +19,7 @@ setup(
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering :: Artificial Intelligence'
     ],
-    license='',
+    license='Apache-2.0',
     packages=['opda', 'experiments'],
     package_dir={'': 'src'},
     scripts=[],
