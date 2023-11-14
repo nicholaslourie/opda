@@ -41,6 +41,20 @@ installed.
 
    Use the ``--editable`` option for development.
 
+If you also wish to develop or test the package, then:
+
+1. Install the development requirements:
+
+   .. code:: bash
+
+      $ pip install --requirement dev-requirements.txt
+
+2. Run the tests:
+
+   .. code:: bash
+
+      $ pytest
+
 
 Usage
 =====
