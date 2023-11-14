@@ -20,6 +20,7 @@ design analysis. Jump to the section most relevant to you:
 - `Setup <#setup>`_
 - `Usage <#usage>`_
 - `Development <#development>`_
+- `Contact <#contact>`_
 
 
 Setup
@@ -104,3 +105,10 @@ below a specific level, use the ``--level`` option:
 
 Tests up to level 0 are run by default. Tests without a specified level
 are always run.
+
+
+Contact
+=======
+For more information, see the code
+repository, `opda <https://github.com/nalourie/opda>`_. Questions and
+comments may be addressed to Nicholas Lourie.
