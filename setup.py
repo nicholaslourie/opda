@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='opda',
-    version='0.0.0',
+    version='0.1.0',
     description='A framework for the design and analysis of deep learning'
                 ' experiments.',
     long_description=open('README.rst', 'r').read(),
