@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='opda',
-    version='0.0.0',
+    version='0.1.0',
     description='A framework for the design and analysis of deep learning'
                 ' experiments.',
     long_description=open('README.rst', 'r').read(),
@@ -19,7 +19,7 @@ setup(
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering :: Artificial Intelligence'
     ],
-    license='',
+    license='Apache-2.0',
     packages=['opda', 'experiments'],
     package_dir={'': 'src'},
     scripts=[],

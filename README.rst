@@ -41,6 +41,34 @@ installed.
 
    Use the ``--editable`` option for development.
 
+If you also wish to develop or test the package, then:
+
+1. Install the development requirements:
+
+   .. code:: bash
+
+      $ pip install --requirement dev-requirements.txt
+
+2. Run the tests:
+
+   .. code:: bash
+
+      $ pytest
+
+If you want to run the notebooks in this repository:
+
+1. Install jupyter notebooks:
+
+   .. code:: bash
+
+      $ pip install notebook
+
+2. Run the notebook server:
+
+   .. code:: bash
+
+      $ cd nbs/ && jupyter notebook
+
 
 Usage
 =====
