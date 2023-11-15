@@ -19,6 +19,7 @@ design analysis. Jump to the section most relevant to you:
 
 - `Setup <#setup>`_
 - `Usage <#usage>`_
+- `Examples <#examples>`_
 - `Development <#development>`_
 - `Contact <#contact>`_
 
@@ -85,6 +86,85 @@ documentation for a function or class:
 
 See ``opda.parametric`` for parametric and ``opda.nonparametric`` for
 nonparametric analyses.
+
+
+Examples
+========
+Let's evaluate a model while accounting for hyperparameter tuning
+effort. The ``opda.nonparametric.EmpiricalDistribution`` class allows
+us to generate tuning curves that capture the cost-benefit
+trade-off. First, make an array of floats, ``ys``, representing the
+scores obtained from random hyperparameter search. Then, use it to
+instantiate ``EmpiricalDistribution`` with confidence bands:
+
+.. code-block:: python
+
+   >>> import numpy as np
+   >>> from opda.nonparametric import EmpiricalDistribution
+   >>>
+   >>> ys = np.random.uniform(size=64)
+   >>> lower_cdf, point_cdf, upper_cdf =\
+   ...   EmpiricalDistribution.confidence_bands(
+   ...     ys=ys,            # accuracy results from random search
+   ...     confidence=0.80,  # confidence level
+   ...     a=0.,             # lower bound on accuracy
+   ...     b=1.,             # upper bound on accuracy
+   ...   )
+
+This code yields lower and upper 80% confidence bands for the CDF, as
+well as a point estimate. You can compute tuning curves from these
+distributions via the ``.quantile_tuning_curve`` method:
+
+.. code-block:: python
+
+   >>> ns = np.arange(1, 11)
+   >>> point_cdf.quantile_tuning_curve(ns)
+   array([0.47992688, 0.67358247, 0.75169446, 0.78485399, 0.81752114,
+          0.85299978, 0.85299978, 0.86373213, 0.89545778, 0.89545778])
+
+The *lower* CDF band gives the *upper* tuning curve band, and the
+*upper* CDF band gives the *lower* tuning curve band:
+
+.. code-block:: python
+
+   >>> lower_tuning_curve = upper_cdf.quantile_tuning_curve(ns)
+   >>> point_tuning_curve = point_cdf.quantile_tuning_curve(ns)
+   >>> upper_tuning_curve = lower_cdf.quantile_tuning_curve(ns)
+   >>> (
+   ...   lower_tuning_curve < point_tuning_curve
+   ... ) & (
+   ...   point_tuning_curve < upper_tuning_curve
+   ... )
+   array([ True,  True,  True,  True,  True,  True,  True,  True,  True,
+           True])
+
+Using these functions, you could then plot the tuning curve with
+confidence bands:
+
+.. code-block:: python
+
+   >>> from matplotlib import pyplot as plt
+   >>>
+   >>> ns = np.linspace(1, 10, num=1_000)
+   >>> plt.plot(
+   ...   ns,
+   ...   point_cdf.quantile_tuning_curve(ns),
+   ...   label='tuning curve',
+   ... )
+   >>> plt.fill_between(
+   ...   ns,
+   ...   upper_cdf.quantile_tuning_curve(ns),
+   ...   lower_cdf.quantile_tuning_curve(ns),
+   ...   alpha=0.275,
+   ...   label=f'80% confidence',
+   ... )
+   >>> plt.xlabel('search iterations')
+   >>> plt.ylabel('accuracy')
+   >>> plt.legend()
+   >>> plt.show()
+
+Run ``help(EmpiricalDistribution)`` to see its documentation and learn
+about other helpful methods.
 
 
 Development
