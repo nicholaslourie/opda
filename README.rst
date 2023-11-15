@@ -30,13 +30,13 @@ installed.
 
 1. Clone the repo:
 
-   .. code:: bash
+   .. code-block:: bash
 
       $ git clone git@github.com:nalourie/opda.git
 
 2. Install the package with ``pip``:
 
-   .. code:: bash
+   .. code-block:: bash
 
       $ pip install .
 
@@ -46,13 +46,13 @@ If you also wish to develop or test the package, then:
 
 1. Install the development requirements:
 
-   .. code:: bash
+   .. code-block:: bash
 
       $ pip install --requirement dev-requirements.txt
 
 2. Run the tests:
 
-   .. code:: bash
+   .. code-block:: bash
 
       $ pytest
 
@@ -60,13 +60,13 @@ If you want to run the notebooks in this repository:
 
 1. Install jupyter notebooks:
 
-   .. code:: bash
+   .. code-block:: bash
 
       $ pip install notebook
 
 2. Run the notebook server:
 
-   .. code:: bash
+   .. code-block:: bash
 
       $ cd nbs/ && jupyter notebook
 
@@ -76,7 +76,7 @@ Usage
 The code is self-documenting, use the ``help`` function to read the
 documentation for a function or class:
 
-.. code:: bash
+.. code-block:: python
 
    >>> from opda.nonparametric import EmpiricalDistribution
    >>> help(QuadraticDistribution)
@@ -91,7 +91,7 @@ Development
 ===========
 Run tests with ``pytest``:
 
-.. code:: bash
+.. code-block:: bash
 
    $ pytest
 
@@ -99,7 +99,7 @@ Tests are organized into levels. Lower levels run faster and are
 suitable for quick feedback during development. To run the tests at and
 below a specific level, use the ``--level`` option:
 
-.. code:: bash
+.. code-block:: bash
 
    $ pytest --level 2
 
