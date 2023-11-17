@@ -21,6 +21,7 @@ design analysis. Jump to the section most relevant to you:
 - `Usage <#usage>`_
 - `Development <#development>`_
 - `Examples <#examples>`_
+- `Resources <#resources>`_
 - `Citation <#citation>`_
 - `Contact <#contact>`_
 
@@ -186,6 +187,13 @@ confidence bands:
 
 Run ``help(EmpiricalDistribution)`` to see its documentation and learn
 about other helpful methods.
+
+
+Resources
+=========
+For more information on OPDA, checkout our paper: `Show Your Work with
+Confidence: Confidence Bands for Tuning Curves
+<https://arxiv.org/abs/2311.09480>`_.
 
 
 Citation
