@@ -73,7 +73,7 @@ Files
 This directory should contain the following files:
 
   - **LICENSE**: the license for using this data
-  - **README**: this README file
+  - **README.md**: this README file
   - **deberta-base.results.jsonl**: the hyperparameter tuning results for
     DeBERTa base
   - **deberta-v3-base.results.jsonl**: the hyperparameter tuning results for
