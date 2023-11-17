@@ -21,6 +21,7 @@ design analysis. Jump to the section most relevant to you:
 - `Usage <#usage>`_
 - `Examples <#examples>`_
 - `Development <#development>`_
+- `Citation <#citation>`_
 - `Contact <#contact>`_
 
 
@@ -185,6 +186,23 @@ below a specific level, use the ``--level`` option:
 
 Tests up to level 0 are run by default. Tests without a specified level
 are always run.
+
+
+Citation
+========
+If you use the code, data, or other work presented in this repository,
+please cite:
+
+.. code-block:: none
+
+    @misc{lourie2023work,
+        title={Show Your Work with Confidence: Confidence Bands for Tuning Curves},
+        author={Nicholas Lourie and Kyunghyun Cho and He He},
+        year={2023},
+        eprint={2311.09480},
+        archivePrefix={arXiv},
+        primaryClass={cs.CL}
+    }
 
 
 Contact
