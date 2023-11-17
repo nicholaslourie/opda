@@ -19,8 +19,8 @@ design analysis. Jump to the section most relevant to you:
 
 - `Setup <#setup>`_
 - `Usage <#usage>`_
-- `Examples <#examples>`_
 - `Development <#development>`_
+- `Examples <#examples>`_
 - `Citation <#citation>`_
 - `Contact <#contact>`_
 
@@ -87,6 +87,26 @@ documentation for a function or class:
 
 See ``opda.parametric`` for parametric and ``opda.nonparametric`` for
 nonparametric analyses.
+
+
+Development
+===========
+Run tests with ``pytest``:
+
+.. code-block:: bash
+
+   $ pytest
+
+Tests are organized into levels. Lower levels run faster and are
+suitable for quick feedback during development. To run the tests at and
+below a specific level, use the ``--level`` option:
+
+.. code-block:: bash
+
+   $ pytest --level 2
+
+Tests up to level 0 are run by default. Tests without a specified level
+are always run.
 
 
 Examples
@@ -166,26 +186,6 @@ confidence bands:
 
 Run ``help(EmpiricalDistribution)`` to see its documentation and learn
 about other helpful methods.
-
-
-Development
-===========
-Run tests with ``pytest``:
-
-.. code-block:: bash
-
-   $ pytest
-
-Tests are organized into levels. Lower levels run faster and are
-suitable for quick feedback during development. To run the tests at and
-below a specific level, use the ``--level`` option:
-
-.. code-block:: bash
-
-   $ pytest --level 2
-
-Tests up to level 0 are run by default. Tests without a specified level
-are always run.
 
 
 Citation
