@@ -156,6 +156,39 @@ class EmpiricalDistribution:
     b : float or None, optional (default=None)
         The maximum of the support of the underlying distribution. If
         ``None``, then it will be set to ``np.inf``.
+
+    Notes
+    -----
+    ``EmpiricalDistribution`` provides confidence bands for the CDF
+    which can then be translated into confidence bands for the tuning
+    curve. See `Examples`_ for how to accomplish this task or [1]_ for
+    more background.
+
+    References
+    ----------
+    .. [1] Lourie, Nicholas, Kyunghyun Cho, and He He. "Show Your Work
+       with Confidence: Confidence Bands for Tuning Curves." arXiv
+       preprint arXiv:2311.09480 (2023).
+
+    Examples
+    --------
+    To produce confidence bands for tuning curves, first create
+    confidence bands for the CDF of the score distribution:
+
+    .. code:: python
+
+        >>> ns = [1, 2, 3, 4, 5]
+        >>> lower_cdf, point_cdf, upper_cdf =\
+        ...   EmpiricalDistribution.confidence_bands(
+        ...     ys=[0.1, 0.8, 0.5, 0.4, 0.6],
+        ...     confidence=0.80,
+        ...   )
+        >>> tuning_curve_lower = upper_cdf.quantile_tuning_curve(ns)
+        >>> tuning_curve_point = point_cdf.quantile_tuning_curve(ns)
+        >>> tuning_curve_upper = lower_cdf.quantile_tuning_curve(ns)
+
+    Note that the upper CDF band gives the lower tuning curve band and
+    vice versa.
     """
     def __init__(
             self,
