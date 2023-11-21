@@ -343,18 +343,18 @@ def binomial_confidence_interval(n_successes, n_total, confidence):
 
     Notes
     -----
-    The Clopper-Pearson interval does not account for the binomial
-    distribution's discreteness. This lack of correction causes
-    Clopper-Pearson intervals to be conservative. In addition, this
-    function implements an equal-tailed version of the Clopper-Pearson
-    interval which can be very conservative when the number of
-    successes is zero or the total number of observations.
+    The Clopper-Pearson interval [1]_ does not account for the
+    binomial distribution's discreteness. This lack of correction
+    causes Clopper-Pearson intervals to be conservative. In addition,
+    this function implements an equal-tailed version of the
+    Clopper-Pearson interval which can be very conservative when the
+    number of successes is zero or the total number of observations.
 
     References
     ----------
-    Clopper, C. and Pearson, E. S., "The Use of Confidence or Fiducial
-    Limits Illustrated in the Case of the Binomial"
-    (1934). Biometrika. 26 (4): 404–413. doi:10.1093/biomet/26.4.404.
+    .. [1] Clopper, C. and Pearson, E. S., "The Use of Confidence or
+       Fiducial Limits Illustrated in the Case of the Binomial"
+       (1934). Biometrika. 26 (4): 404–413. doi:10.1093/biomet/26.4.404.
     """
     n_successes = np.array(n_successes)
     n_total = np.array(n_total)
