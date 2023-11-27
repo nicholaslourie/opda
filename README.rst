@@ -86,8 +86,7 @@ documentation for a function or class:
    Help on class EmpiricalDistribution in module opda.nonparametric:
    ...
 
-See ``opda.parametric`` for parametric and ``opda.nonparametric`` for
-nonparametric analyses.
+See ``opda.nonparametric`` for the primary functionality.
 
 
 Development
