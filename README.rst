@@ -86,13 +86,19 @@ documentation for a function or class:
    Help on class EmpiricalDistribution in module opda.nonparametric:
    ...
 
-See ``opda.parametric`` for parametric and ``opda.nonparametric`` for
-nonparametric analyses.
+See ``opda.nonparametric`` for the primary functionality.
 
 
 Development
 ===========
-Run tests with ``pytest``:
+For development, we use `pyenv <https://github.com/pyenv/pyenv>`_ to
+manage python versions and
+`pyenv-virtualenv <https://github.com/pyenv/pyenv-virtualenv>`_
+with a
+`.python-version <https://github.com/pyenv/pyenv-virtualenv#activate-virtualenv>`_
+file for managing the virtual environment.
+
+Run tests with `pytest <https://docs.pytest.org/>`_:
 
 .. code-block:: bash
 
