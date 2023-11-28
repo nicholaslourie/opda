@@ -28,7 +28,7 @@ design analysis. Jump to the section most relevant to you:
 
 Setup
 =====
-Check you have a virtual environment with Python 3.9 or above
+Check you have a virtual environment with Python 3.8 or above
 installed.
 
 1. Clone the repo:
