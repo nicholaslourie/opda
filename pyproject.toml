@@ -6,3 +6,4 @@ build-backend = "setuptools.build_meta"
 minversion = "6.0"
 addopts = "--strict-markers"
 markers = ["level"]
+testpaths = ["tests"]
