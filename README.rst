@@ -117,6 +117,19 @@ below a specific level, use the ``--level`` option:
 Tests up to level 0 are run by default. Tests without a specified level
 are always run.
 
+Check the documentation's correctness by executing code examples as
+`doctests <https://docs.python.org/3/library/doctest.html>`_. Run
+these doctests with pytest:
+
+.. code-block:: bash
+
+   $ pytest --doctest-modules --doctest-glob *.rst -- README.rst src
+
+``--doctest-modules`` runs doctests from the docstrings in any
+python modules, while ``--doctest-globs *.rst`` searches
+reStructuredText files for doctests. The arguments (``README.rst src``)
+ensure pytest looks at the right paths for these tests.
+
 
 Examples
 ========
