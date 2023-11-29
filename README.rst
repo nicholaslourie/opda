@@ -173,14 +173,16 @@ confidence bands:
 
 .. code-block:: python
 
+   >>> import matplotlib as mpl; mpl.use('AGG');
    >>> from matplotlib import pyplot as plt
    >>>
-   >>> ns = np.linspace(1, 10, num=1_000)
+   >>> ns = np.linspace(1, 12, num=1_000)
    >>> plt.plot(
    ...   ns,
    ...   point_cdf.quantile_tuning_curve(ns),
    ...   label='tuning curve',
    ... )
+   [<matplotlib.lines.Line2D object at ...>]
    >>> plt.fill_between(
    ...   ns,
    ...   upper_cdf.quantile_tuning_curve(ns),
@@ -188,10 +190,14 @@ confidence bands:
    ...   alpha=0.275,
    ...   label=f'80% confidence',
    ... )
+   <matplotlib.collections.PolyCollection object at ...>
    >>> plt.xlabel('search iterations')
+   Text(0.5, 0, 'search iterations')
    >>> plt.ylabel('accuracy')
-   >>> plt.legend()
-   >>> plt.show()
+   Text(0, 0.5, 'accuracy')
+   >>> plt.legend(loc='lower right')
+   <matplotlib.legend.Legend object at ...>
+   >>> # plt.savefig('figure.png')
 
 Run ``help(EmpiricalDistribution)`` to see its documentation and learn
 about other helpful methods.
