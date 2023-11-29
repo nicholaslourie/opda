@@ -43,7 +43,9 @@ installed.
 
       $ pip install .
 
-   Use the ``--editable`` option for development.
+   Use the ``--editable`` option for development. Editable installs
+   require `pip v21.3 or higher
+   <https://pip.pypa.io/en/stable/news/#v21-3>`_.
 
 If you also wish to develop or test the package, then:
 
