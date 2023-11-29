@@ -132,7 +132,7 @@ instantiate ``EmpiricalDistribution`` with confidence bands:
    >>> import numpy as np
    >>> from opda.nonparametric import EmpiricalDistribution
    >>>
-   >>> ys = np.random.uniform(size=64)
+   >>> ys = np.random.default_rng(0).uniform(0.5, 0.8, size=64)
    >>> lower_cdf, point_cdf, upper_cdf =\
    ...   EmpiricalDistribution.confidence_bands(
    ...     ys=ys,            # accuracy results from random search
@@ -149,8 +149,8 @@ distributions via the ``.quantile_tuning_curve`` method:
 
    >>> ns = np.arange(1, 11)
    >>> point_cdf.quantile_tuning_curve(ns)
-   array([0.47992688, 0.67358247, 0.75169446, 0.78485399, 0.81752114,
-          0.85299978, 0.85299978, 0.86373213, 0.89545778, 0.89545778])
+   array([0.6576063 , 0.70653402, 0.73889728, 0.74979324, 0.75895368,
+          0.76684635, 0.76684635, 0.76708231, 0.77382667, 0.77382667])
 
 The *lower* CDF band gives the *upper* tuning curve band, and the
 *upper* CDF band gives the *lower* tuning curve band:
