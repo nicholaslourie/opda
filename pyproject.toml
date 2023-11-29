@@ -41,6 +41,7 @@ classifiers = [
   "Operating System :: OS Independent",
   "Topic :: Scientific/Engineering",
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Private :: Do Not Upload",
 ]
 
 [project.optional-dependencies]
