@@ -28,7 +28,7 @@ design analysis. Jump to the section most relevant to you:
 
 Setup
 =====
-Check you have a virtual environment with Python 3.9 or above
+Check you have a virtual environment with Python 3.8 or above
 installed.
 
 1. Clone the repo:
@@ -47,11 +47,11 @@ installed.
 
 If you also wish to develop or test the package, then:
 
-1. Install the development requirements:
+1. Install the extra development dependencies:
 
    .. code-block:: bash
 
-      $ pip install --requirement dev-requirements.txt
+      $ pip install .[dev]
 
 2. Run the tests:
 
@@ -61,11 +61,11 @@ If you also wish to develop or test the package, then:
 
 If you want to run the notebooks in this repository:
 
-1. Install jupyter notebooks:
+1. Install the extra notebook dependencies:
 
    .. code-block:: bash
 
-      $ pip install notebook
+      $ pip install .[nbs]
 
 2. Run the notebook server:
 

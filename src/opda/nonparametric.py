@@ -10,6 +10,14 @@ from scipy import special, stats
 from opda import utils
 
 
+# backwards compatibility
+
+import sys
+
+if sys.version_info < (3, 9, 0):
+    functools.cache = functools.lru_cache(maxsize=None)
+
+
 # helper functions and classes
 
 def _normalize_pmf(ws):

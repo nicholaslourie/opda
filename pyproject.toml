@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "opda"
+version = "0.1.0"
+authors = [{ name = "Nicholas Lourie", email = "dev@nicholaslourie.com" }]
+description = """\
+  A framework for the design and analysis of deep learning experiments.\
+  """
+readme = "README.rst"
+license = {text = "Apache-2.0"}
+requires-python = ">= 3.8"
+dependencies = [
+  "autograd >= 1.6.0",
+  "matplotlib >= 3.7.0",
+  "numpy >= 1.24.0",
+  "scipy >= 1.10.0",
+]
+keywords = [
+  "opda",
+  "optimal design analysis",
+  "hyperparameter tuning",
+  "machine learning", "ml",
+  "deep learning", "dl",
+  "artificial intelligence", "ai",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: Apache Software License",
+  "Natural Language :: English",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Operating System :: OS Independent",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Private :: Do Not Upload",
+]
+
+[project.optional-dependencies]
+dev = ["pytest == 7.4.3"]
+nbs = ["notebook == 7.0.6"]
+
+[project.urls]
+Homepage = "https://github.com/nalourie/opda"
+Issues = "https://github.com/nalourie/opda/issues"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["experiments", "opda"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--strict-markers"
+markers = ["level"]
+testpaths = ["tests"]
