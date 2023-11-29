@@ -84,7 +84,7 @@ documentation for a function or class:
 .. code-block:: python
 
    >>> from opda.nonparametric import EmpiricalDistribution
-   >>> help(QuadraticDistribution)
+   >>> help(EmpiricalDistribution)
    Help on class EmpiricalDistribution in module opda.nonparametric:
    ...
 
