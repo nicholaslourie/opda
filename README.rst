@@ -43,7 +43,9 @@ installed.
 
       $ pip install .
 
-   Use the ``--editable`` option for development.
+   Use the ``--editable`` option for development. Editable installs
+   require `pip v21.3 or higher
+   <https://pip.pypa.io/en/stable/news/#v21-3>`_.
 
 If you also wish to develop or test the package, then:
 
@@ -82,7 +84,7 @@ documentation for a function or class:
 .. code-block:: python
 
    >>> from opda.nonparametric import EmpiricalDistribution
-   >>> help(QuadraticDistribution)
+   >>> help(EmpiricalDistribution)
    Help on class EmpiricalDistribution in module opda.nonparametric:
    ...
 
@@ -115,6 +117,19 @@ below a specific level, use the ``--level`` option:
 Tests up to level 0 are run by default. Tests without a specified level
 are always run.
 
+Check the documentation's correctness by executing code examples as
+`doctests <https://docs.python.org/3/library/doctest.html>`_. Run
+these doctests with pytest:
+
+.. code-block:: bash
+
+   $ pytest --doctest-modules --doctest-glob *.rst -- README.rst src
+
+``--doctest-modules`` runs doctests from the docstrings in any
+python modules, while ``--doctest-globs *.rst`` searches
+reStructuredText files for doctests. The arguments (``README.rst src``)
+ensure pytest looks at the right paths for these tests.
+
 
 Examples
 ========
@@ -130,7 +145,7 @@ instantiate ``EmpiricalDistribution`` with confidence bands:
    >>> import numpy as np
    >>> from opda.nonparametric import EmpiricalDistribution
    >>>
-   >>> ys = np.random.uniform(size=64)
+   >>> ys = np.random.default_rng(0).uniform(0.5, 0.8, size=64)
    >>> lower_cdf, point_cdf, upper_cdf =\
    ...   EmpiricalDistribution.confidence_bands(
    ...     ys=ys,            # accuracy results from random search
@@ -147,8 +162,8 @@ distributions via the ``.quantile_tuning_curve`` method:
 
    >>> ns = np.arange(1, 11)
    >>> point_cdf.quantile_tuning_curve(ns)
-   array([0.47992688, 0.67358247, 0.75169446, 0.78485399, 0.81752114,
-          0.85299978, 0.85299978, 0.86373213, 0.89545778, 0.89545778])
+   array([0.6576063 , 0.70653402, 0.73889728, 0.74979324, 0.75895368,
+          0.76684635, 0.76684635, 0.76708231, 0.77382667, 0.77382667])
 
 The *lower* CDF band gives the *upper* tuning curve band, and the
 *upper* CDF band gives the *lower* tuning curve band:
@@ -171,14 +186,16 @@ confidence bands:
 
 .. code-block:: python
 
+   >>> import matplotlib as mpl; mpl.use('AGG');
    >>> from matplotlib import pyplot as plt
    >>>
-   >>> ns = np.linspace(1, 10, num=1_000)
+   >>> ns = np.linspace(1, 12, num=1_000)
    >>> plt.plot(
    ...   ns,
    ...   point_cdf.quantile_tuning_curve(ns),
    ...   label='tuning curve',
    ... )
+   [<matplotlib.lines.Line2D object at ...>]
    >>> plt.fill_between(
    ...   ns,
    ...   upper_cdf.quantile_tuning_curve(ns),
@@ -186,10 +203,14 @@ confidence bands:
    ...   alpha=0.275,
    ...   label=f'80% confidence',
    ... )
+   <matplotlib.collections.PolyCollection object at ...>
    >>> plt.xlabel('search iterations')
+   Text(0.5, 0, 'search iterations')
    >>> plt.ylabel('accuracy')
-   >>> plt.legend()
-   >>> plt.show()
+   Text(0, 0.5, 'accuracy')
+   >>> plt.legend(loc='lower right')
+   <matplotlib.legend.Legend object at ...>
+   >>> # plt.savefig('figure.png')
 
 Run ``help(EmpiricalDistribution)`` to see its documentation and learn
 about other helpful methods.
