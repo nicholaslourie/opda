@@ -17,9 +17,9 @@ def pytest_configure(config):
 
 
 def pytest_runtest_setup(item):
-    level_to_run = item.config.getoption('level')
-    levels = [mark.args[0] for mark in item.iter_markers(name='level')]
-    if levels and all(level > level_to_run for level in levels):
+    level = item.config.getoption('--level')
+    item_levels = [mark.args[0] for mark in item.iter_markers(name='level')]
+    if item_levels and all(item_level > level for item_level in item_levels):
         pytest.skip(
             'The test\'s level is higher than the current level being run.'
         )
