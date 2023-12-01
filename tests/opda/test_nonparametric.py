@@ -429,7 +429,6 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     method='inverted_cdf',
                     axis=0,
                 )
-
                 #   Test 0 < ns <= len(ys).
                 #     scalar
                 self.assertAlmostEqual(
@@ -519,7 +518,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     dist.quantile_tuning_curve([[-2], [1]], q=quantile)
 
                 # Test when ys has duplicates.
-                ys = [0., 0., 50., 0., 100.]
+                ys = [0., 0., 50., 0., 25.]
                 ws = (
                     np.random.dirichlet(np.ones_like(ys))
                     if use_weights else
