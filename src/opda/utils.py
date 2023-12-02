@@ -127,15 +127,16 @@ def beta_highest_density_interval(a, b, coverage, atol=1e-10):
 
     For the beta distribution with parameters ``a`` and ``b``, return
     the shortest interval that contains ``coverage`` of the
-    probability mass.
+    probability mass. Note that the highest density interval only
+    exists if at least one of ``a`` or ``b`` is greater than 1.
 
     Parameters
     ----------
-    a : float or array of floats, required
+    a : positive float or array of floats, required
         The alpha parameter for the beta distribution.
-    b : float or array of floats, required
+    b : positive float or array of floats, required
         The beta parameter for the beta distribution.
-    coverage : float, required
+    coverage : float or array of floats between 0 and 1, required
         The desired coverage for the returned intervals.
 
     Returns
