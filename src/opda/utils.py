@@ -374,14 +374,14 @@ def binomial_confidence_interval(n_successes, n_total, confidence):
 
     Parameters
     ----------
-    n_successes : int or array of ints, required
+    n_successes : non-negative int or array of ints, required
         An int or array of ints with each entry denoting the number of
         successes in a sample. Must be broadcastable with ``n_total``.
-    n_total : int or array of ints, required
+    n_total : positive int or array of ints, required
         An int or array of ints with each entry denoting the total
         number of observations in a sample. Must be broadcastable with
        ``n_successes``.
-    confidence : float or array of floats, required
+    confidence : float or array of floats between 0 and 1, required
         A float or array of floats between zero and one denoting the
         desired confidence for each confidence interval. Must be
         broadcastable with ``n_successes`` broadcasted with ``n_total``.
