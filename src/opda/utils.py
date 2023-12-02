@@ -297,11 +297,18 @@ def beta_highest_density_coverage(a, b, x, atol=1e-10):
         coverage of the minimal highest density interval containing the
         corresponding value from ``x``.
     """
-    # Use binary search to find the coverage of the highest density interval
-    # containing x.
+    # Validate the arguments.
     a = np.array(a)
+    if np.any(a <= 0):
+        raise ValueError('a must be positive.')
+
     b = np.array(b)
+    if np.any(b <= 0):
+        raise ValueError('b must be positive.')
+
     x = np.array(x)
+    if np.any((x < 0.) | (x > 1.)):
+        raise ValueError('x must be between 0 and 1.')
 
     if np.any((a <= 1.) & (b <= 1.)):
         raise ValueError(
@@ -309,6 +316,10 @@ def beta_highest_density_coverage(a, b, x, atol=1e-10):
             f' a highest density interval.'
         )
 
+    # Compute the highest density coverage.
+
+    # Use binary search to find the coverage of the highest density interval
+    # containing x.
     beta = stats.beta(a, b)
 
     mode = np.clip((a - 1) / (a + b - 2), 0., 1.)
