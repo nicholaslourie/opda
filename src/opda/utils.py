@@ -50,9 +50,9 @@ def dkw_epsilon(n, confidence):
 
     Parameters
     ----------
-    n : int, required
+    n : positive int, required
         The number of samples.
-    confidence : float, required
+    confidence : float between 0 and 1, required
         The desired confidence or coverage.
 
     Returns
