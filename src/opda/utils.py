@@ -235,11 +235,11 @@ def beta_equal_tailed_coverage(a, b, x):
 
     Parameters
     ----------
-    a : float or array of floats, required
+    a : positive float or array of floats, required
         The alpha parameter for the beta distribution.
-    b : float or array of floats, required
+    b : positive float or array of floats, required
         The beta parameter for the beta distribution.
-    x : float or array of floats, required
+    x : float or array of floats between 0 and 1, required
         The points defining the minimal equal-tailed intervals whose
         coverage to return.
 
