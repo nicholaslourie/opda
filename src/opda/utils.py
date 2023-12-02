@@ -100,10 +100,20 @@ def beta_equal_tailed_interval(a, b, coverage):
         first returned value gives the lower bound and the second the
         upper bound for the equal-tailed intervals.
     """
+    # Validate the arguments.
     a = np.array(a)
-    b = np.array(b)
-    coverage = np.array(coverage)
+    if np.any(a <= 0):
+        raise ValueError('a must be positive.')
 
+    b = np.array(b)
+    if np.any(b <= 0):
+        raise ValueError('b must be positive.')
+
+    coverage = np.array(coverage)
+    if np.any((coverage < 0.) | (coverage > 1.)):
+        raise ValueError('coverage must be between 0 and 1.')
+
+    # Compute the equal-tailed interval.
     beta = stats.beta(a, b)
 
     x = beta.ppf((1. - coverage) / 2.)
