@@ -275,15 +275,17 @@ def beta_highest_density_coverage(a, b, x, atol=1e-10):
 
     For the beta distribution with parameters ``a`` and ``b``, return
     the coverage of the smallest highest density interval containing
-    ``x``. See the related function: ``beta_highest_density_interval``.
+    ``x``. Note that the highest density interval only exists if at
+    least one of ``a`` or ``b`` is greater than 1. See the related
+    function: ``beta_highest_density_interval``.
 
     Parameters
     ----------
-    a : float or array of floats, required
+    a : positive float or array of floats, required
         The alpha parameter for the beta distribution.
-    b : float or array of floats, required
+    b : positive float or array of floats, required
         The beta parameter for the beta distribution.
-    x : float or array of floats, required
+    x : float or array of floats between 0 and 1, required
         The points defining the minimal intervals whose coverage to
         return.
 
