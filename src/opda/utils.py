@@ -60,9 +60,16 @@ def dkw_epsilon(n, confidence):
     float
         The epsilon for the Dvoretzky-Kiefer-Wolfowitz inequality.
     """
+    # Validate the arguments.
     n = np.array(n)
-    confidence = np.array(confidence)
+    if n <= 0:
+        raise ValueError('n must be positive.')
 
+    confidence = np.array(confidence)
+    if np.any((confidence < 0.) | (confidence > 1.)):
+        raise ValueError('confidence must be between 0 and 1.')
+
+    # Compute the DKW epsilon.
     return np.sqrt(
         np.log(2. / (1. - confidence))
         / (2. * n)
