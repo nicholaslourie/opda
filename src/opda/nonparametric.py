@@ -225,11 +225,15 @@ class EmpiricalDistribution:
             if np.abs(np.sum(ws) - 1.) > 1e-10:
                 raise ValueError('ws must sum to 1.')
 
+        if a is not None and not np.isscalar(a):
+            raise ValueError('a must be a scalar.')
         if a is not None and a > np.min(ys):
             raise ValueError(
                 f'a ({a}) cannot be greater than the min of ys ({np.min(ys)}).'
             )
 
+        if b is not None and not np.isscalar(b):
+            raise ValueError('b must be a scalar.')
         if b is not None and b < np.max(ys):
             raise ValueError(
                 f'b ({b}) cannot be less than the max of ys ({np.max(ys)}).'
