@@ -35,6 +35,23 @@ class QuadraticDistribution:
             *,
             convex=False,
     ):
+        # Validate the arguments.
+        if not np.isscalar(a):
+            raise ValueError('a must be a scalar.')
+
+        if not np.isscalar(b):
+            raise ValueError('b must be a scalar.')
+
+        if not np.isscalar(c):
+            raise ValueError('c must be a scalar.')
+
+        if not isinstance(convex, bool):
+            raise ValueError('convex must be a boolean.')
+
+        if a > b:
+            raise ValueError('a must be less than or equal to b.')
+
+        # Bind attributes to the instance.
         self.a = a
         self.b = b
         self.c = c
