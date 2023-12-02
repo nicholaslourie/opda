@@ -159,9 +159,19 @@ def beta_highest_density_interval(a, b, coverage, atol=1e-10):
     # boundary. If ``a`` and ``b`` are less than or equal to 1, then the mode
     # is not unique and the highest density region is not necessarily an
     # interval.
+
+    # Validate the arguments.
     a = np.array(a)
+    if np.any(a <= 0):
+        raise ValueError('a must be positive.')
+
     b = np.array(b)
+    if np.any(b <= 0):
+        raise ValueError('b must be positive.')
+
     coverage = np.array(coverage)
+    if np.any((coverage < 0.) | (coverage > 1.)):
+        raise ValueError('coverage must be between 0 and 1.')
 
     if np.any((a <= 1.) & (b <= 1.)):
         raise ValueError(
@@ -169,6 +179,7 @@ def beta_highest_density_interval(a, b, coverage, atol=1e-10):
             f' a highest density interval.'
         )
 
+    # Compute the highest density interval.
     beta = stats.beta(a, b)
 
     mode = np.clip((a - 1) / (a + b - 2), 0., 1.)
