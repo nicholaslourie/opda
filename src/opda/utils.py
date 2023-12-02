@@ -408,29 +408,37 @@ def binomial_confidence_interval(n_successes, n_total, confidence):
        Fiducial Limits Illustrated in the Case of the Binomial"
        (1934). Biometrika. 26 (4): 404–413. doi:10.1093/biomet/26.4.404.
     """
+    # Validate the arguments.
     n_successes = np.array(n_successes)
-    n_total = np.array(n_total)
-    confidence = np.array(confidence)
-
+    if not np.all(n_successes % 1 == 0):
+        raise ValueError('n_successes must only contain integers.')
     if np.any(n_successes < 0):
         raise ValueError(
             f'n_successes ({n_successes}) must be greater than or equal'
             f' to 0.'
         )
+
+    n_total = np.array(n_total)
+    if not np.all(n_total % 1 == 0):
+        raise ValueError('n_total must only contain integers.')
     if np.any(n_total < 1):
         raise ValueError(
             f'n_total ({n_total}) must be greater than or equal to 1.'
         )
+
+    confidence = np.array(confidence)
     if np.any((confidence < 0.) | (confidence > 1.)):
         raise ValueError(
             f'confidence ({confidence}) must be between 0 and 1.'
         )
+
     if np.any(n_successes > n_total):
         raise ValueError(
             f'n_successes ({n_successes}) must be less than or equal to'
             f' n_total ({n_total}).'
         )
 
+    # Compute the binomial confidence interval.
     lo = np.where(
         n_successes == 0,
         0.,
