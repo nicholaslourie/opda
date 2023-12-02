@@ -251,10 +251,20 @@ def beta_equal_tailed_coverage(a, b, x):
         coverage of the minimal equal-tailed interval containing the
         corresponding value from ``x``.
     """
+    # Validate the arguments.
     a = np.array(a)
-    b = np.array(b)
-    x = np.array(x)
+    if np.any(a <= 0):
+        raise ValueError('a must be positive.')
 
+    b = np.array(b)
+    if np.any(b <= 0):
+        raise ValueError('b must be positive.')
+
+    x = np.array(x)
+    if np.any((x < 0.) | (x > 1.)):
+        raise ValueError('x must be between 0 and 1.')
+
+    # Compute the equal-tailed coverage.
     beta = stats.beta(a, b)
 
     return 2 * np.abs(0.5 - beta.cdf(x))
