@@ -401,7 +401,7 @@ class EmpiricalDistribution:
         """Return the quantile tuning curve evaluated at ``ns``.
 
         Since the empirical distribution is discrete, its exact
-        quantiles are ambiguous. See the ``ppf`` method for the
+        quantiles are ambiguous. See the :py:meth:`ppf` method for the
         definition of the quantile function we use.
 
         Parameters

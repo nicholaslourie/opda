@@ -231,7 +231,8 @@ def beta_equal_tailed_coverage(a, b, x):
 
     For the beta distribution with parameters ``a`` and ``b``, return
     the coverage of the smallest equal-tailed interval containing
-    ``x``. See the related function: ``beta_equal_tailed_interval``.
+    ``x``. See the related function:
+    :py:func:`beta_equal_tailed_interval`.
 
     Parameters
     ----------
@@ -277,7 +278,7 @@ def beta_highest_density_coverage(a, b, x, atol=1e-10):
     the coverage of the smallest highest density interval containing
     ``x``. Note that the highest density interval only exists if at
     least one of ``a`` or ``b`` is greater than 1. See the related
-    function: ``beta_highest_density_interval``.
+    function: :py:func:`beta_highest_density_interval`.
 
     Parameters
     ----------
