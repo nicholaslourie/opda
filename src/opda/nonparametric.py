@@ -603,7 +603,7 @@ class EmpiricalDistribution:
         ----------
         ys : 1D array of floats, required
             The sample from the distribution.
-        confidence : float, required
+        confidence : float between 0 and 1, required
             The coverage or confidence level for the bands.
         method : str, optional (default='ld_highest_density')
             One of the strings 'dkw', 'ks', 'ld_equal_tailed', or
@@ -616,7 +616,7 @@ class EmpiricalDistribution:
         b : float or None, optional (default=None)
             The maximum of the support of the underlying distribution.
             If ``None``, then it will be set to ``np.inf``.
-        n_jobs : int or None, optional (default=None)
+        n_jobs : positive int or None, optional (default=None)
             Set the maximum number of parallel processes to use when
             constructing the confidence bands. If ``None`` then
             ``n_jobs`` will be set to the number of CPUs returned by
