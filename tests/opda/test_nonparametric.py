@@ -649,6 +649,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             ys = [42.]
             ws = [1.] if use_weights else None
             dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+
             self.assertEqual(dist.average_tuning_curve(1), 42.)
             self.assertEqual(dist.average_tuning_curve(10), 42.)
             self.assertEqual(
@@ -1759,7 +1760,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 self.assertGreater(hi, confidence)
 
     @pytest.mark.level(3)
-    def test_ld_equal_tailed_bands_has_correct_coverage(self):
+    def test_ld_equal_tailed_bands_have_correct_coverage(self):
         n_trials = 1_000
         dist = stats.norm(0., 1.)
         for confidence in [0.5, 0.9, 0.99]:
@@ -1801,7 +1802,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 self.assertGreater(hi, confidence - tol)
 
     @pytest.mark.level(3)
-    def test_ld_highest_density_bands_has_correct_coverage(self):
+    def test_ld_highest_density_bands_have_correct_coverage(self):
         n_trials = 1_000
         dist = stats.norm(0., 1.)
         for confidence in [0.5, 0.9, 0.99]:
