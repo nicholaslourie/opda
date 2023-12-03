@@ -3,6 +3,7 @@
 import unittest
 
 import numpy as np
+import pytest
 
 from experiments import simulation
 
@@ -41,6 +42,7 @@ class MakeDampedLinearSinTestCase(unittest.TestCase):
 class SimulationTestCase(unittest.TestCase):
     """Test experiments.simulation.Simulation."""
 
+    @pytest.mark.level(1)
     def test_run(self):
         sim_kwargs = {
             'n_trials': 7,
