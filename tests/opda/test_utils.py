@@ -817,6 +817,21 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
 
     @pytest.mark.level(1)
     def test_beta_highest_density_coverage(self):
+        x_lo, x_hi = 0.01, 0.99
+        # NOTE: These checks must use values of x between 0.01 and 0.99,
+        # otherwise they will spuriously fail. The reason is that these
+        # tests work by taking the coverage returned by
+        # beta_highest_density_coverage, constructing the highest
+        # density interval with that coverage, and verifying that x is
+        # one of the endpoints. If x is too close to 0 or 1 and the beta
+        # distribution is highly concentrated, then x can change by a
+        # large amount *without* changing the coverage much. This happens
+        # because the distribution will have almost no probability
+        # density near the endpoints. This invalidates our testing
+        # strategy. Instead, we test when x is near the endpoints in a
+        # separate test (See test_when_interval_has_large_coverage on
+        # BetaHighestDensityCoverageTestCase).
+
         # Test when a and b are scalars.
         for a in [1., 2., 3.]:
             for b in [1., 2., 3.]:
@@ -833,7 +848,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
                     ))
                 # when x is an array.
                 k = 5
-                x = np.random.rand(k)
+                x = np.random.uniform(x_lo, x_hi, size=k)
                 coverage = utils.beta_highest_density_coverage(a, b, x)
                 lo, hi = utils.beta_highest_density_interval(a, b, coverage)
                 self.assertEqual(coverage.shape, (k,))
@@ -853,7 +868,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
                 np.isclose(lo, x) | np.isclose(hi, x)
             ))
         #   when x is an array.
-        x = np.random.rand(n)
+        x = np.random.uniform(x_lo, x_hi, size=n)
         coverage = utils.beta_highest_density_coverage(a, b, x)
         lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n,))
@@ -873,7 +888,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
                 np.isclose(lo, x) | np.isclose(hi, x)
             ))
         #   when x is an array.
-        x = np.random.rand(n, m)
+        x = np.random.uniform(x_lo, x_hi, size=(n, m))
         coverage = utils.beta_highest_density_coverage(a, b, x)
         lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, m))
@@ -893,7 +908,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
                 np.isclose(lo, x) | np.isclose(hi, x)
             ))
         #   when x is an array.
-        x = np.random.rand(n, m)
+        x = np.random.uniform(x_lo, x_hi, size=(n, m))
         coverage = utils.beta_highest_density_coverage(a, b, x)
         lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, m))
@@ -906,7 +921,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
         a = np.arange(1, n + 1)[:, None]
         b = np.arange(n + 1, 1, -1)[:, None]
         k = 5
-        x = np.random.rand(k)[None, :]
+        x = np.random.uniform(x_lo, x_hi, size=(1, k))
         coverage = utils.beta_highest_density_coverage(a, b, x)
         lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, k))
@@ -918,7 +933,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
         a = np.arange(1, n + 1).reshape(n, 1)[..., None]
         b = np.arange(m + 1, 1, -1).reshape(1, m)[..., None]
         k = 5
-        x = np.random.rand(k)[None, None, :]
+        x = np.random.uniform(x_lo, x_hi, size=(1, 1, k))
         coverage = utils.beta_highest_density_coverage(a, b, x)
         lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, m, k))

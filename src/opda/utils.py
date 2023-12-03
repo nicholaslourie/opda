@@ -201,9 +201,9 @@ def beta_highest_density_interval(a, b, coverage, atol=1e-10):
         y = beta.ppf(np.clip(beta.cdf(x) + coverage, 0., 1.))
         # NOTE: For small values of coverage, y (the upper confidence
         # limit) can fall below x (the lower confidence limit) when
-        # computed as above due to discretization/rounding errors, so
-        # fix that below.
-        y = np.clip(y, x, 1.)
+        # computed as above due to discretization/rounding errors. In
+        # general, y should be at or above the mode, so fix that below.
+        y = np.clip(y, mode, 1.)
 
         # NOTE: Inline the unnormalized beta density rather than using
         # scipy.stats.beta.pdf because:

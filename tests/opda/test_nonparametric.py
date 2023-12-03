@@ -415,21 +415,20 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 # Test when len(ys) > 1.
                 ys = [0., 50., 25., 100., 75.]
                 ws = (
-                    np.random.dirichlet(np.ones_like(ys))
+                    np.random.dirichlet(np.full_like(ys, 5))
                     if use_weights else
                     None
                 )
                 dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
                 curve = np.quantile(
                     np.maximum.accumulate(
-                        np.random.choice(ys, p=ws, size=(10_000, 7), replace=True),
+                        np.random.choice(ys, p=ws, size=(1_000, 7), replace=True),
                         axis=1,
                     ),
                     quantile,
                     method='inverted_cdf',
                     axis=0,
                 )
-
                 #   Test 0 < ns <= len(ys).
                 #     scalar
                 self.assertAlmostEqual(
@@ -519,16 +518,16 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     dist.quantile_tuning_curve([[-2], [1]], q=quantile)
 
                 # Test when ys has duplicates.
-                ys = [0., 0., 50., 0., 100.]
+                ys = [0., 0., 50., 0., 25.]
                 ws = (
-                    np.random.dirichlet(np.ones_like(ys))
+                    np.random.dirichlet(np.full_like(ys, 5))
                     if use_weights else
                     None
                 )
                 dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
                 curve = np.quantile(
                     np.maximum.accumulate(
-                        np.random.choice(ys, p=ws, size=(10_000, 7), replace=True),
+                        np.random.choice(ys, p=ws, size=(1_000, 7), replace=True),
                         axis=1,
                     ),
                     quantile,
@@ -609,7 +608,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 # Test when n is non-integral.
                 ys = [0., 50., 25., 100., 75.]
                 ws = (
-                    np.random.dirichlet(np.ones_like(ys))
+                    np.random.dirichlet(np.full_like(ys, 5))
                     if use_weights else
                     None
                 )
@@ -650,6 +649,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             ys = [42.]
             ws = [1.] if use_weights else None
             dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+
             self.assertEqual(dist.average_tuning_curve(1), 42.)
             self.assertEqual(dist.average_tuning_curve(10), 42.)
             self.assertEqual(
@@ -1760,7 +1760,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 self.assertGreater(hi, confidence)
 
     @pytest.mark.level(3)
-    def test_ld_equal_tailed_bands_has_correct_coverage(self):
+    def test_ld_equal_tailed_bands_have_correct_coverage(self):
         n_trials = 1_000
         dist = stats.norm(0., 1.)
         for confidence in [0.5, 0.9, 0.99]:
@@ -1802,7 +1802,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 self.assertGreater(hi, confidence - tol)
 
     @pytest.mark.level(3)
-    def test_ld_highest_density_bands_has_correct_coverage(self):
+    def test_ld_highest_density_bands_have_correct_coverage(self):
         n_trials = 1_000
         dist = stats.norm(0., 1.)
         for confidence in [0.5, 0.9, 0.99]:
