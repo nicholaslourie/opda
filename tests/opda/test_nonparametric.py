@@ -1691,7 +1691,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         n_trials = 1_000
         dist = stats.norm(0., 1.)
         for confidence in [0.5, 0.9, 0.99]:
-            for n_samples in [5, 25]:
+            for n_samples in [2, 25]:
                 covered = []
                 for _ in range(n_trials):
                     ys = dist.rvs(size=n_samples)
@@ -1727,7 +1727,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         n_trials = 1_000
         dist = stats.norm(0., 1.)
         for confidence in [0.5, 0.9, 0.99]:
-            for n_samples in [5, 25]:
+            for n_samples in [2, 25]:
                 covered = []
                 for _ in range(n_trials):
                     ys = dist.rvs(size=n_samples)
@@ -1764,12 +1764,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         n_trials = 1_000
         dist = stats.norm(0., 1.)
         for confidence in [0.5, 0.9, 0.99]:
-            # NOTE: Because the threshold for the LD bands is
-            # estimated via simulation, in practice the bands' nominal
-            # coverage might defer a bit from from the actual coverage
-            # due to simulation error.
-            tol = (1 - confidence) * 0.05
-            for n_samples in [5, 25]:
+            for n_samples in [2, 25]:
                 covered = []
                 for _ in range(n_trials):
                     ys = dist.rvs(size=n_samples)
@@ -1798,20 +1793,15 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     n_total=n_trials,
                     confidence=0.999999,
                 )
-                self.assertLess(lo, confidence + tol)
-                self.assertGreater(hi, confidence - tol)
+                self.assertLess(lo, confidence)
+                self.assertGreater(hi, confidence)
 
     @pytest.mark.level(3)
     def test_ld_highest_density_bands_have_correct_coverage(self):
         n_trials = 1_000
         dist = stats.norm(0., 1.)
         for confidence in [0.5, 0.9, 0.99]:
-            # NOTE: Because the threshold for the LD bands is
-            # estimated via simulation, in practice the bands' nominal
-            # coverage might defer a bit from from the actual coverage
-            # due to simulation error.
-            tol = (1 - confidence) * 0.05
-            for n_samples in [5, 25]:
+            for n_samples in [2, 25]:
                 covered = []
                 for _ in range(n_trials):
                     ys = dist.rvs(size=n_samples)
@@ -1840,5 +1830,5 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     n_total=n_trials,
                     confidence=0.999999,
                 )
-                self.assertLess(lo, confidence + tol)
-                self.assertGreater(hi, confidence - tol)
+                self.assertLess(lo, confidence)
+                self.assertGreater(hi, confidence)

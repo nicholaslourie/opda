@@ -30,7 +30,7 @@ def _normalize_cdf(ws_cumsum):
 
 @functools.cache
 def _dkw_band_weights(n, confidence):
-    ws_cumsum = (1. + np.arange(n)) / n
+    ws_cumsum = np.arange(n + 1) / n
     epsilon = utils.dkw_epsilon(n, confidence)
     return (
         np.clip(ws_cumsum - epsilon, 0., 1.),
@@ -40,7 +40,7 @@ def _dkw_band_weights(n, confidence):
 
 @functools.cache
 def _ks_band_weights(n, confidence):
-    ws_cumsum = (1. + np.arange(n)) / n
+    ws_cumsum = np.arange(n + 1) / n
     epsilon = stats.kstwo(n).ppf(confidence)
     return (
         np.clip(ws_cumsum - epsilon, 0., 1.),
@@ -136,7 +136,8 @@ def _ld_band_weights(n, confidence, kind, n_trials=100_000, n_jobs=None):
     # NOTE: If the j'th order statistic is the largest one smaller than
     # x, then the lower bound for the j'th and the upper bound for the
     # j+1'th provide the bounds for the CDF at x.
-    hi = np.concatenate([hi[1:], [1.]])
+    lo = np.concatenate([[0.], lo])
+    hi = np.concatenate([hi, [1.]])
 
     return (
         np.clip(lo, 0., 1.),
@@ -742,14 +743,8 @@ class EmpiricalDistribution:
                 ' or "ld_highest_density".'
             )
 
-        ws_lo = np.diff(
-            np.concatenate([[0.], ws_lo_cumsum, [1.]]),
-            prepend=[0.],
-        )[unsorting]
-        ws_hi = np.diff(
-            np.concatenate([[ws_hi_cumsum[0]], ws_hi_cumsum, [1.]]),
-            prepend=[0.],
-        )[unsorting]
+        ws_lo = np.diff(ws_lo_cumsum, prepend=[0.], append=[1.])[unsorting]
+        ws_hi = np.diff(ws_hi_cumsum, prepend=[0.], append=[1.])[unsorting]
 
         return (
             cls(ys_extended, ws=ws_lo, a=a, b=b),
