@@ -586,9 +586,9 @@ class EmpiricalDistribution:
             ys,
             confidence,
             *,
-            method = 'ld_highest_density',
             a = None,
             b = None,
+            method = 'ld_highest_density',
             n_jobs = None,
     ):
         """Return confidence bands for the CDF.
@@ -606,17 +606,17 @@ class EmpiricalDistribution:
             The sample from the distribution.
         confidence : float between 0 and 1, required
             The coverage or confidence level for the bands.
-        method : str, optional (default='ld_highest_density')
-            One of the strings 'dkw', 'ks', 'ld_equal_tailed', or
-            'ld_highest_density'. The ``method`` parameter determines
-            the kind of confidence band and thus its properties. See
-            `Notes`_ for details on the different methods.
         a : float or None, optional (default=None)
             The minimum of the support of the underlying distribution.
             If ``None``, then it will be set to ``-np.inf``.
         b : float or None, optional (default=None)
             The maximum of the support of the underlying distribution.
             If ``None``, then it will be set to ``np.inf``.
+        method : str, optional (default='ld_highest_density')
+            One of the strings 'dkw', 'ks', 'ld_equal_tailed', or
+            'ld_highest_density'. The ``method`` parameter determines
+            the kind of confidence band and thus its properties. See
+            `Notes`_ for details on the different methods.
         n_jobs : positive int or None, optional (default=None)
             Set the maximum number of parallel processes to use when
             constructing the confidence bands. If ``None`` then
