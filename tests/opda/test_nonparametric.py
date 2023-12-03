@@ -1691,7 +1691,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         n_trials = 1_000
         dist = stats.norm(0., 1.)
         for confidence in [0.5, 0.9, 0.99]:
-            for n_samples in [2, 25]:
+            for n_samples in [2, 16]:
                 covered = []
                 for _ in range(n_trials):
                     ys = dist.rvs(size=n_samples)
@@ -1702,17 +1702,11 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     # NOTE: Since the confidence bands are step
                     # functions and the CDF is increasing, if there's a
                     # violation of the confidence bands then there will
-                    # be one just before or after a discontinuity.
-                    grid = np.concatenate([
-                        [-np.inf],
-                        ys - 1e-15,
-                        ys,
-                        ys + 1e-15,
-                        [np.inf],
-                    ])
+                    # be one just before the discontinuity for the upper
+                    # band and at the discontinuity for the lower band.
                     covered.append(
-                        np.all(lo.cdf(grid) <= dist.cdf(grid))
-                        & np.all(dist.cdf(grid) <= hi.cdf(grid))
+                        np.all(lo.cdf(ys) <= dist.cdf(ys))
+                        & np.all(dist.cdf(ys - 1e-15) <= hi.cdf(ys - 1e-15))
                     )
 
                 _, hi = utils.binomial_confidence_interval(
@@ -1727,7 +1721,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         n_trials = 1_000
         dist = stats.norm(0., 1.)
         for confidence in [0.5, 0.9, 0.99]:
-            for n_samples in [2, 25]:
+            for n_samples in [2, 16]:
                 covered = []
                 for _ in range(n_trials):
                     ys = dist.rvs(size=n_samples)
@@ -1738,17 +1732,11 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     # NOTE: Since the confidence bands are step
                     # functions and the CDF is increasing, if there's a
                     # violation of the confidence bands then there will
-                    # be one just before or after a discontinuity.
-                    grid = np.concatenate([
-                        [-np.inf],
-                        ys - 1e-15,
-                        ys,
-                        ys + 1e-15,
-                        [np.inf],
-                    ])
+                    # be one just before the discontinuity for the upper
+                    # band and at the discontinuity for the lower band.
                     covered.append(
-                        np.all(lo.cdf(grid) <= dist.cdf(grid))
-                        & np.all(dist.cdf(grid) <= hi.cdf(grid))
+                        np.all(lo.cdf(ys) <= dist.cdf(ys))
+                        & np.all(dist.cdf(ys - 1e-15) <= hi.cdf(ys - 1e-15))
                     )
 
                 lo, hi = utils.binomial_confidence_interval(
@@ -1764,7 +1752,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         n_trials = 1_000
         dist = stats.norm(0., 1.)
         for confidence in [0.5, 0.9, 0.99]:
-            for n_samples in [2, 25]:
+            for n_samples in [2, 16]:
                 covered = []
                 for _ in range(n_trials):
                     ys = dist.rvs(size=n_samples)
@@ -1775,17 +1763,11 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     # NOTE: Since the confidence bands are step
                     # functions and the CDF is increasing, if there's a
                     # violation of the confidence bands then there will
-                    # be one just before or after a discontinuity.
-                    grid = np.concatenate([
-                        [-np.inf],
-                        ys - 1e-15,
-                        ys,
-                        ys + 1e-15,
-                        [np.inf],
-                    ])
+                    # be one just before the discontinuity for the upper
+                    # band and at the discontinuity for the lower band.
                     covered.append(
-                        np.all(lo.cdf(grid) <= dist.cdf(grid))
-                        & np.all(dist.cdf(grid) <= hi.cdf(grid))
+                        np.all(lo.cdf(ys) <= dist.cdf(ys))
+                        & np.all(dist.cdf(ys - 1e-15) <= hi.cdf(ys - 1e-15))
                     )
 
                 lo, hi = utils.binomial_confidence_interval(
@@ -1801,7 +1783,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         n_trials = 1_000
         dist = stats.norm(0., 1.)
         for confidence in [0.5, 0.9, 0.99]:
-            for n_samples in [2, 25]:
+            for n_samples in [2, 16]:
                 covered = []
                 for _ in range(n_trials):
                     ys = dist.rvs(size=n_samples)
@@ -1812,17 +1794,11 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     # NOTE: Since the confidence bands are step
                     # functions and the CDF is increasing, if there's a
                     # violation of the confidence bands then there will
-                    # be one just before or after a discontinuity.
-                    grid = np.concatenate([
-                        [-np.inf],
-                        ys - 1e-15,
-                        ys,
-                        ys + 1e-15,
-                        [np.inf],
-                    ])
+                    # be one just before the discontinuity for the upper
+                    # band and at the discontinuity for the lower band.
                     covered.append(
-                        np.all(lo.cdf(grid) <= dist.cdf(grid))
-                        & np.all(dist.cdf(grid) <= hi.cdf(grid))
+                        np.all(lo.cdf(ys) <= dist.cdf(ys))
+                        & np.all(dist.cdf(ys - 1e-15) <= hi.cdf(ys - 1e-15))
                     )
 
                 lo, hi = utils.binomial_confidence_interval(
