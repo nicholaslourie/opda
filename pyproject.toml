@@ -45,7 +45,7 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest == 7.4.3"]
+tests = ["pytest == 7.4.3"]
 nbs = ["notebook == 7.0.6"]
 
 [project.urls]

@@ -62,7 +62,7 @@ class EllipseVolumeTestCase(unittest.TestCase):
 class GetApproximationParametersTestCase(unittest.TestCase):
     """Test experiments.analytic.get_approximation_parameters."""
 
-    @pytest.mark.level(1)
+    @pytest.mark.level(2)
     def test_get_approximation_parameters(self):
         # Quadratic Functions
         for n_dims in [1, 2, 3]:

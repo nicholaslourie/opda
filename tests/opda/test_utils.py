@@ -339,6 +339,7 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
             < 1e-10
         ))
 
+    @pytest.mark.level(1)
     def test_on_small_confidences(self):
         for coverage in [1e-8, 1e-12, 1e-16]:
             for a in [1., 5., 10.]:
@@ -369,7 +370,6 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
 class BetaHighestDensityIntervalTestCase(unittest.TestCase):
     """Test opda.utils.beta_highest_density_interval."""
 
-    @pytest.mark.level(1)
     def test_beta_highest_density_interval(self):
         # Test when a and b are scalars.
         for a in [1., 5., 10.]:
@@ -606,6 +606,7 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
             (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5
         ))
 
+    @pytest.mark.level(1)
     def test_on_small_confidences(self):
         for coverage in [1e-8, 1e-12, 1e-16]:
             for a in [1., 5., 10.]:
@@ -752,6 +753,7 @@ class BetaEqualTailedCoverageTestCase(unittest.TestCase):
             np.isclose(lo, x) | np.isclose(hi, x)
         ))
 
+    @pytest.mark.level(1)
     def test_when_interval_has_large_coverage(self):
         for a in [1., 5., 10.]:
             for b in [1., 5., 10.]:
@@ -780,6 +782,7 @@ class BetaEqualTailedCoverageTestCase(unittest.TestCase):
                     self.assertEqual(coverage.shape, ())
                     self.assertAlmostEqual(coverage, 1.)
 
+    @pytest.mark.level(1)
     def test_when_interval_has_small_coverage(self):
         for a in [1., 5., 10.]:
             for b in [1., 5., 10.]:
@@ -815,7 +818,6 @@ class BetaEqualTailedCoverageTestCase(unittest.TestCase):
 class BetaHighestDensityCoverageTestCase(unittest.TestCase):
     """Test opda.utils.beta_highest_density_coverage."""
 
-    @pytest.mark.level(1)
     def test_beta_highest_density_coverage(self):
         x_lo, x_hi = 0.01, 0.99
         # NOTE: These checks must use values of x between 0.01 and 0.99,
@@ -941,6 +943,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
             np.isclose(lo, x) | np.isclose(hi, x)
         ))
 
+    @pytest.mark.level(1)
     def test_when_interval_has_large_coverage(self):
         for a in [1., 5., 10.]:
             for b in [1., 5., 10.]:
@@ -979,6 +982,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
                         1. if x != mode else 0.,
                     )
 
+    @pytest.mark.level(1)
     def test_when_interval_has_small_coverage(self):
         for a in [1., 5., 10.]:
             for b in [1., 5., 10.]:
@@ -1098,6 +1102,7 @@ class BinomialConfidenceIntervalTestCase(unittest.TestCase):
             atol=5e-4,
         ))
 
+    @pytest.mark.level(1)
     def test_binomial_confidence_interval_is_symmetric(self):
         for n_successes, n_total in [
                 (  0,   1),

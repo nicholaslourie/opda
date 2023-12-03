@@ -53,7 +53,7 @@ If you also wish to develop or test the package, then:
 
    .. code-block:: bash
 
-      $ pip install .[dev]
+      $ pip install .[tests]
 
 2. Run the tests:
 
