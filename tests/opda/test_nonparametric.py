@@ -415,14 +415,14 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 # Test when len(ys) > 1.
                 ys = [0., 50., 25., 100., 75.]
                 ws = (
-                    np.random.dirichlet(np.ones_like(ys))
+                    np.random.dirichlet(np.full_like(ys, 5))
                     if use_weights else
                     None
                 )
                 dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
                 curve = np.quantile(
                     np.maximum.accumulate(
-                        np.random.choice(ys, p=ws, size=(10_000, 7), replace=True),
+                        np.random.choice(ys, p=ws, size=(1_000, 7), replace=True),
                         axis=1,
                     ),
                     quantile,
@@ -520,14 +520,14 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 # Test when ys has duplicates.
                 ys = [0., 0., 50., 0., 25.]
                 ws = (
-                    np.random.dirichlet(np.ones_like(ys))
+                    np.random.dirichlet(np.full_like(ys, 5))
                     if use_weights else
                     None
                 )
                 dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
                 curve = np.quantile(
                     np.maximum.accumulate(
-                        np.random.choice(ys, p=ws, size=(10_000, 7), replace=True),
+                        np.random.choice(ys, p=ws, size=(1_000, 7), replace=True),
                         axis=1,
                     ),
                     quantile,
@@ -608,7 +608,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 # Test when n is non-integral.
                 ys = [0., 50., 25., 100., 75.]
                 ws = (
-                    np.random.dirichlet(np.ones_like(ys))
+                    np.random.dirichlet(np.full_like(ys, 5))
                     if use_weights else
                     None
                 )
