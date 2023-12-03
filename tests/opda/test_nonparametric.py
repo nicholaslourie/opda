@@ -1465,52 +1465,102 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         methods = ['dkw', 'ks', 'ld_equal_tailed', 'ld_highest_density']
         for method in methods:
             for confidence in [0.5, 0.9]:
-                for has_duplicates in [False, True]:
-                    if has_duplicates:
-                        ys = np.random.uniform(0, 1, size=n)
-                        ys = np.concatenate([ys[:n-n//3], ys[:n//3]])
-                        with warnings.catch_warnings():
-                            warnings.simplefilter('ignore', RuntimeWarning)
+                for a, b in [(0., 1.), (-np.inf, np.inf), (None, None)]:
+                    for has_duplicates in [False, True]:
+                        if has_duplicates:
+                            ys = np.random.uniform(0, 1, size=n)
+                            ys = np.concatenate([ys[:n-n//3], ys[:n//3]])
+                            with warnings.catch_warnings():
+                                warnings.simplefilter('ignore', RuntimeWarning)
+                                lo, dist, hi =\
+                                    nonparametric.EmpiricalDistribution\
+                                    .confidence_bands(
+                                        ys,
+                                        confidence,
+                                        a=a,
+                                        b=b,
+                                        method=method,
+                                    )
+                        else:
+                            ys = np.random.uniform(0, 1, size=n)
                             lo, dist, hi =\
                                 nonparametric.EmpiricalDistribution\
                                 .confidence_bands(
-                                    ys, confidence, method=method,
+                                    ys,
+                                    confidence,
+                                    a=a,
+                                    b=b,
+                                    method=method,
                                 )
-                    else:
-                        ys = np.random.uniform(0, 1, size=n)
-                        lo, dist, hi =\
-                            nonparametric.EmpiricalDistribution\
-                            .confidence_bands(
-                                ys, confidence, method=method,
-                            )
-                    # Check that dist is the empirical distribution.
-                    self.assertEqual(
-                        dist.cdf(ys).tolist(),
-                        nonparametric.EmpiricalDistribution(ys).cdf(ys).tolist(),
-                    )
-                    # Check bounded below by 0.
-                    self.assertGreaterEqual(np.min(lo.cdf(ys)), 0.)
-                    self.assertGreaterEqual(np.min(dist.cdf(ys)), 0.)
-                    self.assertGreaterEqual(np.min(hi.cdf(ys)), 0.)
-                    # Check bounded above by 1.
-                    self.assertLessEqual(np.max(lo.cdf(ys)), 1.)
-                    self.assertLessEqual(np.max(dist.cdf(ys)), 1.)
-                    self.assertLessEqual(np.max(hi.cdf(ys)), 1.)
-                    # Check bands are proper distance from the empirical CDF.
-                    if method == 'dkw' or method == 'ks':
-                        epsilon = (
-                            utils.dkw_epsilon(n, confidence)
-                            if method == 'dkw' else
-                            stats.kstwo(n).ppf(confidence)
+                        # Check that dist is the empirical distribution.
+                        self.assertEqual(
+                            dist.cdf(ys).tolist(),
+                            nonparametric.EmpiricalDistribution(ys).cdf(ys)\
+                              .tolist(),
                         )
-                        self.assertTrue(np.allclose(
-                            (dist.cdf(ys) - lo.cdf(ys))[dist.cdf(ys) > epsilon],
-                            epsilon,
-                        ))
-                        self.assertTrue(np.allclose(
-                            (hi.cdf(ys) - dist.cdf(ys))[1. - dist.cdf(ys) > epsilon],
-                            epsilon,
-                        ))
+                        # Check bounded below by 0.
+                        #   on ys
+                        self.assertGreaterEqual(np.min(lo.cdf(ys)), 0.)
+                        self.assertGreaterEqual(np.min(dist.cdf(ys)), 0.)
+                        self.assertGreaterEqual(np.min(hi.cdf(ys)), 0.)
+                        #   on the support's bounds
+                        #     lower bound
+                        if a is not None:
+                            self.assertGreaterEqual(lo.cdf(a), 0.)
+                            self.assertGreaterEqual(dist.cdf(a), 0.)
+                            self.assertGreaterEqual(hi.cdf(a), 0.)
+                        #     upper bound
+                        if b is not None:
+                            self.assertGreaterEqual(lo.cdf(b), 0.)
+                            self.assertGreaterEqual(dist.cdf(b), 0.)
+                            self.assertGreaterEqual(hi.cdf(b), 0.)
+                        #     -np.inf
+                        self.assertGreaterEqual(lo.cdf(-np.inf), 0.)
+                        self.assertGreaterEqual(dist.cdf(-np.inf), 0.)
+                        self.assertGreaterEqual(hi.cdf(-np.inf), 0.)
+                        #     np.inf
+                        self.assertGreaterEqual(lo.cdf(np.inf), 0.)
+                        self.assertGreaterEqual(dist.cdf(np.inf), 0.)
+                        self.assertGreaterEqual(hi.cdf(np.inf), 0.)
+                        # Check bounded above by 1.
+                        #   on ys
+                        self.assertLessEqual(np.max(lo.cdf(ys)), 1.)
+                        self.assertLessEqual(np.max(dist.cdf(ys)), 1.)
+                        self.assertLessEqual(np.max(hi.cdf(ys)), 1.)
+                        #   on the support's bounds
+                        #     lower bound
+                        if a is not None:
+                            self.assertLessEqual(lo.cdf(a), 1.)
+                            self.assertLessEqual(dist.cdf(a), 1.)
+                            self.assertLessEqual(hi.cdf(a), 1.)
+                        #     upper bound
+                        if b is not None:
+                            self.assertLessEqual(lo.cdf(b), 1.)
+                            self.assertLessEqual(dist.cdf(b), 1.)
+                            self.assertLessEqual(hi.cdf(b), 1.)
+                        #     -np.inf
+                        self.assertLessEqual(lo.cdf(-np.inf), 1.)
+                        self.assertLessEqual(dist.cdf(-np.inf), 1.)
+                        self.assertLessEqual(hi.cdf(-np.inf), 1.)
+                        #     np.inf
+                        self.assertLessEqual(lo.cdf(np.inf), 1.)
+                        self.assertLessEqual(dist.cdf(np.inf), 1.)
+                        self.assertLessEqual(hi.cdf(np.inf), 1.)
+                       # Check bands are proper distance from the empirical CDF.
+                        if method == 'dkw' or method == 'ks':
+                            epsilon = (
+                                utils.dkw_epsilon(n, confidence)
+                                if method == 'dkw' else
+                                stats.kstwo(n).ppf(confidence)
+                            )
+                            self.assertTrue(np.allclose(
+                                (dist.cdf(ys) - lo.cdf(ys))[dist.cdf(ys) > epsilon],
+                                epsilon,
+                            ))
+                            self.assertTrue(np.allclose(
+                                (hi.cdf(ys) - dist.cdf(ys))[1. - dist.cdf(ys) > epsilon],
+                                epsilon,
+                            ))
 
     def test_ppf_is_almost_sure_left_inverse_of_cdf(self):
         # NOTE: In general, the quantile function is an almost sure left
