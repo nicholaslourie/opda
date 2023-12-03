@@ -225,11 +225,15 @@ class EmpiricalDistribution:
             if np.abs(np.sum(ws) - 1.) > 1e-10:
                 raise ValueError('ws must sum to 1.')
 
+        if a is not None and not np.isscalar(a):
+            raise ValueError('a must be a scalar.')
         if a is not None and a > np.min(ys):
             raise ValueError(
                 f'a ({a}) cannot be greater than the min of ys ({np.min(ys)}).'
             )
 
+        if b is not None and not np.isscalar(b):
+            raise ValueError('b must be a scalar.')
         if b is not None and b < np.max(ys):
             raise ValueError(
                 f'b ({b}) cannot be less than the max of ys ({np.max(ys)}).'
@@ -397,7 +401,7 @@ class EmpiricalDistribution:
         """Return the quantile tuning curve evaluated at ``ns``.
 
         Since the empirical distribution is discrete, its exact
-        quantiles are ambiguous. See the ``ppf`` method for the
+        quantiles are ambiguous. See the :py:meth:`ppf` method for the
         definition of the quantile function we use.
 
         Parameters
@@ -599,7 +603,7 @@ class EmpiricalDistribution:
         ----------
         ys : 1D array of floats, required
             The sample from the distribution.
-        confidence : float, required
+        confidence : float between 0 and 1, required
             The coverage or confidence level for the bands.
         method : str, optional (default='ld_highest_density')
             One of the strings 'dkw', 'ks', 'ld_equal_tailed', or
@@ -612,7 +616,7 @@ class EmpiricalDistribution:
         b : float or None, optional (default=None)
             The maximum of the support of the underlying distribution.
             If ``None``, then it will be set to ``np.inf``.
-        n_jobs : int or None, optional (default=None)
+        n_jobs : positive int or None, optional (default=None)
             Set the maximum number of parallel processes to use when
             constructing the confidence bands. If ``None`` then
             ``n_jobs`` will be set to the number of CPUs returned by
@@ -668,6 +672,12 @@ class EmpiricalDistribution:
         Bound on Differential Entropy" (2008). IEEE TRANSACTIONS ON
         INFORMATION THEORY. 732.
         """
+        # Validate arguments and handle defaults.
+        ys = np.array(ys)
+        if len(ys.shape) != 1:
+            raise ValueError(f'ys must be a 1D array, not {len(ys.shape)}D.')
+        if len(ys) == 0:
+            raise ValueError('ys must be non-empty.')
         if (
                 len(np.unique(ys)) != len(ys)
                 and method in ['ks', 'ld_equal_tailed', 'ld_highest_density']
@@ -681,9 +691,31 @@ class EmpiricalDistribution:
                 stacklevel=2,
             )
 
-        a = a if a is not None else -np.inf
-        b = b if b is not None else np.inf
+        if not np.isscalar(confidence):
+            raise ValueError('confidence must be a scalar.')
+        if confidence < 0. or confidence > 1.:
+            raise ValueError('confidence must be between 0 and 1.')
 
+        a = a if a is not None else -np.inf
+        if not np.isscalar(a):
+            raise ValueError('a must be a scalar.')
+        if a > np.min(ys):
+            raise ValueError(
+                f'a ({a}) cannot be greater than the min of ys ({np.min(ys)}).'
+            )
+
+        b = b if b is not None else np.inf
+        if not np.isscalar(b):
+            raise ValueError('b must be a scalar.')
+        if b < np.max(ys):
+            raise ValueError(
+                f'b ({b}) cannot be less than the max of ys ({np.max(ys)}).'
+            )
+
+        if n_jobs is not None and n_jobs < 1:
+            raise ValueError('n_jobs must be a positive integer.')
+
+        # Compute the confidence bands.
         n = len(ys)
         ys_extended = np.concatenate([[a], ys, [b]])
         unsorting = np.argsort(np.argsort(ys_extended))

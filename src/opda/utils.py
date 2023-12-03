@@ -50,9 +50,9 @@ def dkw_epsilon(n, confidence):
 
     Parameters
     ----------
-    n : int, required
+    n : positive int, required
         The number of samples.
-    confidence : float, required
+    confidence : float between 0 and 1, required
         The desired confidence or coverage.
 
     Returns
@@ -60,9 +60,16 @@ def dkw_epsilon(n, confidence):
     float
         The epsilon for the Dvoretzky-Kiefer-Wolfowitz inequality.
     """
+    # Validate the arguments.
     n = np.array(n)
-    confidence = np.array(confidence)
+    if n <= 0:
+        raise ValueError('n must be positive.')
 
+    confidence = np.array(confidence)
+    if np.any((confidence < 0.) | (confidence > 1.)):
+        raise ValueError('confidence must be between 0 and 1.')
+
+    # Compute the DKW epsilon.
     return np.sqrt(
         np.log(2. / (1. - confidence))
         / (2. * n)
@@ -78,11 +85,11 @@ def beta_equal_tailed_interval(a, b, coverage):
 
     Parameters
     ----------
-    a : float or array of floats, required
+    a : positive float or array of floats, required
         The alpha parameter for the beta distribution.
-    b : float or array of floats, required
+    b : positive float or array of floats, required
         The beta parameter for the beta distribution.
-    coverage : float, required
+    coverage : float or array of floats between 0 and 1, required
         The desired coverage for the returned intervals.
 
     Returns
@@ -93,10 +100,20 @@ def beta_equal_tailed_interval(a, b, coverage):
         first returned value gives the lower bound and the second the
         upper bound for the equal-tailed intervals.
     """
+    # Validate the arguments.
     a = np.array(a)
-    b = np.array(b)
-    coverage = np.array(coverage)
+    if np.any(a <= 0):
+        raise ValueError('a must be positive.')
 
+    b = np.array(b)
+    if np.any(b <= 0):
+        raise ValueError('b must be positive.')
+
+    coverage = np.array(coverage)
+    if np.any((coverage < 0.) | (coverage > 1.)):
+        raise ValueError('coverage must be between 0 and 1.')
+
+    # Compute the equal-tailed interval.
     beta = stats.beta(a, b)
 
     x = beta.ppf((1. - coverage) / 2.)
@@ -110,15 +127,16 @@ def beta_highest_density_interval(a, b, coverage, atol=1e-10):
 
     For the beta distribution with parameters ``a`` and ``b``, return
     the shortest interval that contains ``coverage`` of the
-    probability mass.
+    probability mass. Note that the highest density interval only
+    exists if at least one of ``a`` or ``b`` is greater than 1.
 
     Parameters
     ----------
-    a : float or array of floats, required
+    a : positive float or array of floats, required
         The alpha parameter for the beta distribution.
-    b : float or array of floats, required
+    b : positive float or array of floats, required
         The beta parameter for the beta distribution.
-    coverage : float, required
+    coverage : float or array of floats between 0 and 1, required
         The desired coverage for the returned intervals.
 
     Returns
@@ -141,9 +159,19 @@ def beta_highest_density_interval(a, b, coverage, atol=1e-10):
     # boundary. If ``a`` and ``b`` are less than or equal to 1, then the mode
     # is not unique and the highest density region is not necessarily an
     # interval.
+
+    # Validate the arguments.
     a = np.array(a)
+    if np.any(a <= 0):
+        raise ValueError('a must be positive.')
+
     b = np.array(b)
+    if np.any(b <= 0):
+        raise ValueError('b must be positive.')
+
     coverage = np.array(coverage)
+    if np.any((coverage < 0.) | (coverage > 1.)):
+        raise ValueError('coverage must be between 0 and 1.')
 
     if np.any((a <= 1.) & (b <= 1.)):
         raise ValueError(
@@ -151,6 +179,7 @@ def beta_highest_density_interval(a, b, coverage, atol=1e-10):
             f' a highest density interval.'
         )
 
+    # Compute the highest density interval.
     beta = stats.beta(a, b)
 
     mode = np.clip((a - 1) / (a + b - 2), 0., 1.)
@@ -202,15 +231,16 @@ def beta_equal_tailed_coverage(a, b, x):
 
     For the beta distribution with parameters ``a`` and ``b``, return
     the coverage of the smallest equal-tailed interval containing
-    ``x``. See the related function: ``beta_equal_tailed_interval``.
+    ``x``. See the related function:
+    :py:func:`beta_equal_tailed_interval`.
 
     Parameters
     ----------
-    a : float or array of floats, required
+    a : positive float or array of floats, required
         The alpha parameter for the beta distribution.
-    b : float or array of floats, required
+    b : positive float or array of floats, required
         The beta parameter for the beta distribution.
-    x : float or array of floats, required
+    x : float or array of floats between 0 and 1, required
         The points defining the minimal equal-tailed intervals whose
         coverage to return.
 
@@ -222,10 +252,20 @@ def beta_equal_tailed_coverage(a, b, x):
         coverage of the minimal equal-tailed interval containing the
         corresponding value from ``x``.
     """
+    # Validate the arguments.
     a = np.array(a)
-    b = np.array(b)
-    x = np.array(x)
+    if np.any(a <= 0):
+        raise ValueError('a must be positive.')
 
+    b = np.array(b)
+    if np.any(b <= 0):
+        raise ValueError('b must be positive.')
+
+    x = np.array(x)
+    if np.any((x < 0.) | (x > 1.)):
+        raise ValueError('x must be between 0 and 1.')
+
+    # Compute the equal-tailed coverage.
     beta = stats.beta(a, b)
 
     return 2 * np.abs(0.5 - beta.cdf(x))
@@ -236,15 +276,17 @@ def beta_highest_density_coverage(a, b, x, atol=1e-10):
 
     For the beta distribution with parameters ``a`` and ``b``, return
     the coverage of the smallest highest density interval containing
-    ``x``. See the related function: ``beta_highest_density_interval``.
+    ``x``. Note that the highest density interval only exists if at
+    least one of ``a`` or ``b`` is greater than 1. See the related
+    function: :py:func:`beta_highest_density_interval`.
 
     Parameters
     ----------
-    a : float or array of floats, required
+    a : positive float or array of floats, required
         The alpha parameter for the beta distribution.
-    b : float or array of floats, required
+    b : positive float or array of floats, required
         The beta parameter for the beta distribution.
-    x : float or array of floats, required
+    x : float or array of floats between 0 and 1, required
         The points defining the minimal intervals whose coverage to
         return.
 
@@ -256,11 +298,18 @@ def beta_highest_density_coverage(a, b, x, atol=1e-10):
         coverage of the minimal highest density interval containing the
         corresponding value from ``x``.
     """
-    # Use binary search to find the coverage of the highest density interval
-    # containing x.
+    # Validate the arguments.
     a = np.array(a)
+    if np.any(a <= 0):
+        raise ValueError('a must be positive.')
+
     b = np.array(b)
+    if np.any(b <= 0):
+        raise ValueError('b must be positive.')
+
     x = np.array(x)
+    if np.any((x < 0.) | (x > 1.)):
+        raise ValueError('x must be between 0 and 1.')
 
     if np.any((a <= 1.) & (b <= 1.)):
         raise ValueError(
@@ -268,6 +317,10 @@ def beta_highest_density_coverage(a, b, x, atol=1e-10):
             f' a highest density interval.'
         )
 
+    # Compute the highest density coverage.
+
+    # Use binary search to find the coverage of the highest density interval
+    # containing x.
     beta = stats.beta(a, b)
 
     mode = np.clip((a - 1) / (a + b - 2), 0., 1.)
@@ -322,14 +375,14 @@ def binomial_confidence_interval(n_successes, n_total, confidence):
 
     Parameters
     ----------
-    n_successes : int or array of ints, required
+    n_successes : non-negative int or array of ints, required
         An int or array of ints with each entry denoting the number of
         successes in a sample. Must be broadcastable with ``n_total``.
-    n_total : int or array of ints, required
+    n_total : positive int or array of ints, required
         An int or array of ints with each entry denoting the total
         number of observations in a sample. Must be broadcastable with
        ``n_successes``.
-    confidence : float or array of floats, required
+    confidence : float or array of floats between 0 and 1, required
         A float or array of floats between zero and one denoting the
         desired confidence for each confidence interval. Must be
         broadcastable with ``n_successes`` broadcasted with ``n_total``.
@@ -356,29 +409,37 @@ def binomial_confidence_interval(n_successes, n_total, confidence):
        Fiducial Limits Illustrated in the Case of the Binomial"
        (1934). Biometrika. 26 (4): 404–413. doi:10.1093/biomet/26.4.404.
     """
+    # Validate the arguments.
     n_successes = np.array(n_successes)
-    n_total = np.array(n_total)
-    confidence = np.array(confidence)
-
+    if not np.all(n_successes % 1 == 0):
+        raise ValueError('n_successes must only contain integers.')
     if np.any(n_successes < 0):
         raise ValueError(
             f'n_successes ({n_successes}) must be greater than or equal'
             f' to 0.'
         )
+
+    n_total = np.array(n_total)
+    if not np.all(n_total % 1 == 0):
+        raise ValueError('n_total must only contain integers.')
     if np.any(n_total < 1):
         raise ValueError(
             f'n_total ({n_total}) must be greater than or equal to 1.'
         )
+
+    confidence = np.array(confidence)
     if np.any((confidence < 0.) | (confidence > 1.)):
         raise ValueError(
             f'confidence ({confidence}) must be between 0 and 1.'
         )
+
     if np.any(n_successes > n_total):
         raise ValueError(
             f'n_successes ({n_successes}) must be less than or equal to'
             f' n_total ({n_total}).'
         )
 
+    # Compute the binomial confidence interval.
     lo = np.where(
         n_successes == 0,
         0.,
