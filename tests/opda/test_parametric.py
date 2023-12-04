@@ -49,11 +49,15 @@ class QuadraticDistributionTestCase(unittest.TestCase):
                     dist.pdf(a + us * (b - a)).tolist(),
                     np.ones_like(us).tolist(),
                 )
-            # Test outside of the distribution's support.
-            self.assertEqual(dist.pdf(a - 1e-10), np.array(0.))
-            self.assertEqual(dist.pdf(a - 10), np.array(0.))
-            self.assertEqual(dist.pdf(b + 1e-10), np.array(0.))
-            self.assertEqual(dist.pdf(b + 10), np.array(0.))
+
+        # Test outside of the distribution's support.
+        for a, b, c in [(0., 1., 0.5), (0., 1., 1.)]:
+            for convex in [False, True]:
+                dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
+                self.assertEqual(dist.pdf(a - 1e-10), np.array(0.))
+                self.assertEqual(dist.pdf(a - 10), np.array(0.))
+                self.assertEqual(dist.pdf(b + 1e-10), np.array(0.))
+                self.assertEqual(dist.pdf(b + 10), np.array(0.))
 
     def test_cdf(self):
         a, b, c = 0., 1., 1.
@@ -80,11 +84,15 @@ class QuadraticDistributionTestCase(unittest.TestCase):
                     dist.cdf(a + us * (b - a)).tolist(),
                     us.tolist(),
                 )
-            # Test outside of the distribution's support.
-            self.assertEqual(dist.cdf(a - 1e-10), 0.)
-            self.assertEqual(dist.cdf(a - 10), 0.)
-            self.assertEqual(dist.cdf(b + 1e-10), 1.)
-            self.assertEqual(dist.cdf(b + 10), 1.)
+
+        # Test outside of the distribution's support.
+        for a, b, c in [(0., 1., 0.5), (0., 1., 1.)]:
+            for convex in [False, True]:
+                dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
+                self.assertEqual(dist.cdf(a - 1e-10), 0.)
+                self.assertEqual(dist.cdf(a - 10), 0.)
+                self.assertEqual(dist.cdf(b + 1e-10), 1.)
+                self.assertEqual(dist.cdf(b + 10), 1.)
 
     def test_ppf(self):
         a, b, c = 0., 1., 1.
