@@ -1495,7 +1495,11 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                             ys = np.random.uniform(0, 1, size=n)
                             ys = np.concatenate([ys[:n-n//3], ys[:n//3]])
                             with warnings.catch_warnings():
-                                warnings.simplefilter('ignore', RuntimeWarning)
+                                warnings.filterwarnings(
+                                    'ignore',
+                                    message=r'Duplicates detected in ys',
+                                    category=RuntimeWarning,
+                                )
                                 lo, dist, hi =\
                                     nonparametric.EmpiricalDistribution\
                                     .confidence_bands(
