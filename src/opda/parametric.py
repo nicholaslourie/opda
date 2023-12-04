@@ -192,6 +192,11 @@ class QuadraticDistribution:
         if np.any(ns <= 0):
             raise ValueError('ns must be positive.')
 
+        if not np.isscalar(q):
+            raise ValueError('q must be a scalar.')
+        if q < 0. or q > 1.:
+            raise ValueError('q must be between 0 and 1, inclusive.')
+
         a, b, c = self.a, self.b, self.c
 
         if self.convex:
