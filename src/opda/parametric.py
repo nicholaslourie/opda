@@ -159,6 +159,7 @@ class QuadraticDistribution:
         qs = np.array(qs)
         if np.any((qs < 0. - 1e-10) | (qs > 1. + 1e-10)):
             raise ValueError('qs must be between 0 and 1, inclusive.')
+        qs = np.clip(qs, 0., 1.)
 
         # Compute the quantiles.
         a, b, c = self.a, self.b, self.c
@@ -167,9 +168,6 @@ class QuadraticDistribution:
             ys = a + (b - a) * qs**(1/c)
         else:  # concave
             ys = b - (b - a) * (1 - qs)**(1/c)
-
-        ys = np.where(qs >= 1, b, ys)
-        ys = np.where(qs <= 0, a, ys)
 
         return ys
 
