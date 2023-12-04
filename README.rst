@@ -118,7 +118,11 @@ below a specific level, use the ``--level`` option:
    $ pytest --level 2
 
 Tests up to level 0 are run by default. Tests without a specified level
-are always run.
+are always run. To run all levels, use the ``--all-levels`` option:
+
+.. code-block:: bash
+
+   $ pytest --all-levels
 
 Check the documentation's correctness by executing code examples as
 `doctests <https://docs.python.org/3/library/doctest.html>`_. Run
