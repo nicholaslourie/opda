@@ -389,10 +389,9 @@ class EmpiricalDistribution:
         qs = np.array(qs)
         if np.any((qs < 0. - 1e-10) | (qs > 1. + 1e-10)):
             raise ValueError('qs must be between 0 and 1, inclusive.')
-
-        # Compute the quantiles.
         qs = np.clip(qs, 0., 1.)
 
+        # Compute the quantiles.
         return np.maximum(
             self._ys[np.argmax(qs[..., None] <= self._ws_cumsum, axis=-1)],
             self._a,
@@ -422,10 +421,8 @@ class EmpiricalDistribution:
         if np.any(ns <= 0):
             raise ValueError('ns must be positive.')
 
-        if q < 0. or 1. < q:
-            raise ValueError(
-                f'q must be between 0 and 1 inclusive, not {q}.'
-            )
+        if q < 0. or q > 1.:
+            raise ValueError(f'q must be between 0 and 1, inclusive.')
 
         # Compute the quantile tuning curve.
         return self.ppf(q**(1/ns))
@@ -695,7 +692,9 @@ class EmpiricalDistribution:
         if not np.isscalar(confidence):
             raise ValueError('confidence must be a scalar.')
         if confidence < 0. or confidence > 1.:
-            raise ValueError('confidence must be between 0 and 1.')
+            raise ValueError(
+                'confidence must be between 0 and 1, inclusive.'
+            )
 
         a = a if a is not None else -np.inf
         if not np.isscalar(a):

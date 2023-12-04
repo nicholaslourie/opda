@@ -67,7 +67,9 @@ def dkw_epsilon(n, confidence):
 
     confidence = np.array(confidence)
     if np.any((confidence < 0.) | (confidence > 1.)):
-        raise ValueError('confidence must be between 0 and 1.')
+        raise ValueError(
+            'confidence must be between 0 and 1, inclusive.'
+        )
 
     # Compute the DKW epsilon.
     return np.sqrt(
@@ -111,7 +113,9 @@ def beta_equal_tailed_interval(a, b, coverage):
 
     coverage = np.array(coverage)
     if np.any((coverage < 0.) | (coverage > 1.)):
-        raise ValueError('coverage must be between 0 and 1.')
+        raise ValueError(
+            'coverage must be between 0 and 1, inclusive.'
+        )
 
     # Compute the equal-tailed interval.
     beta = stats.beta(a, b)
@@ -171,7 +175,9 @@ def beta_highest_density_interval(a, b, coverage, atol=1e-10):
 
     coverage = np.array(coverage)
     if np.any((coverage < 0.) | (coverage > 1.)):
-        raise ValueError('coverage must be between 0 and 1.')
+        raise ValueError(
+            'coverage must be between 0 and 1, inclusive.'
+        )
 
     if np.any((a <= 1.) & (b <= 1.)):
         raise ValueError(
@@ -263,7 +269,9 @@ def beta_equal_tailed_coverage(a, b, x):
 
     x = np.array(x)
     if np.any((x < 0.) | (x > 1.)):
-        raise ValueError('x must be between 0 and 1.')
+        raise ValueError(
+            'x must be between 0 and 1, inclusive.'
+        )
 
     # Compute the equal-tailed coverage.
     beta = stats.beta(a, b)
@@ -309,7 +317,9 @@ def beta_highest_density_coverage(a, b, x, atol=1e-10):
 
     x = np.array(x)
     if np.any((x < 0.) | (x > 1.)):
-        raise ValueError('x must be between 0 and 1.')
+        raise ValueError(
+            'x must be between 0 and 1, inclusive.'
+        )
 
     if np.any((a <= 1.) & (b <= 1.)):
         raise ValueError(
@@ -430,7 +440,7 @@ def binomial_confidence_interval(n_successes, n_total, confidence):
     confidence = np.array(confidence)
     if np.any((confidence < 0.) | (confidence > 1.)):
         raise ValueError(
-            f'confidence ({confidence}) must be between 0 and 1.'
+            f'confidence must be between 0 and 1, inclusive.'
         )
 
     if np.any(n_successes > n_total):

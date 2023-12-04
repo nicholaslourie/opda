@@ -179,7 +179,7 @@ class QuadraticDistribution:
         ----------
         ns : array of positive floats, required
             The points at which to evaluate the tuning curve.
-        q : float, optional (default=0.5)
+        q : float between 0 and 1, optional (default=0.5)
             The quantile at which to evaluate the tuning curve.
 
         Returns
@@ -191,6 +191,11 @@ class QuadraticDistribution:
         ns = np.array(ns)
         if np.any(ns <= 0):
             raise ValueError('ns must be positive.')
+
+        if not np.isscalar(q):
+            raise ValueError('q must be a scalar.')
+        if q < 0. or q > 1.:
+            raise ValueError('q must be between 0 and 1, inclusive.')
 
         a, b, c = self.a, self.b, self.c
 
@@ -269,6 +274,24 @@ class QuadraticDistribution:
             An array of initial parameter estimates and an array of
             bounds.
         """
+        # Validate arguments.
+        ys = np.array(ys)
+        if len(ys.shape) != 1:
+            raise ValueError(f'ys must be a 1D array, not {len(ys.shape)}D.')
+        if len(ys) == 0:
+            raise ValueError('ys must be non-empty.')
+
+        if not np.isscalar(fraction):
+            raise ValueError('fraction must be a scalar.')
+        if fraction < 0. or fraction > 1.:
+            raise ValueError(
+                'fraction must be between 0 and 1, inclusive.'
+            )
+
+        if not isinstance(convex, bool):
+            raise ValueError('convex must be a boolean.')
+
+        # Compute the initial parameters and bounds.
         ys_fraction = (
             np.sort(ys)[:int(fraction * len(ys))]
             if convex else
