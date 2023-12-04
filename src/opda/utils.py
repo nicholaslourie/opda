@@ -415,7 +415,7 @@ def binomial_confidence_interval(n_successes, n_total, confidence):
     ----------
     .. [1] Clopper, C. and Pearson, E. S., "The Use of Confidence or
        Fiducial Limits Illustrated in the Case of the Binomial"
-       (1934). Biometrika. 26 (4): 404–413. doi:10.1093/biomet/26.4.404.
+       (1934). Biometrika. 26 (4): 404-413. doi:10.1093/biomet/26.4.404.
     """
     # Validate the arguments.
     n_successes = np.array(n_successes)
