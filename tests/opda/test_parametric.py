@@ -26,14 +26,12 @@ class QuadraticDistributionTestCase(unittest.TestCase):
 
     def test_pdf(self):
         a, b, c = 0., 1., 1.
-        dist = parametric.QuadraticDistribution(a, b, c)
         for convex in [False, True]:
+            dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
             # not broadcasting
             for n in range(6):
                 # When c = 1., the distribution is uniform.
                 self.assertEqual(dist.pdf(a + (n / 5.) * (b - a)), np.array(1.))
-            self.assertEqual(dist.pdf(a - 1e-10), np.array(0.))
-            self.assertEqual(dist.pdf(b + 1e-10), np.array(0.))
             # broadcasting
             for _ in range(7):
                 us = np.random.uniform(0, 1, size=5)
@@ -52,16 +50,23 @@ class QuadraticDistributionTestCase(unittest.TestCase):
                     np.ones_like(us).tolist(),
                 )
 
+        # Test outside of the distribution's support.
+        for a, b, c in [(0., 1., 0.5), (0., 1., 1.)]:
+            for convex in [False, True]:
+                dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
+                self.assertEqual(dist.pdf(a - 1e-10), np.array(0.))
+                self.assertEqual(dist.pdf(a - 10), np.array(0.))
+                self.assertEqual(dist.pdf(b + 1e-10), np.array(0.))
+                self.assertEqual(dist.pdf(b + 10), np.array(0.))
+
     def test_cdf(self):
         a, b, c = 0., 1., 1.
-        dist = parametric.QuadraticDistribution(a, b, c)
         for convex in [False, True]:
+            dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
             # not broadcasting
             for n in range(6):
                 # When c = 1., the distribution is uniform.
                 self.assertAlmostEqual(dist.cdf(a + (n / 5.) * (b - a)), np.array(n / 5.))
-            self.assertEqual(dist.cdf(a - 1e-10), 0.)
-            self.assertEqual(dist.cdf(b + 1e-10), 1.)
             # broadcasting
             for _ in range(7):
                 us = np.random.uniform(0, 1, size=5)
@@ -79,6 +84,15 @@ class QuadraticDistributionTestCase(unittest.TestCase):
                     dist.cdf(a + us * (b - a)).tolist(),
                     us.tolist(),
                 )
+
+        # Test outside of the distribution's support.
+        for a, b, c in [(0., 1., 0.5), (0., 1., 1.)]:
+            for convex in [False, True]:
+                dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
+                self.assertEqual(dist.cdf(a - 1e-10), 0.)
+                self.assertEqual(dist.cdf(a - 10), 0.)
+                self.assertEqual(dist.cdf(b + 1e-10), 1.)
+                self.assertEqual(dist.cdf(b + 10), 1.)
 
     def test_ppf(self):
         a, b, c = 0., 1., 1.
@@ -320,6 +334,30 @@ class QuadraticDistributionTestCase(unittest.TestCase):
                 self.assertLess(b, bounds[1, 1])
                 self.assertGreater(c, bounds[2, 0])
                 self.assertLess(c, bounds[2, 1])
+
+    def test_pdf_on_boundary_of_support(self):
+        for convex in [False, True]:
+            a, b, c = 0., 1., 0.5
+            dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
+            self.assertEqual(dist.pdf(a), np.inf if convex else 0.5)
+            self.assertEqual(dist.pdf(b), 0.5 if convex else np.inf)
+
+            a, b, c = 0., 1., 1.
+            dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
+            self.assertEqual(dist.pdf(a), 1.)
+            self.assertEqual(dist.pdf(b), 1.)
+
+    def test_cdf_on_boundary_of_support(self):
+        for convex in [False, True]:
+            a, b, c = 0., 1., 0.5
+            dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
+            self.assertEqual(dist.cdf(a), 0.)
+            self.assertEqual(dist.cdf(b), 1.)
+
+            a, b, c = 0., 1., 1.
+            dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
+            self.assertEqual(dist.cdf(a), 0.)
+            self.assertEqual(dist.cdf(b), 1.)
 
     def test_ppf_is_inverse_of_cdf(self):
         # NOTE: For continuous distributions like the quadratic

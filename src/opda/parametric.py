@@ -1,5 +1,7 @@
 """Parametric OPDA."""
 
+import warnings
+
 import numpy as np
 from scipy import special
 
@@ -89,10 +91,18 @@ class QuadraticDistribution:
 
         a, b, c = self.a, self.b, self.c
 
-        if self.convex:
-            ps = (c / (b - a)) * ((ys - a) / (b - a))**(c - 1)
-        else:  # concave
-            ps = (c / (b - a)) * ((b - ys) / (b - a))**(c - 1)
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                'ignore',
+                message=r'(divide by zero|invalid value) encountered in scalar'
+                        r' power',
+                category=RuntimeWarning,
+            )
+
+            if self.convex:
+                ps = (c / (b - a)) * ((ys - a) / (b - a))**(c - 1)
+            else:  # concave
+                ps = (c / (b - a)) * ((b - ys) / (b - a))**(c - 1)
 
         ps = np.where((ys < a) | (ys > b), 0., ps)
 
@@ -123,13 +133,14 @@ class QuadraticDistribution:
 
         a, b, c = self.a, self.b, self.c
 
+        # Handle values of y outside the support by clipping to a and b
+        # since the CDF is 0 when y is below a and 1 when y is above b.
+        ys = np.clip(ys, a, b)
+
         if self.convex:
             qs = ((ys - a) / (b - a))**c
         else:  # concave
             qs = 1 - ((b - ys) / (b - a))**c
-
-        qs = np.where(ys <= a, 0., qs)
-        qs = np.where(ys >= b, 1., qs)
 
         return qs
 
@@ -158,6 +169,7 @@ class QuadraticDistribution:
         qs = np.array(qs)
         if np.any((qs < 0. - 1e-10) | (qs > 1. + 1e-10)):
             raise ValueError('qs must be between 0 and 1, inclusive.')
+        qs = np.clip(qs, 0., 1.)
 
         # Compute the quantiles.
         a, b, c = self.a, self.b, self.c
@@ -166,9 +178,6 @@ class QuadraticDistribution:
             ys = a + (b - a) * qs**(1/c)
         else:  # concave
             ys = b - (b - a) * (1 - qs)**(1/c)
-
-        ys = np.where(qs >= 1, b, ys)
-        ys = np.where(qs <= 0, a, ys)
 
         return ys
 
