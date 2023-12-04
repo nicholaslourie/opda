@@ -274,6 +274,24 @@ class QuadraticDistribution:
             An array of initial parameter estimates and an array of
             bounds.
         """
+        # Validate arguments.
+        ys = np.array(ys)
+        if len(ys.shape) != 1:
+            raise ValueError(f'ys must be a 1D array, not {len(ys.shape)}D.')
+        if len(ys) == 0:
+            raise ValueError('ys must be non-empty.')
+
+        if not np.isscalar(fraction):
+            raise ValueError('fraction must be a scalar.')
+        if fraction < 0. or fraction > 1.:
+            raise ValueError(
+                'fraction must be between 0 and 1, inclusive.'
+            )
+
+        if not isinstance(convex, bool):
+            raise ValueError('convex must be a boolean.')
+
+        # Compute the initial parameters and bounds.
         ys_fraction = (
             np.sort(ys)[:int(fraction * len(ys))]
             if convex else
