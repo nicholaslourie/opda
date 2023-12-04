@@ -1,5 +1,7 @@
 """Parametric OPDA."""
 
+import warnings
+
 import numpy as np
 from scipy import special
 
@@ -89,10 +91,18 @@ class QuadraticDistribution:
 
         a, b, c = self.a, self.b, self.c
 
-        if self.convex:
-            ps = (c / (b - a)) * ((ys - a) / (b - a))**(c - 1)
-        else:  # concave
-            ps = (c / (b - a)) * ((b - ys) / (b - a))**(c - 1)
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                'ignore',
+                message=r'(divide by zero|invalid value) encountered in scalar'
+                        r' power',
+                category=RuntimeWarning,
+            )
+
+            if self.convex:
+                ps = (c / (b - a)) * ((ys - a) / (b - a))**(c - 1)
+            else:  # concave
+                ps = (c / (b - a)) * ((b - ys) / (b - a))**(c - 1)
 
         ps = np.where((ys < a) | (ys > b), 0., ps)
 
