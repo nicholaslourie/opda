@@ -26,8 +26,8 @@ class QuadraticDistributionTestCase(unittest.TestCase):
 
     def test_pdf(self):
         a, b, c = 0., 1., 1.
-        dist = parametric.QuadraticDistribution(a, b, c)
         for convex in [False, True]:
+            dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
             # not broadcasting
             for n in range(6):
                 # When c = 1., the distribution is uniform.
@@ -57,8 +57,8 @@ class QuadraticDistributionTestCase(unittest.TestCase):
 
     def test_cdf(self):
         a, b, c = 0., 1., 1.
-        dist = parametric.QuadraticDistribution(a, b, c)
         for convex in [False, True]:
+            dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
             # not broadcasting
             for n in range(6):
                 # When c = 1., the distribution is uniform.
