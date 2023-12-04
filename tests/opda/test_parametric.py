@@ -347,6 +347,18 @@ class QuadraticDistributionTestCase(unittest.TestCase):
             self.assertEqual(dist.pdf(a), 1.)
             self.assertEqual(dist.pdf(b), 1.)
 
+    def test_cdf_on_boundary_of_support(self):
+        for convex in [False, True]:
+            a, b, c = 0., 1., 0.5
+            dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
+            self.assertEqual(dist.cdf(a), 0.)
+            self.assertEqual(dist.cdf(b), 1.)
+
+            a, b, c = 0., 1., 1.
+            dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
+            self.assertEqual(dist.cdf(a), 0.)
+            self.assertEqual(dist.cdf(b), 1.)
+
     def test_ppf_is_inverse_of_cdf(self):
         # NOTE: For continuous distributions like the quadratic
         # distribution, the quantile function is the inverse of the
