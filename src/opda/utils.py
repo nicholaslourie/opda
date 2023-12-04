@@ -3,8 +3,6 @@
 import numpy as np
 from scipy import stats
 
-from opda import exceptions
-
 
 def sort_by_first(*args):
     """Return the arrays sorted by the first array.
