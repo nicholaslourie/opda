@@ -84,96 +84,108 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         self.assertTrue(np.allclose(freqs, ws, atol=0.05))
 
     def test_pmf(self):
-        # Test without weights.
-        #   when len(ys) == 1
-        ys = [42.]
-        dist = nonparametric.EmpiricalDistribution(ys)
-        self.assertEqual(dist.pmf(42.), 1.)
-        self.assertEqual(dist.pmf(0.), 0.)
-        self.assertEqual(dist.pmf(42. - 1e-10), 0.)
-        self.assertEqual(dist.pmf(42. + 1e-10), 0.)
-        #   when len(ys) == 2
-        ys = [1., 42.]
-        dist = nonparametric.EmpiricalDistribution(ys)
-        self.assertEqual(dist.pmf(ys).tolist(), [1./len(ys)] * len(ys))
-        self.assertEqual(
-            dist.pmf([0., 1., 42., -1.]).tolist(),
-            [0., 0.5, 0.5, 0.],
-        )
-        #   when len(ys) > 2
-        ys = [-42., 1., 42., 100., 1_000.]
-        dist = nonparametric.EmpiricalDistribution(ys)
-        self.assertEqual(dist.pmf(ys).tolist(), [1./len(ys)] * len(ys))
-        self.assertEqual(
-            dist.pmf([0., 1., 42., -1.]).tolist(),
-            [0., 0.2, 0.2, 0.],
-        )
-        #   when ys has duplicates
-        ys = [-42., -42., 1., 100., 1_000.]
-        dist = nonparametric.EmpiricalDistribution(ys)
-        self.assertEqual(
-            dist.pmf(ys).tolist(),
-            [0.4, 0.4, 0.2, 0.2, 0.2],
-        )
-        self.assertEqual(
-            dist.pmf([0., 1., -42., -1.]).tolist(),
-            [0., 0.2, 0.4, 0.],
-        )
-        #   when shape is 2D
-        ys = [-42., 1., 42., 100., 1_000.]
-        dist = nonparametric.EmpiricalDistribution(ys)
-        self.assertEqual(
-            dist.pmf([[0., 1.], [42., -1.]]).tolist(),
-            [[0., 0.2], [0.2, 0.]],
-        )
+        for a, b in [(-1e4, 1e4), (-np.inf, np.inf), (None, None)]:
+            # Test without weights.
+            #   when len(ys) == 1
+            ys = [42.]
+            dist = nonparametric.EmpiricalDistribution(ys, a=a, b=b)
+            self.assertEqual(dist.pmf(42.), 1.)
+            self.assertEqual(dist.pmf(0.), 0.)
+            self.assertEqual(dist.pmf(42. - 1e-10), 0.)
+            self.assertEqual(dist.pmf(42. + 1e-10), 0.)
+            #   when len(ys) == 2
+            ys = [1., 42.]
+            dist = nonparametric.EmpiricalDistribution(ys, a=a, b=b)
+            self.assertEqual(dist.pmf(ys).tolist(), [1./len(ys)] * len(ys))
+            self.assertEqual(
+                dist.pmf([0., 1., 42., -1.]).tolist(),
+                [0., 0.5, 0.5, 0.],
+            )
+            #   when len(ys) > 2
+            ys = [-42., 1., 42., 100., 1_000.]
+            dist = nonparametric.EmpiricalDistribution(ys, a=a, b=b)
+            self.assertEqual(dist.pmf(ys).tolist(), [1./len(ys)] * len(ys))
+            self.assertEqual(
+                dist.pmf([0., 1., 42., -1.]).tolist(),
+                [0., 0.2, 0.2, 0.],
+            )
+            #   when ys has duplicates
+            ys = [-42., -42., 1., 100., 1_000.]
+            dist = nonparametric.EmpiricalDistribution(ys, a=a, b=b)
+            self.assertEqual(
+                dist.pmf(ys).tolist(),
+                [0.4, 0.4, 0.2, 0.2, 0.2],
+            )
+            self.assertEqual(
+                dist.pmf([0., 1., -42., -1.]).tolist(),
+                [0., 0.2, 0.4, 0.],
+            )
+            #   when shape is 2D
+            ys = [-42., 1., 42., 100., 1_000.]
+            dist = nonparametric.EmpiricalDistribution(ys, a=a, b=b)
+            self.assertEqual(
+                dist.pmf([[0., 1.], [42., -1.]]).tolist(),
+                [[0., 0.2], [0.2, 0.]],
+            )
 
-        # Test with weights.
-        #   when len(ys) == 1
-        ys = [42.]
-        ws = [1.]
-        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-        self.assertEqual(dist.pmf(42.), 1.)
-        self.assertEqual(dist.pmf(0.), 0.)
-        self.assertEqual(dist.pmf(42. - 1e-10), 0.)
-        self.assertEqual(dist.pmf(42. + 1e-10), 0.)
-        #   when len(ys) == 2
-        ys = [1., 42.]
-        ws = [0.1, 0.9]
-        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-        self.assertEqual(dist.pmf(ys).tolist(), ws)
-        self.assertEqual(
-            dist.pmf([0., 1., 42., -1.]).tolist(),
-            [0., 0.1, 0.9, 0.],
-        )
-        #   when len(ys) > 2
-        ys = [-42., 1., 42., 100., 1_000.]
-        ws = [0.1, 0.2, 0.3, 0.15, 0.25]
-        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-        self.assertEqual(dist.pmf(ys).tolist(), ws)
-        self.assertEqual(
-            dist.pmf([0., 1., 42., -1.]).tolist(),
-            [0., 0.2, 0.3, 0.],
-        )
-        #   when ys has duplicates
-        ys = [-42., -42., 1., 100., 1_000.]
-        ws = [0.1, 0.1, 0.4, 0.15, 0.25]
-        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-        self.assertEqual(
-            dist.pmf(ys).tolist(),
-            [0.2, 0.2, 0.4, 0.15, 0.25],
-        )
-        self.assertEqual(
-            dist.pmf([0., 1., -42., -1.]).tolist(),
-            [0., 0.4, 0.2, 0.],
-        )
-        #   when shape is 2D
-        ys = [-42., 1., 42., 100., 1_000.]
-        ws = [0.1, 0.2, 0.3, 0.15, 0.25]
-        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-        self.assertEqual(
-            dist.pmf([[0., 1.], [42., -1.]]).tolist(),
-            [[0., 0.2], [0.3, 0.]],
-        )
+            # Test with weights.
+            #   when len(ys) == 1
+            ys = [42.]
+            ws = [1.]
+            dist = nonparametric.EmpiricalDistribution(ys, ws=ws, a=a, b=b)
+            self.assertEqual(dist.pmf(42.), 1.)
+            self.assertEqual(dist.pmf(0.), 0.)
+            self.assertEqual(dist.pmf(42. - 1e-10), 0.)
+            self.assertEqual(dist.pmf(42. + 1e-10), 0.)
+            #   when len(ys) == 2
+            ys = [1., 42.]
+            ws = [0.1, 0.9]
+            dist = nonparametric.EmpiricalDistribution(ys, ws=ws, a=a, b=b)
+            self.assertEqual(dist.pmf(ys).tolist(), ws)
+            self.assertEqual(
+                dist.pmf([0., 1., 42., -1.]).tolist(),
+                [0., 0.1, 0.9, 0.],
+            )
+            #   when len(ys) > 2
+            ys = [-42., 1., 42., 100., 1_000.]
+            ws = [0.1, 0.2, 0.3, 0.15, 0.25]
+            dist = nonparametric.EmpiricalDistribution(ys, ws=ws, a=a, b=b)
+            self.assertEqual(dist.pmf(ys).tolist(), ws)
+            self.assertEqual(
+                dist.pmf([0., 1., 42., -1.]).tolist(),
+                [0., 0.2, 0.3, 0.],
+            )
+            #   when ys has duplicates
+            ys = [-42., -42., 1., 100., 1_000.]
+            ws = [0.1, 0.1, 0.4, 0.15, 0.25]
+            dist = nonparametric.EmpiricalDistribution(ys, ws=ws, a=a, b=b)
+            self.assertEqual(
+                dist.pmf(ys).tolist(),
+                [0.2, 0.2, 0.4, 0.15, 0.25],
+            )
+            self.assertEqual(
+                dist.pmf([0., 1., -42., -1.]).tolist(),
+                [0., 0.4, 0.2, 0.],
+            )
+            #   when shape is 2D
+            ys = [-42., 1., 42., 100., 1_000.]
+            ws = [0.1, 0.2, 0.3, 0.15, 0.25]
+            dist = nonparametric.EmpiricalDistribution(ys, ws=ws, a=a, b=b)
+            self.assertEqual(
+                dist.pmf([[0., 1.], [42., -1.]]).tolist(),
+                [[0., 0.2], [0.3, 0.]],
+            )
+
+            # Test outside of the distribution's support.
+            ys = [-42., 1., 42., 100., 1_000.]
+            for ws in [None, [0.1, 0.2, 0.3, 0.15, 0.25]]:
+                dist = nonparametric.EmpiricalDistribution(ys, ws=ws, a=a, b=b)
+                if a is not None:
+                    self.assertEqual(dist.pmf(a - 1e-10), np.array(0.))
+                    self.assertEqual(dist.pmf(a - 10), np.array(0.))
+                if b is not None:
+                    self.assertEqual(dist.pmf(b + 1e-10), np.array(0.))
+                    self.assertEqual(dist.pmf(b + 10), np.array(0.))
 
     def test_cdf(self):
         # Test without weights.
