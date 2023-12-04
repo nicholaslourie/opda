@@ -440,7 +440,7 @@ def binomial_confidence_interval(n_successes, n_total, confidence):
     confidence = np.array(confidence)
     if np.any((confidence < 0.) | (confidence > 1.)):
         raise ValueError(
-            f'confidence must be between 0 and 1, inclusive.'
+            'confidence must be between 0 and 1, inclusive.'
         )
 
     if np.any(n_successes > n_total):

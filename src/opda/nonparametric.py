@@ -428,7 +428,7 @@ class EmpiricalDistribution:
             raise ValueError('ns must be positive.')
 
         if q < 0. or q > 1.:
-            raise ValueError(f'q must be between 0 and 1, inclusive.')
+            raise ValueError('q must be between 0 and 1, inclusive.')
 
         if not isinstance(minimize, bool):
             raise ValueError('minimize must be a boolean.')
@@ -737,10 +737,10 @@ class EmpiricalDistribution:
                 and method in ['ks', 'ld_equal_tailed', 'ld_highest_density']
         ):
             warnings.warn(
-                f'Duplicates detected in ys. confidence_bands with the'
-                f' ks, ld_equal_tailed, or ld_highest_density methods'
-                f' requires the underlying distribution to be continuous'
-                f' in order to achieve exact coverage.',
+                'Duplicates detected in ys. confidence_bands with the'
+                ' ks, ld_equal_tailed, or ld_highest_density methods'
+                ' requires the underlying distribution to be continuous'
+                ' in order to achieve exact coverage.',
                 RuntimeWarning,
                 stacklevel=2,
             )
