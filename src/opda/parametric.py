@@ -209,7 +209,7 @@ class QuadraticDistribution:
         a, b, c = self.a, self.b, self.c
 
         if self.convex:
-            ys = a + (b - a) * qs**(1/(c * ns))
+            ys = a + (b - a) * q**(1/(c * ns))
         else:  # concave
             ys = b - (b - a) * (1 - q**(1/ns))**(1/c)
 
