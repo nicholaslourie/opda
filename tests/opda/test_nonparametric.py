@@ -1704,65 +1704,82 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     None
                 )
                 dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-                # Test 0 < ns <= len(ys).
-                #   scalar
-                self.assertTrue(np.isclose(
-                    dist.average_tuning_curve(1),
-                    expected,
-                    equal_nan=True,
-                ))
-                self.assertTrue(np.isclose(
-                    dist.average_tuning_curve(3),
-                    expected,
-                    equal_nan=True,
-                ))
-                self.assertTrue(np.isclose(
-                    dist.average_tuning_curve(5),
-                    expected,
-                    equal_nan=True,
-                ))
-                #   1D array
-                self.assertTrue(np.allclose(
-                    dist.average_tuning_curve([1, 2, 3, 4, 5]),
-                    expected,
-                    equal_nan=True,
-                ))
-                #   2D array
-                self.assertTrue(np.allclose(
-                    dist.average_tuning_curve([
-                        [1, 2, 3, 4, 5],
-                        [2, 4, 1, 3, 5],
-                    ]),
-                    expected,
-                    equal_nan=True,
-                ))
-                # Test ns > len(ys).
-                #   scalar
-                self.assertTrue(np.isclose(
-                    dist.average_tuning_curve(6),
-                    expected,
-                    equal_nan=True,
-                ))
-                self.assertTrue(np.isclose(
-                    dist.average_tuning_curve(7),
-                    expected,
-                    equal_nan=True,
-                ))
-                #   1D array
-                self.assertTrue(np.allclose(
-                    dist.average_tuning_curve([1, 2, 7]),
-                    expected,
-                    equal_nan=True,
-                ))
-                #   2D array
-                self.assertTrue(np.allclose(
-                    dist.average_tuning_curve([
-                        [1, 2, 7],
-                        [6, 2, 1],
-                    ]),
-                    expected,
-                    equal_nan=True,
-                ))
+
+                with warnings.catch_warnings():
+                    if np.isnan(expected):
+                        # If both infinity and negative infinity are
+                        # present in ys then numpy will log a warning
+                        # when taking a weighted sum over the
+                        # samples. This warning is useful because if
+                        # both infinity and negative infinity have
+                        # non-zero probability then the average tuning
+                        # curve is undefined. Suppress this warning in
+                        # the test though, since it is expected.
+                        warnings.filterwarnings(
+                            'ignore',
+                            message=r'invalid value encountered in reduce',
+                            category=RuntimeWarning,
+                        )
+
+                    # Test 0 < ns <= len(ys).
+                    #   scalar
+                    self.assertTrue(np.isclose(
+                        dist.average_tuning_curve(1),
+                        expected,
+                        equal_nan=True,
+                    ))
+                    self.assertTrue(np.isclose(
+                        dist.average_tuning_curve(3),
+                        expected,
+                        equal_nan=True,
+                    ))
+                    self.assertTrue(np.isclose(
+                        dist.average_tuning_curve(5),
+                        expected,
+                        equal_nan=True,
+                    ))
+                    #   1D array
+                    self.assertTrue(np.allclose(
+                        dist.average_tuning_curve([1, 2, 3, 4, 5]),
+                        expected,
+                        equal_nan=True,
+                    ))
+                    #   2D array
+                    self.assertTrue(np.allclose(
+                        dist.average_tuning_curve([
+                            [1, 2, 3, 4, 5],
+                            [2, 4, 1, 3, 5],
+                        ]),
+                        expected,
+                        equal_nan=True,
+                    ))
+                    # Test ns > len(ys).
+                    #   scalar
+                    self.assertTrue(np.isclose(
+                        dist.average_tuning_curve(6),
+                        expected,
+                        equal_nan=True,
+                    ))
+                    self.assertTrue(np.isclose(
+                        dist.average_tuning_curve(7),
+                        expected,
+                        equal_nan=True,
+                    ))
+                    #   1D array
+                    self.assertTrue(np.allclose(
+                        dist.average_tuning_curve([1, 2, 7]),
+                        expected,
+                        equal_nan=True,
+                    ))
+                    #   2D array
+                    self.assertTrue(np.allclose(
+                        dist.average_tuning_curve([
+                            [1, 2, 7],
+                            [6, 2, 1],
+                        ]),
+                        expected,
+                        equal_nan=True,
+                    ))
 
     @pytest.mark.level(3)
     def test_dkw_bands_have_correct_coverage(self):
