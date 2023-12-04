@@ -32,8 +32,6 @@ class QuadraticDistributionTestCase(unittest.TestCase):
             for n in range(6):
                 # When c = 1., the distribution is uniform.
                 self.assertEqual(dist.pdf(a + (n / 5.) * (b - a)), np.array(1.))
-            self.assertEqual(dist.pdf(a - 1e-10), np.array(0.))
-            self.assertEqual(dist.pdf(b + 1e-10), np.array(0.))
             # broadcasting
             for _ in range(7):
                 us = np.random.uniform(0, 1, size=5)
@@ -51,6 +49,11 @@ class QuadraticDistributionTestCase(unittest.TestCase):
                     dist.pdf(a + us * (b - a)).tolist(),
                     np.ones_like(us).tolist(),
                 )
+            # Test outside of the distribution's support.
+            self.assertEqual(dist.pdf(a - 1e-10), np.array(0.))
+            self.assertEqual(dist.pdf(a - 10), np.array(0.))
+            self.assertEqual(dist.pdf(b + 1e-10), np.array(0.))
+            self.assertEqual(dist.pdf(b + 10), np.array(0.))
 
     def test_cdf(self):
         a, b, c = 0., 1., 1.
