@@ -179,7 +179,7 @@ class QuadraticDistribution:
         ----------
         ns : array of positive floats, required
             The points at which to evaluate the tuning curve.
-        q : float, optional (default=0.5)
+        q : float between 0 and 1, optional (default=0.5)
             The quantile at which to evaluate the tuning curve.
 
         Returns
