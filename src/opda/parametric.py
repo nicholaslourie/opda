@@ -123,13 +123,14 @@ class QuadraticDistribution:
 
         a, b, c = self.a, self.b, self.c
 
+        # Handle values of y outside the support by clipping to a and b
+        # since the CDF is 0 when y is below a and 1 when y is above b.
+        ys = np.clip(ys, a, b)
+
         if self.convex:
             qs = ((ys - a) / (b - a))**c
         else:  # concave
             qs = 1 - ((b - ys) / (b - a))**c
-
-        qs = np.where(ys <= a, 0., qs)
-        qs = np.where(ys >= b, 1., qs)
 
         return qs
 
