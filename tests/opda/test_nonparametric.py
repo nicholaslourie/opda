@@ -1252,172 +1252,271 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 ))
 
     def test_naive_tuning_curve(self):
-        # Test when len(ys) == 1.
-        ys = [42.]
-        dist = nonparametric.EmpiricalDistribution(ys)
+        for minimize in [False, True]:
+            # Test when len(ys) == 1.
+            ys = [42.]
+            dist = nonparametric.EmpiricalDistribution(ys)
 
-        self.assertEqual(dist.naive_tuning_curve(1), 42.)
-        self.assertEqual(dist.naive_tuning_curve(10), 42.)
-        self.assertEqual(
-            dist.naive_tuning_curve([1, 10]).tolist(),
-            [42., 42.],
-        )
-        self.assertEqual(
-            dist.naive_tuning_curve([
-                [1, 10],
-                [10, 1],
-            ]).tolist(),
-            [
-                [42., 42.],
-                [42., 42.],
-            ],
-        )
-
-        # Test when len(ys) > 1.
-        ys = [0., 50., 25., 100., 75.]
-        dist = nonparametric.EmpiricalDistribution(ys)
-        #   Test 0 < ns <= len(ys).
-        #     scalar
-        self.assertEqual(dist.naive_tuning_curve(1), 0.)
-        self.assertEqual(dist.naive_tuning_curve(3), 50.)
-        self.assertEqual(dist.naive_tuning_curve(5), 100.)
-        #     1D array
-        self.assertEqual(
-            dist.naive_tuning_curve([1, 2, 3, 4, 5]).tolist(),
-            [0., 50., 50., 100., 100.],
-        )
-        self.assertEqual(
-            dist.naive_tuning_curve([2, 4, 1, 3, 5]).tolist(),
-            [50., 100., 0., 50., 100.],
-        )
-        #     2D array
-        self.assertEqual(
-            dist.naive_tuning_curve([
-                [1, 2, 3, 4, 5],
-                [2, 4, 1, 3, 5],
-            ]).tolist(),
-            [
-                [0., 50., 50., 100., 100.],
-                [50., 100., 0., 50., 100.],
-            ],
-        )
-        #   Test ns > len(ys).
-        #     scalar
-        self.assertEqual(dist.naive_tuning_curve(6), 100.)
-        self.assertEqual(dist.naive_tuning_curve(10), 100.)
-        #     1D array
-        self.assertEqual(
-            dist.naive_tuning_curve([1, 2, 10]).tolist(),
-            [0., 50., 100.],
-        )
-        #     2D array
-        self.assertEqual(
-            dist.naive_tuning_curve([
-                [1, 2, 10],
-                [10, 2, 1],
-            ]).tolist(),
-            [
-                [0., 50., 100.],
-                [100., 50., 0.],
-            ],
-        )
-        #   Test non-integer ns.
-        for n in range(1, 11):
             self.assertEqual(
-                dist.naive_tuning_curve(int(n)),
-                dist.naive_tuning_curve(float(n)),
+                dist.naive_tuning_curve(1, minimize=minimize),
+                42.,
             )
-        for n in [0.5, 1.5, 10.5]:
-            with self.assertRaises(ValueError):
-                dist.naive_tuning_curve(n)
-            with self.assertRaises(ValueError):
-                dist.naive_tuning_curve([n])
-            with self.assertRaises(ValueError):
-                dist.naive_tuning_curve([n, 1])
-            with self.assertRaises(ValueError):
-                dist.naive_tuning_curve([[n], [1]])
-        #   Test ns <= 0.
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve(0)
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve(-1)
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([0])
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([-2])
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([0, 1])
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([-2, 1])
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([[0], [1]])
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([[-2], [1]])
+            self.assertEqual(
+                dist.naive_tuning_curve(10, minimize=minimize),
+                42.,
+            )
+            self.assertEqual(
+                dist.naive_tuning_curve([1, 10], minimize=minimize).tolist(),
+                [42., 42.],
+            )
+            self.assertEqual(
+                dist.naive_tuning_curve(
+                    [
+                        [1, 10],
+                        [10, 1],
+                    ],
+                    minimize=minimize,
+                ).tolist(),
+                [
+                    [42., 42.],
+                    [42., 42.],
+                ],
+            )
 
-        # Test when ys has duplicates.
-        ys = [0., 0., 50., 0., 100.]
-        dist = nonparametric.EmpiricalDistribution(ys)
-        #   Test 0 < ns <= len(ys).
-        #     scalar
-        self.assertEqual(dist.naive_tuning_curve(1), 0.)
-        self.assertEqual(dist.naive_tuning_curve(2), 0.)
-        self.assertEqual(dist.naive_tuning_curve(3), 50.)
-        self.assertEqual(dist.naive_tuning_curve(4), 50.)
-        self.assertEqual(dist.naive_tuning_curve(5), 100.)
-        #     1D array
-        self.assertEqual(
-            dist.naive_tuning_curve([1, 2, 3, 4, 5]).tolist(),
-            [0., 0., 50., 50., 100.],
-        )
-        self.assertEqual(
-            dist.naive_tuning_curve([2, 4, 1, 3, 5]).tolist(),
-            [0., 50., 0., 50., 100.],
-        )
-        #     2D array
-        self.assertEqual(
-            dist.naive_tuning_curve([
-                [1, 2, 3, 4, 5],
-                [2, 4, 1, 3, 5],
-            ]).tolist(),
-            [
+            # Test when len(ys) > 1.
+            ys = [0., 50., -25., 100., 75.]
+            dist = nonparametric.EmpiricalDistribution(ys)
+            #   Test 0 < ns <= len(ys).
+            #     scalar
+            self.assertEqual(dist.naive_tuning_curve(1, minimize=minimize), 0.)
+            self.assertEqual(
+                dist.naive_tuning_curve(3, minimize=minimize),
+                -25. if minimize else 50.,
+            )
+            self.assertEqual(
+                dist.naive_tuning_curve(5, minimize=minimize),
+                -25. if minimize else 100.,
+            )
+            #     1D array
+            self.assertEqual(
+                dist.naive_tuning_curve(
+                    [1, 2, 3, 4, 5],
+                    minimize=minimize,
+                ).tolist(),
+                [0., 0., -25., -25., -25.]
+                if minimize else
+                [0., 50., 50., 100., 100.],
+            )
+            self.assertEqual(
+                dist.naive_tuning_curve(
+                    [2, 4, 1, 3, 5],
+                    minimize=minimize,
+                ).tolist(),
+                [0., -25., 0., -25., -25.]
+                if minimize else
+                [50., 100., 0., 50., 100.],
+            )
+            #     2D array
+            self.assertEqual(
+                dist.naive_tuning_curve(
+                    [
+                        [1, 2, 3, 4, 5],
+                        [2, 4, 1, 3, 5],
+                    ],
+                    minimize=minimize,
+                ).tolist(),
+                [
+                    [0., 0., -25., -25., -25.],
+                    [0., -25., 0., -25., -25.],
+                ]
+                if minimize else
+                [
+                    [0., 50., 50., 100., 100.],
+                    [50., 100., 0., 50., 100.],
+                ],
+            )
+            #   Test ns > len(ys).
+            #     scalar
+            self.assertEqual(
+                dist.naive_tuning_curve(6, minimize=minimize),
+                -25. if minimize else 100.,
+            )
+            self.assertEqual(
+                dist.naive_tuning_curve(10, minimize=minimize),
+                -25. if minimize else 100.,
+            )
+            #     1D array
+            self.assertEqual(
+                dist.naive_tuning_curve(
+                    [1, 2, 10],
+                    minimize=minimize,
+                ).tolist(),
+                [0., 0., -25.]
+                if minimize else
+                [0., 50., 100.],
+            )
+            #     2D array
+            self.assertEqual(
+                dist.naive_tuning_curve(
+                    [
+                        [1, 2, 10],
+                        [10, 2, 1],
+                    ],
+                    minimize=minimize,
+                ).tolist(),
+                [
+                    [0., 0., -25.],
+                    [-25., 0., 0.],
+                ]
+                if minimize else
+                [
+                    [0., 50., 100.],
+                    [100., 50., 0.],
+                ],
+            )
+            #   Test non-integer ns.
+            for n in range(1, 11):
+                self.assertEqual(
+                    dist.naive_tuning_curve(int(n), minimize=minimize),
+                    dist.naive_tuning_curve(float(n), minimize=minimize),
+                )
+            for n in [0.5, 1.5, 10.5]:
+                with self.assertRaises(ValueError):
+                    dist.naive_tuning_curve(n, minimize=minimize)
+                with self.assertRaises(ValueError):
+                    dist.naive_tuning_curve([n], minimize=minimize)
+                with self.assertRaises(ValueError):
+                    dist.naive_tuning_curve([n, 1], minimize=minimize)
+                with self.assertRaises(ValueError):
+                    dist.naive_tuning_curve([[n], [1]], minimize=minimize)
+            #   Test ns <= 0.
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve(0, minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve(-1, minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve([0], minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve([-2], minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve([0, 1], minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve([-2, 1], minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve([[0], [1]], minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve([[-2], [1]], minimize=minimize)
+
+            # Test when ys has duplicates.
+            ys = [0., 0., 50., -25., 100.]
+            dist = nonparametric.EmpiricalDistribution(ys)
+            #   Test 0 < ns <= len(ys).
+            #     scalar
+            self.assertEqual(dist.naive_tuning_curve(1, minimize=minimize), 0.)
+            self.assertEqual(dist.naive_tuning_curve(2, minimize=minimize), 0.)
+            self.assertEqual(
+                dist.naive_tuning_curve(3, minimize=minimize),
+                0. if minimize else 50.,
+            )
+            self.assertEqual(
+                dist.naive_tuning_curve(4, minimize=minimize),
+                -25. if minimize else 50.,
+            )
+            self.assertEqual(
+                dist.naive_tuning_curve(5, minimize=minimize),
+                -25. if minimize else 100.,
+            )
+            #     1D array
+            self.assertEqual(
+                dist.naive_tuning_curve(
+                    [1, 2, 3, 4, 5],
+                    minimize=minimize,
+                ).tolist(),
+                [0., 0., 0., -25., -25.]
+                if minimize else
                 [0., 0., 50., 50., 100.],
+            )
+            self.assertEqual(
+                dist.naive_tuning_curve(
+                    [2, 4, 1, 3, 5],
+                    minimize=minimize,
+                ).tolist(),
+                [0., -25., 0., 0., -25.]
+                if minimize else
                 [0., 50., 0., 50., 100.],
-            ],
-        )
-        #   Test ns > len(ys).
-        #     scalar
-        self.assertEqual(dist.naive_tuning_curve(6), 100.)
-        self.assertEqual(dist.naive_tuning_curve(10), 100.)
-        #     1D array
-        self.assertEqual(
-            dist.naive_tuning_curve([1, 2, 10]).tolist(),
-            [0., 0., 100.],
-        )
-        #     2D array
-        self.assertEqual(
-            dist.naive_tuning_curve([
-                [1, 2, 10],
-                [10, 2, 1],
-            ]).tolist(),
-            [
+            )
+            #     2D array
+            self.assertEqual(
+                dist.naive_tuning_curve(
+                    [
+                        [1, 2, 3, 4, 5],
+                        [2, 4, 1, 3, 5],
+                    ],
+                    minimize=minimize,
+                ).tolist(),
+                [
+                    [0., 0., 0., -25., -25.],
+                    [0., -25., 0., 0., -25.],
+                ]
+                if minimize else
+                [
+                    [0., 0., 50., 50., 100.],
+                    [0., 50., 0., 50., 100.],
+                ],
+            )
+            #   Test ns > len(ys).
+            #     scalar
+            self.assertEqual(
+                dist.naive_tuning_curve(6, minimize=minimize),
+                -25. if minimize else 100.,
+            )
+            self.assertEqual(
+                dist.naive_tuning_curve(10, minimize=minimize),
+                -25. if minimize else 100.,
+            )
+            #     1D array
+            self.assertEqual(
+                dist.naive_tuning_curve(
+                    [1, 2, 10],
+                    minimize=minimize,
+                ).tolist(),
+                [0., 0., -25.]
+                if minimize else
                 [0., 0., 100.],
-                [100., 0., 0.],
-            ],
-        )
+            )
+            #     2D array
+            self.assertEqual(
+                dist.naive_tuning_curve(
+                    [
+                        [1, 2, 10],
+                        [10, 2, 1],
+                    ],
+                    minimize=minimize,
+                ).tolist(),
+                [
+                    [0., 0., -25.],
+                    [-25., 0., 0.],
+                ]
+                if minimize else
+                [
+                    [0., 0., 100.],
+                    [100., 0., 0.],
+                ],
+            )
 
-        # Test when ws != None.
-        ys = [-1, 0, 1]
-        ws = [0.1, 0.5, 0.4]
-        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+            # Test when ws != None.
+            ys = [-1, 0, 1]
+            ws = [0.1, 0.5, 0.4]
+            dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
 
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve(1)
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([1])
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([2, 1])
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([[2], [1]])
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve(1, minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve([1], minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve([2, 1], minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve([[2], [1]], minimize=minimize)
 
     def test_v_tuning_curve(self):
         # Test when len(ys) == 1.

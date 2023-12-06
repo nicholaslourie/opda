@@ -289,7 +289,9 @@ class EmpiricalDistribution:
         self._n = len(self.ys)
         self._ns = np.arange(1, self._n + 1)
 
+        self._original_ys_cummin = np.minimum.accumulate(self.ys)
         self._original_ys_cummax = np.maximum.accumulate(self.ys)
+
         self._original_ys_sorted = np.sort(self.ys)
 
     def sample(self, size):
@@ -478,7 +480,7 @@ class EmpiricalDistribution:
             axis=-1,
         )
 
-    def naive_tuning_curve(self, ns):
+    def naive_tuning_curve(self, ns, *, minimize=False):
         """Return the naive estimate for the tuning curve at ``ns``.
 
         The naive tuning curve estimate assigns to n the maximum value
@@ -491,6 +493,9 @@ class EmpiricalDistribution:
         ns : array of positive ints, required
             The values at which to evaluate the naive tuning curve
             estimate.
+        minimize : bool, optional (default=False)
+            Whether or not to estimate the tuning curve for minimizing a
+            metric as opposed to maximizing it.
 
         Returns
         -------
@@ -510,10 +515,17 @@ class EmpiricalDistribution:
             raise ValueError('ns must be positive.')
         ns = ns.astype(int)
 
+        if not isinstance(minimize, bool):
+            raise ValueError('minimize must be a boolean.')
+
         # Compute the naive tuning curve estimate.
         ns = np.clip(ns, None, self._n)
 
-        return self._original_ys_cummax[ns - 1]
+        return (
+            self._original_ys_cummin
+            if minimize else  # maximize
+            self._original_ys_cummax
+        )[ns - 1]
 
     def v_tuning_curve(self, ns):
         """Return the v estimate for the tuning curve at ``ns``.
