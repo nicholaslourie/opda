@@ -14,7 +14,9 @@ class QuadraticDistributionTestCase(unittest.TestCase):
         a, b = 0., 1.
         for c in [0.5, 10.]:
             for convex in [False, True]:
-                ys = parametric.QuadraticDistribution(a, b, c).sample(2_500)
+                ys = parametric.QuadraticDistribution(
+                    a, b, c, convex=convex,
+                ).sample(2_500)
                 self.assertLess(a, np.min(ys))
                 self.assertGreater(b, np.max(ys))
         # Test when c = 1. and the samples should be uniformly distributed.
@@ -96,8 +98,8 @@ class QuadraticDistributionTestCase(unittest.TestCase):
 
     def test_ppf(self):
         a, b, c = 0., 1., 1.
-        dist = parametric.QuadraticDistribution(a, b, c)
         for convex in [False, True]:
+            dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
             # not broadcasting
             for n in range(6):
                 # When c = 1., the distribution is uniform.
