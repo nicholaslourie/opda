@@ -406,30 +406,498 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         )
 
     def test_quantile_tuning_curve(self):
-        for quantile in [0.25, 0.5, 0.75]:
-            for use_weights in [False, True]:
+        for use_weights in [False, True]:
+            for quantile in [0.25, 0.5, 0.75]:
+                for minimize in [False, True]:
+                    # Test when len(ys) == 1.
+                    ys = [42.]
+                    ws = [1.] if use_weights else None
+                    dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+
+                    self.assertEqual(
+                        dist.quantile_tuning_curve(
+                            1,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        42.,
+                    )
+                    self.assertEqual(
+                        dist.quantile_tuning_curve(
+                            10,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        42.,
+                    )
+                    self.assertEqual(
+                        dist.quantile_tuning_curve(
+                            [1, 10],
+                            q=quantile,
+                            minimize=minimize,
+                        ).tolist(),
+                        [42., 42.],
+                    )
+                    self.assertEqual(
+                        dist.quantile_tuning_curve(
+                            [
+                                [1, 10],
+                                [10, 1],
+                            ],
+                            q=quantile,
+                            minimize=minimize,
+                        ).tolist(),
+                        [
+                            [42., 42.],
+                            [42., 42.],
+                        ],
+                    )
+
+                    # Test when len(ys) > 1.
+                    ys = [0., 50., 25., 100., 75.]
+                    ws = (
+                        np.random.dirichlet(np.full_like(ys, 5))
+                        if use_weights else
+                        None
+                    )
+                    dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+                    curve = np.quantile(
+                        np.minimum.accumulate(
+                            np.random.choice(
+                                ys,
+                                p=ws,
+                                size=(1_000, 7),
+                                replace=True,
+                            ),
+                            axis=1,
+                        )
+                        if minimize else
+                        np.maximum.accumulate(
+                            np.random.choice(
+                                ys,
+                                p=ws,
+                                size=(1_000, 7),
+                                replace=True,
+                            ),
+                            axis=1,
+                        ),
+                        quantile,
+                        method='inverted_cdf',
+                        axis=0,
+                    )
+                    #   Test 0 < ns <= len(ys).
+                    #     scalar
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(
+                            1,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        curve[0],
+                        delta=25.,
+                    )
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(
+                            3,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        curve[2],
+                        delta=25.,
+                    )
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(
+                            5,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        curve[4],
+                        delta=25.,
+                    )
+                    #     1D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [1, 2, 3, 4, 5],
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        curve[:5],
+                        atol=25.,
+                    ))
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [2, 4, 1, 3, 5],
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        [curve[1], curve[3], curve[0], curve[2], curve[4]],
+                        atol=25.,
+                    ))
+                    #     2D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [
+                                [1, 2, 3, 4, 5],
+                                [2, 4, 1, 3, 5],
+                            ],
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        [
+                            curve[:5],
+                            [curve[1], curve[3], curve[0], curve[2], curve[4]],
+                        ],
+                        atol=25.,
+                    ))
+                    #   Test ns > len(ys).
+                    #     scalar
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(
+                            6,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        curve
+                        [5],
+                        delta=25.,
+                    )
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(
+                            7,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        curve[6],
+                        delta=25.,
+                    )
+                    #     1D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [1, 2, 7],
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        [curve[0], curve[1], curve[6]],
+                        atol=25.,
+                    ))
+                    #     2D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [
+                                [1, 2, 7],
+                                [6, 2, 1],
+                            ],
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        [
+                            [curve[0], curve[1], curve[6]],
+                            [curve[5], curve[1], curve[0]],
+                        ],
+                        atol=25.,
+                    ))
+                    #   Test ns <= 0.
+                    with self.assertRaises(ValueError):
+                        dist.quantile_tuning_curve(
+                            0,
+                            q=quantile,
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.quantile_tuning_curve(
+                            -1,
+                            q=quantile,
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.quantile_tuning_curve(
+                            [0],
+                            q=quantile,
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.quantile_tuning_curve(
+                            [-2],
+                            q=quantile,
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.quantile_tuning_curve(
+                            [0, 1],
+                            q=quantile,
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.quantile_tuning_curve(
+                            [-2, 1],
+                            q=quantile,
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.quantile_tuning_curve(
+                            [[0], [1]],
+                            q=quantile,
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.quantile_tuning_curve(
+                            [[-2], [1]],
+                            q=quantile,
+                            minimize=minimize,
+                        )
+
+                    # Test when ys has duplicates.
+                    ys = [0., 0., 50., 0., 25.]
+                    ws = (
+                        np.random.dirichlet(np.full_like(ys, 5))
+                        if use_weights else
+                        None
+                    )
+                    dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+                    curve = np.quantile(
+                        np.minimum.accumulate(
+                            np.random.choice(
+                                ys,
+                                p=ws,
+                                size=(1_000, 7),
+                                replace=True,
+                            ),
+                            axis=1,
+                        )
+                        if minimize else
+                        np.maximum.accumulate(
+                            np.random.choice(
+                                ys,
+                                p=ws,
+                                size=(1_000, 7),
+                                replace=True,
+                            ),
+                            axis=1,
+                        ),
+                        quantile,
+                        method='inverted_cdf',
+                        axis=0,
+                    )
+                    #   Test 0 < ns <= len(ys).
+                    #     scalar
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(
+                            1,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        curve[0],
+                        delta=25.,
+                    )
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(
+                            3,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        curve[2],
+                        delta=25.,
+                    )
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(
+                            5,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        curve[4],
+                        delta=25.,
+                    )
+                    #     1D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [1, 2, 3, 4, 5],
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        curve[:5],
+                        atol=25.,
+                    ))
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [2, 4, 1, 3, 5],
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        [curve[1], curve[3], curve[0], curve[2], curve[4]],
+                        atol=25.,
+                    ))
+                    #     2D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [
+                                [1, 2, 3, 4, 5],
+                                [2, 4, 1, 3, 5],
+                            ],
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        [
+                            curve[:5],
+                            [curve[1], curve[3], curve[0], curve[2], curve[4]],
+                        ],
+                        atol=25.,
+                    ))
+                    #   Test ns > len(ys).
+                    #     scalar
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(
+                            6,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        curve[5],
+                        delta=25.,
+                    )
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(
+                            7,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        curve[6],
+                        delta=25.,
+                    )
+                    #     1D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [1, 2, 7],
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        [curve[0], curve[1], curve[6]],
+                        atol=25.,
+                    ))
+                    #     2D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [
+                                [1, 2, 7],
+                                [6, 2, 1],
+                            ],
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        [
+                            [curve[0], curve[1], curve[6]],
+                            [curve[5], curve[1], curve[0]],
+                        ],
+                        atol=25.,
+                    ))
+
+                    # Test when n is non-integral.
+                    ys = [0., 50., 25., 100., 75.]
+                    ws = (
+                        np.random.dirichlet(np.full_like(ys, 5))
+                        if use_weights else
+                        None
+                    )
+                    dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+                    #   scalar
+                    #     0 < ns <= len(ys)
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(
+                            0.5,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        dist.quantile_tuning_curve(
+                            1,
+                            q=1-(1-quantile)**(1/0.5)
+                              if minimize else
+                              quantile**(1/0.5),
+                            minimize=minimize,
+                        ),
+                    )
+                    #     ns > len(ys)
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(
+                            10.5,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        dist.quantile_tuning_curve(
+                            1,
+                            q=1-(1-quantile)**(1/10.5)
+                              if minimize else
+                              quantile**(1/10.5),
+                            minimize=minimize,
+                        ),
+                    )
+                    #   1D array
+                    #     0 < ns <= len(ys) and ns > len(ys)
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [0.5, 10.5],
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        dist.quantile_tuning_curve(
+                            [1, 21],
+                            q=1-(1-quantile)**2
+                              if minimize else
+                              quantile**2,
+                            minimize=minimize,
+                        ),
+                    ))
+                    #   2D array
+                    #     0 < ns <= len(ys) and ns > len(ys)
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [
+                                [0.5, 10.5, 2.5],
+                                [2.5,  3.5, 0.5],
+                            ],
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        dist.quantile_tuning_curve(
+                            [
+                                [1, 21, 5],
+                                [5,  7, 1],
+                            ],
+                            q=1-(1-quantile)**2
+                              if minimize else
+                              quantile**2,
+                            minimize=minimize,
+                        ),
+                    ))
+
+    def test_average_tuning_curve(self):
+        for use_weights in [False, True]:
+            for minimize in [False, True]:
                 # Test when len(ys) == 1.
                 ys = [42.]
                 ws = [1.] if use_weights else None
                 dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
 
                 self.assertEqual(
-                    dist.quantile_tuning_curve(1, q=quantile),
+                    dist.average_tuning_curve(1, minimize=minimize),
                     42.,
                 )
                 self.assertEqual(
-                    dist.quantile_tuning_curve(10, q=quantile),
+                    dist.average_tuning_curve(10, minimize=minimize),
                     42.,
                 )
                 self.assertEqual(
-                    dist.quantile_tuning_curve([1, 10], q=quantile).tolist(),
+                    dist.average_tuning_curve(
+                        [1, 10],
+                        minimize=minimize,
+                    ).tolist(),
                     [42., 42.],
                 )
                 self.assertEqual(
-                    dist.quantile_tuning_curve([
-                        [1, 10],
-                        [10, 1],
-                    ], q=quantile).tolist(),
+                    dist.average_tuning_curve(
+                        [
+                            [1, 10],
+                            [10, 1],
+                        ],
+                        minimize=minimize,
+                    ).tolist(),
                     [
                         [42., 42.],
                         [42., 42.],
@@ -439,252 +907,637 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 # Test when len(ys) > 1.
                 ys = [0., 50., 25., 100., 75.]
                 ws = (
-                    np.random.dirichlet(np.full_like(ys, 5))
+                    np.random.dirichlet(np.ones_like(ys))
                     if use_weights else
                     None
                 )
                 dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-                curve = np.quantile(
+                curve = np.mean(
+                    np.minimum.accumulate(
+                        np.random.choice(
+                            ys,
+                            p=ws,
+                            size=(2_500, 7),
+                            replace=True,
+                        ),
+                        axis=1,
+                    )
+                    if minimize else
                     np.maximum.accumulate(
-                        np.random.choice(ys, p=ws, size=(1_000, 7), replace=True),
+                        np.random.choice(
+                            ys,
+                            p=ws,
+                            size=(2_500, 7),
+                            replace=True,
+                        ),
                         axis=1,
                     ),
-                    quantile,
-                    method='inverted_cdf',
                     axis=0,
                 )
                 #   Test 0 < ns <= len(ys).
                 #     scalar
                 self.assertAlmostEqual(
-                    dist.quantile_tuning_curve(1, q=quantile),
+                    dist.average_tuning_curve(1, minimize=minimize),
                     curve[0],
-                    delta=25.,
+                    delta=5.,
                 )
                 self.assertAlmostEqual(
-                    dist.quantile_tuning_curve(3, q=quantile),
+                    dist.average_tuning_curve(3, minimize=minimize),
                     curve[2],
-                    delta=25.,
+                    delta=5.,
                 )
                 self.assertAlmostEqual(
-                    dist.quantile_tuning_curve(5, q=quantile),
+                    dist.average_tuning_curve(5, minimize=minimize),
                     curve[4],
-                    delta=25.,
+                    delta=5.,
                 )
                 #     1D array
                 self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([1, 2, 3, 4, 5], q=quantile),
+                    dist.average_tuning_curve(
+                        [1, 2, 3, 4, 5],
+                        minimize=minimize,
+                    ),
                     curve[:5],
-                    atol=25.,
+                    atol=5.,
                 ))
                 self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([2, 4, 1, 3, 5], q=quantile),
+                    dist.average_tuning_curve(
+                        [2, 4, 1, 3, 5],
+                        minimize=minimize,
+                    ),
                     [curve[1], curve[3], curve[0], curve[2], curve[4]],
-                    atol=25.,
+                    atol=5.,
                 ))
                 #     2D array
                 self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([
-                        [1, 2, 3, 4, 5],
-                        [2, 4, 1, 3, 5],
-                    ], q=quantile),
+                    dist.average_tuning_curve(
+                        [
+                            [1, 2, 3, 4, 5],
+                            [2, 4, 1, 3, 5],
+                        ],
+                        minimize=minimize,
+                    ),
                     [
                         curve[:5],
                         [curve[1], curve[3], curve[0], curve[2], curve[4]],
                     ],
-                    atol=25.,
+                    atol=5.,
                 ))
                 #   Test ns > len(ys).
                 #     scalar
                 self.assertAlmostEqual(
-                    dist.quantile_tuning_curve(6, q=quantile),
+                    dist.average_tuning_curve(6, minimize=minimize),
                     curve[5],
-                    delta=25.,
+                    delta=5.,
                 )
                 self.assertAlmostEqual(
-                    dist.quantile_tuning_curve(7, q=quantile),
+                    dist.average_tuning_curve(7, minimize=minimize),
                     curve[6],
-                    delta=25.,
+                    delta=5.,
                 )
                 #     1D array
                 self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([1, 2, 7], q=quantile),
+                    dist.average_tuning_curve(
+                        [1, 2, 7],
+                        minimize=minimize,
+                    ),
                     [curve[0], curve[1], curve[6]],
-                    atol=25.,
+                    atol=5.,
                 ))
                 #     2D array
                 self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([
-                        [1, 2, 7],
-                        [6, 2, 1],
-                    ], q=quantile),
+                    dist.average_tuning_curve(
+                        [
+                            [1, 2, 7],
+                            [6, 2, 1],
+                        ],
+                        minimize=minimize,
+                    ),
                     [
                         [curve[0], curve[1], curve[6]],
                         [curve[5], curve[1], curve[0]],
                     ],
-                    atol=25.,
+                    atol=5.,
                 ))
                 #   Test ns <= 0.
                 with self.assertRaises(ValueError):
-                    dist.quantile_tuning_curve(0, q=quantile)
+                    dist.average_tuning_curve(
+                        0,
+                        minimize=minimize,
+                    )
                 with self.assertRaises(ValueError):
-                    dist.quantile_tuning_curve(-1, q=quantile)
+                    dist.average_tuning_curve(
+                        -1,
+                        minimize=minimize,
+                    )
                 with self.assertRaises(ValueError):
-                    dist.quantile_tuning_curve([0], q=quantile)
+                    dist.average_tuning_curve(
+                        [0],
+                        minimize=minimize,
+                    )
                 with self.assertRaises(ValueError):
-                    dist.quantile_tuning_curve([-2], q=quantile)
+                    dist.average_tuning_curve(
+                        [-2],
+                        minimize=minimize,
+                    )
                 with self.assertRaises(ValueError):
-                    dist.quantile_tuning_curve([0, 1], q=quantile)
+                    dist.average_tuning_curve(
+                        [0, 1],
+                        minimize=minimize,
+                    )
                 with self.assertRaises(ValueError):
-                    dist.quantile_tuning_curve([-2, 1], q=quantile)
+                    dist.average_tuning_curve(
+                        [-2, 1],
+                        minimize=minimize,
+                    )
                 with self.assertRaises(ValueError):
-                    dist.quantile_tuning_curve([[0], [1]], q=quantile)
+                    dist.average_tuning_curve(
+                        [[0], [1]],
+                        minimize=minimize,
+                    )
                 with self.assertRaises(ValueError):
-                    dist.quantile_tuning_curve([[-2], [1]], q=quantile)
+                    dist.average_tuning_curve(
+                        [[-2], [1]],
+                        minimize=minimize,
+                    )
 
                 # Test when ys has duplicates.
-                ys = [0., 0., 50., 0., 25.]
+                ys = [0., 0., 50., 0., 100.]
                 ws = (
-                    np.random.dirichlet(np.full_like(ys, 5))
+                    np.random.dirichlet(np.ones_like(ys))
                     if use_weights else
                     None
                 )
                 dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-                curve = np.quantile(
+                curve = np.mean(
+                    np.minimum.accumulate(
+                        np.random.choice(
+                            ys,
+                            p=ws,
+                            size=(2_500, 7),
+                            replace=True,
+                        ),
+                        axis=1,
+                    )
+                    if minimize else
                     np.maximum.accumulate(
-                        np.random.choice(ys, p=ws, size=(1_000, 7), replace=True),
+                        np.random.choice(
+                            ys,
+                            p=ws,
+                            size=(2_500, 7),
+                            replace=True,
+                        ),
                         axis=1,
                     ),
-                    quantile,
-                    method='inverted_cdf',
                     axis=0,
                 )
                 #   Test 0 < ns <= len(ys).
                 #     scalar
                 self.assertAlmostEqual(
-                    dist.quantile_tuning_curve(1, q=quantile),
+                    dist.average_tuning_curve(1, minimize=minimize),
                     curve[0],
-                    delta=25.,
+                    delta=5.,
                 )
                 self.assertAlmostEqual(
-                    dist.quantile_tuning_curve(3, q=quantile),
+                    dist.average_tuning_curve(3, minimize=minimize),
                     curve[2],
-                    delta=25.,
+                    delta=5.,
                 )
                 self.assertAlmostEqual(
-                    dist.quantile_tuning_curve(5, q=quantile),
+                    dist.average_tuning_curve(5, minimize=minimize),
                     curve[4],
-                    delta=25.,
+                    delta=5.,
                 )
                 #     1D array
                 self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([1, 2, 3, 4, 5], q=quantile),
+                    dist.average_tuning_curve(
+                        [1, 2, 3, 4, 5],
+                        minimize=minimize,
+                    ),
                     curve[:5],
-                    atol=25.,
+                    atol=5.,
                 ))
                 self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([2, 4, 1, 3, 5], q=quantile),
+                    dist.average_tuning_curve(
+                        [2, 4, 1, 3, 5],
+                        minimize=minimize,
+                    ),
                     [curve[1], curve[3], curve[0], curve[2], curve[4]],
-                    atol=25.,
+                    atol=5.,
                 ))
                 #     2D array
                 self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([
-                        [1, 2, 3, 4, 5],
-                        [2, 4, 1, 3, 5],
-                    ], q=quantile),
+                    dist.average_tuning_curve(
+                        [
+                            [1, 2, 3, 4, 5],
+                            [2, 4, 1, 3, 5],
+                        ],
+                        minimize=minimize,
+                    ),
                     [
                         curve[:5],
                         [curve[1], curve[3], curve[0], curve[2], curve[4]],
                     ],
-                    atol=25.,
+                    atol=5.,
                 ))
                 #   Test ns > len(ys).
                 #     scalar
                 self.assertAlmostEqual(
-                    dist.quantile_tuning_curve(6, q=quantile),
+                    dist.average_tuning_curve(
+                        6,
+                        minimize=minimize,
+                    ),
                     curve[5],
-                    delta=25.,
+                    delta=5.,
                 )
                 self.assertAlmostEqual(
-                    dist.quantile_tuning_curve(7, q=quantile),
+                    dist.average_tuning_curve(
+                        7,
+                        minimize=minimize,
+                    ),
                     curve[6],
-                    delta=25.,
+                    delta=5.,
                 )
                 #     1D array
                 self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([1, 2, 7], q=quantile),
+                    dist.average_tuning_curve(
+                        [1, 2, 7],
+                        minimize=minimize,
+                    ),
                     [curve[0], curve[1], curve[6]],
-                    atol=25.,
+                    atol=5.,
                 ))
                 #     2D array
                 self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([
-                        [1, 2, 7],
-                        [6, 2, 1],
-                    ], q=quantile),
+                    dist.average_tuning_curve(
+                        [
+                            [1, 2, 7],
+                            [6, 2, 1],
+                        ],
+                        minimize=minimize,
+                    ),
                     [
                         [curve[0], curve[1], curve[6]],
                         [curve[5], curve[1], curve[0]],
                     ],
-                    atol=25.,
+                    atol=5.,
                 ))
 
                 # Test when n is non-integral.
+                n_trials = 10_000
                 ys = [0., 50., 25., 100., 75.]
                 ws = (
-                    np.random.dirichlet(np.full_like(ys, 5))
+                    np.random.dirichlet(np.ones_like(ys))
                     if use_weights else
                     None
                 )
                 dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+                # Generate ground truth values along the tuning curve.
+                ys_sorted, ws_sorted = utils.sort_by_first(
+                    ys,
+                    ws if ws is not None else np.ones_like(ys) / len(ys),
+                )
+                ws_sorted_cumsum = np.clip(np.cumsum(ws_sorted), 0., 1.)
+                # NOTE: Make sure to include 0 < ns <= len(ys) and ns > len(ys).
+                ns = np.arange(10) + 0.5
+                ts = np.mean([
+                    np.random.choice(
+                        ys_sorted,
+                        p=(
+                            (1-np.concatenate([[0], ws_sorted_cumsum[:-1]]))**n
+                            - (1-ws_sorted_cumsum)**n
+                            if minimize else
+                            ws_sorted_cumsum**n
+                            - np.concatenate([[0], ws_sorted_cumsum[:-1]])**n
+                        ),
+                        size=n_trials,
+                    )
+                    for n in ns
+                ], axis=1)
+                # Compute a bound on the standard error for our ground truth.
+                err = 6 * (
+                    0.25 * (np.max(ys) - np.min(ys))**2  # Popoviciu's inequality
+                    / n_trials                           # divided by sample size
+                )
                 #   scalar
-                #     0 < ns <= len(ys)
-                self.assertAlmostEqual(
-                    dist.quantile_tuning_curve(0.5, q=quantile),
-                    dist.quantile_tuning_curve(1, q=quantile**(1/0.5)),
-                )
-                #     ns > len(ys)
-                self.assertAlmostEqual(
-                    dist.quantile_tuning_curve(10.5, q=quantile),
-                    dist.quantile_tuning_curve(1, q=quantile**(1/10.5)),
-                )
+                for n, t in zip(ns, ts):
+                    self.assertAlmostEqual(
+                        dist.average_tuning_curve(n, minimize=minimize),
+                        t,
+                        delta=err,
+                    )
                 #   1D array
-                #     0 < ns <= len(ys) and ns > len(ys)
                 self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([0.5, 10.5], q=quantile),
-                    dist.quantile_tuning_curve([1, 21], q=quantile**2),
+                    dist.average_tuning_curve(
+                        [ns[0], ns[-1]],
+                        minimize=minimize,
+                    ),
+                    np.array([ts[0], ts[-1]]),
+                    atol=err,
                 ))
                 #   2D array
-                #     0 < ns <= len(ys) and ns > len(ys)
                 self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([
-                        [0.5, 10.5, 2.5],
-                        [2.5,  3.5, 0.5],
-                    ], q=quantile),
-                    dist.quantile_tuning_curve([
-                        [1, 21, 5],
-                        [5,  7, 1],
-                    ], q=quantile**2),
+                    dist.average_tuning_curve(
+                        [
+                            [ ns[0], ns[3], ns[-1]],
+                            [ns[-1], ns[0],  ns[3]],
+                        ],
+                        minimize=minimize,
+                    ),
+                    np.array([
+                        [ ts[0], ts[3], ts[-1]],
+                        [ts[-1], ts[0],  ts[3]],
+                    ]),
+                    atol=err,
                 ))
 
-    def test_average_tuning_curve(self):
-        for use_weights in [False, True]:
+    def test_naive_tuning_curve(self):
+        for minimize in [False, True]:
             # Test when len(ys) == 1.
             ys = [42.]
-            ws = [1.] if use_weights else None
-            dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+            dist = nonparametric.EmpiricalDistribution(ys)
 
-            self.assertEqual(dist.average_tuning_curve(1), 42.)
-            self.assertEqual(dist.average_tuning_curve(10), 42.)
             self.assertEqual(
-                dist.average_tuning_curve([1, 10]).tolist(),
+                dist.naive_tuning_curve(1, minimize=minimize),
+                42.,
+            )
+            self.assertEqual(
+                dist.naive_tuning_curve(10, minimize=minimize),
+                42.,
+            )
+            self.assertEqual(
+                dist.naive_tuning_curve([1, 10], minimize=minimize).tolist(),
                 [42., 42.],
             )
             self.assertEqual(
-                dist.average_tuning_curve([
-                    [1, 10],
-                    [10, 1],
-                ]).tolist(),
+                dist.naive_tuning_curve(
+                    [
+                        [1, 10],
+                        [10, 1],
+                    ],
+                    minimize=minimize,
+                ).tolist(),
+                [
+                    [42., 42.],
+                    [42., 42.],
+                ],
+            )
+
+            # Test when len(ys) > 1.
+            ys = [0., 50., -25., 100., 75.]
+            dist = nonparametric.EmpiricalDistribution(ys)
+            #   Test 0 < ns <= len(ys).
+            #     scalar
+            self.assertEqual(dist.naive_tuning_curve(1, minimize=minimize), 0.)
+            self.assertEqual(
+                dist.naive_tuning_curve(3, minimize=minimize),
+                -25. if minimize else 50.,
+            )
+            self.assertEqual(
+                dist.naive_tuning_curve(5, minimize=minimize),
+                -25. if minimize else 100.,
+            )
+            #     1D array
+            self.assertEqual(
+                dist.naive_tuning_curve(
+                    [1, 2, 3, 4, 5],
+                    minimize=minimize,
+                ).tolist(),
+                [0., 0., -25., -25., -25.]
+                if minimize else
+                [0., 50., 50., 100., 100.],
+            )
+            self.assertEqual(
+                dist.naive_tuning_curve(
+                    [2, 4, 1, 3, 5],
+                    minimize=minimize,
+                ).tolist(),
+                [0., -25., 0., -25., -25.]
+                if minimize else
+                [50., 100., 0., 50., 100.],
+            )
+            #     2D array
+            self.assertEqual(
+                dist.naive_tuning_curve(
+                    [
+                        [1, 2, 3, 4, 5],
+                        [2, 4, 1, 3, 5],
+                    ],
+                    minimize=minimize,
+                ).tolist(),
+                [
+                    [0., 0., -25., -25., -25.],
+                    [0., -25., 0., -25., -25.],
+                ]
+                if minimize else
+                [
+                    [0., 50., 50., 100., 100.],
+                    [50., 100., 0., 50., 100.],
+                ],
+            )
+            #   Test ns > len(ys).
+            #     scalar
+            self.assertEqual(
+                dist.naive_tuning_curve(6, minimize=minimize),
+                -25. if minimize else 100.,
+            )
+            self.assertEqual(
+                dist.naive_tuning_curve(10, minimize=minimize),
+                -25. if minimize else 100.,
+            )
+            #     1D array
+            self.assertEqual(
+                dist.naive_tuning_curve(
+                    [1, 2, 10],
+                    minimize=minimize,
+                ).tolist(),
+                [0., 0., -25.]
+                if minimize else
+                [0., 50., 100.],
+            )
+            #     2D array
+            self.assertEqual(
+                dist.naive_tuning_curve(
+                    [
+                        [1, 2, 10],
+                        [10, 2, 1],
+                    ],
+                    minimize=minimize,
+                ).tolist(),
+                [
+                    [0., 0., -25.],
+                    [-25., 0., 0.],
+                ]
+                if minimize else
+                [
+                    [0., 50., 100.],
+                    [100., 50., 0.],
+                ],
+            )
+            #   Test non-integer ns.
+            for n in range(1, 11):
+                self.assertEqual(
+                    dist.naive_tuning_curve(int(n), minimize=minimize),
+                    dist.naive_tuning_curve(float(n), minimize=minimize),
+                )
+            for n in [0.5, 1.5, 10.5]:
+                with self.assertRaises(ValueError):
+                    dist.naive_tuning_curve(n, minimize=minimize)
+                with self.assertRaises(ValueError):
+                    dist.naive_tuning_curve([n], minimize=minimize)
+                with self.assertRaises(ValueError):
+                    dist.naive_tuning_curve([n, 1], minimize=minimize)
+                with self.assertRaises(ValueError):
+                    dist.naive_tuning_curve([[n], [1]], minimize=minimize)
+            #   Test ns <= 0.
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve(0, minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve(-1, minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve([0], minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve([-2], minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve([0, 1], minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve([-2, 1], minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve([[0], [1]], minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve([[-2], [1]], minimize=minimize)
+
+            # Test when ys has duplicates.
+            ys = [0., 0., 50., -25., 100.]
+            dist = nonparametric.EmpiricalDistribution(ys)
+            #   Test 0 < ns <= len(ys).
+            #     scalar
+            self.assertEqual(dist.naive_tuning_curve(1, minimize=minimize), 0.)
+            self.assertEqual(dist.naive_tuning_curve(2, minimize=minimize), 0.)
+            self.assertEqual(
+                dist.naive_tuning_curve(3, minimize=minimize),
+                0. if minimize else 50.,
+            )
+            self.assertEqual(
+                dist.naive_tuning_curve(4, minimize=minimize),
+                -25. if minimize else 50.,
+            )
+            self.assertEqual(
+                dist.naive_tuning_curve(5, minimize=minimize),
+                -25. if minimize else 100.,
+            )
+            #     1D array
+            self.assertEqual(
+                dist.naive_tuning_curve(
+                    [1, 2, 3, 4, 5],
+                    minimize=minimize,
+                ).tolist(),
+                [0., 0., 0., -25., -25.]
+                if minimize else
+                [0., 0., 50., 50., 100.],
+            )
+            self.assertEqual(
+                dist.naive_tuning_curve(
+                    [2, 4, 1, 3, 5],
+                    minimize=minimize,
+                ).tolist(),
+                [0., -25., 0., 0., -25.]
+                if minimize else
+                [0., 50., 0., 50., 100.],
+            )
+            #     2D array
+            self.assertEqual(
+                dist.naive_tuning_curve(
+                    [
+                        [1, 2, 3, 4, 5],
+                        [2, 4, 1, 3, 5],
+                    ],
+                    minimize=minimize,
+                ).tolist(),
+                [
+                    [0., 0., 0., -25., -25.],
+                    [0., -25., 0., 0., -25.],
+                ]
+                if minimize else
+                [
+                    [0., 0., 50., 50., 100.],
+                    [0., 50., 0., 50., 100.],
+                ],
+            )
+            #   Test ns > len(ys).
+            #     scalar
+            self.assertEqual(
+                dist.naive_tuning_curve(6, minimize=minimize),
+                -25. if minimize else 100.,
+            )
+            self.assertEqual(
+                dist.naive_tuning_curve(10, minimize=minimize),
+                -25. if minimize else 100.,
+            )
+            #     1D array
+            self.assertEqual(
+                dist.naive_tuning_curve(
+                    [1, 2, 10],
+                    minimize=minimize,
+                ).tolist(),
+                [0., 0., -25.]
+                if minimize else
+                [0., 0., 100.],
+            )
+            #     2D array
+            self.assertEqual(
+                dist.naive_tuning_curve(
+                    [
+                        [1, 2, 10],
+                        [10, 2, 1],
+                    ],
+                    minimize=minimize,
+                ).tolist(),
+                [
+                    [0., 0., -25.],
+                    [-25., 0., 0.],
+                ]
+                if minimize else
+                [
+                    [0., 0., 100.],
+                    [100., 0., 0.],
+                ],
+            )
+
+            # Test when ws != None.
+            ys = [-1, 0, 1]
+            ws = [0.1, 0.5, 0.4]
+            dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve(1, minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve([1], minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve([2, 1], minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.naive_tuning_curve([[2], [1]], minimize=minimize)
+
+    def test_v_tuning_curve(self):
+        for minimize in [False, True]:
+            # Test when len(ys) == 1.
+            ys = [42.]
+            dist = nonparametric.EmpiricalDistribution(ys)
+
+            self.assertEqual(dist.v_tuning_curve(1, minimize=minimize), 42.)
+            self.assertEqual(dist.v_tuning_curve(10, minimize=minimize), 42.)
+            self.assertEqual(
+                dist.v_tuning_curve([1, 10], minimize=minimize).tolist(),
+                [42., 42.],
+            )
+            self.assertEqual(
+                dist.v_tuning_curve(
+                    [
+                        [1, 10],
+                        [10, 1],
+                    ],
+                    minimize=minimize,
+                ).tolist(),
                 [
                     [42., 42.],
                     [42., 42.],
@@ -693,11 +1546,15 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
 
             # Test when len(ys) > 1.
             ys = [0., 50., 25., 100., 75.]
-            ws = np.random.dirichlet(np.ones_like(ys)) if use_weights else None
-            dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+            dist = nonparametric.EmpiricalDistribution(ys)
             curve = np.mean(
+                np.minimum.accumulate(
+                    np.random.choice(ys, size=(2_500, 7), replace=True),
+                    axis=1,
+                )
+                if minimize else
                 np.maximum.accumulate(
-                    np.random.choice(ys, p=ws, size=(2_500, 7), replace=True),
+                    np.random.choice(ys, size=(2_500, 7), replace=True),
                     axis=1,
                 ),
                 axis=0,
@@ -705,37 +1562,40 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             #   Test 0 < ns <= len(ys).
             #     scalar
             self.assertAlmostEqual(
-                dist.average_tuning_curve(1),
+                dist.v_tuning_curve(1, minimize=minimize),
                 curve[0],
                 delta=5.,
             )
             self.assertAlmostEqual(
-                dist.average_tuning_curve(3),
+                dist.v_tuning_curve(3, minimize=minimize),
                 curve[2],
                 delta=5.,
             )
             self.assertAlmostEqual(
-                dist.average_tuning_curve(5),
+                dist.v_tuning_curve(5, minimize=minimize),
                 curve[4],
                 delta=5.,
             )
             #     1D array
             self.assertTrue(np.allclose(
-                dist.average_tuning_curve([1, 2, 3, 4, 5]),
+                dist.v_tuning_curve([1, 2, 3, 4, 5], minimize=minimize),
                 curve[:5],
                 atol=5.,
             ))
             self.assertTrue(np.allclose(
-                dist.average_tuning_curve([2, 4, 1, 3, 5]),
+                dist.v_tuning_curve([2, 4, 1, 3, 5], minimize=minimize),
                 [curve[1], curve[3], curve[0], curve[2], curve[4]],
                 atol=5.,
             ))
             #     2D array
             self.assertTrue(np.allclose(
-                dist.average_tuning_curve([
-                    [1, 2, 3, 4, 5],
-                    [2, 4, 1, 3, 5],
-                ]),
+                dist.v_tuning_curve(
+                    [
+                        [1, 2, 3, 4, 5],
+                        [2, 4, 1, 3, 5],
+                    ],
+                    minimize=minimize,
+                ),
                 [
                     curve[:5],
                     [curve[1], curve[3], curve[0], curve[2], curve[4]],
@@ -745,62 +1605,80 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             #   Test ns > len(ys).
             #     scalar
             self.assertAlmostEqual(
-                dist.average_tuning_curve(6),
+                dist.v_tuning_curve(6, minimize=minimize),
                 curve[5],
                 delta=5.,
             )
             self.assertAlmostEqual(
-                dist.average_tuning_curve(7),
+                dist.v_tuning_curve(7, minimize=minimize),
                 curve[6],
                 delta=5.,
             )
             #     1D array
             self.assertTrue(np.allclose(
-                dist.average_tuning_curve([1, 2, 7]),
+                dist.v_tuning_curve([1, 2, 7], minimize=minimize),
                 [curve[0], curve[1], curve[6]],
                 atol=5.,
             ))
             #     2D array
             self.assertTrue(np.allclose(
-                dist.average_tuning_curve([
-                    [1, 2, 7],
-                    [6, 2, 1],
-                ]),
+                dist.v_tuning_curve(
+                    [
+                        [1, 2, 7],
+                        [6, 2, 1],
+                    ],
+                    minimize=minimize,
+                ),
                 [
                     [curve[0], curve[1], curve[6]],
                     [curve[5], curve[1], curve[0]],
                 ],
                 atol=5.,
             ))
+            #   Test non-integer ns.
+            for n in range(1, 11):
+                self.assertEqual(
+                    dist.v_tuning_curve(int(n), minimize=minimize),
+                    dist.v_tuning_curve(float(n), minimize=minimize),
+                )
+            for n in [0.5, 1.5, 10.5]:
+                with self.assertRaises(ValueError):
+                    dist.v_tuning_curve(n, minimize=minimize)
+                with self.assertRaises(ValueError):
+                    dist.v_tuning_curve([n], minimize=minimize)
+                with self.assertRaises(ValueError):
+                    dist.v_tuning_curve([n, 1], minimize=minimize)
+                with self.assertRaises(ValueError):
+                    dist.v_tuning_curve([[n], [1]], minimize=minimize)
             #   Test ns <= 0.
             with self.assertRaises(ValueError):
-                dist.average_tuning_curve(0)
+                dist.v_tuning_curve(0, minimize=minimize)
             with self.assertRaises(ValueError):
-                dist.average_tuning_curve(-1)
+                dist.v_tuning_curve(-1, minimize=minimize)
             with self.assertRaises(ValueError):
-                dist.average_tuning_curve([0])
+                dist.v_tuning_curve([0], minimize=minimize)
             with self.assertRaises(ValueError):
-                dist.average_tuning_curve([-2])
+                dist.v_tuning_curve([-2], minimize=minimize)
             with self.assertRaises(ValueError):
-                dist.average_tuning_curve([0, 1])
+                dist.v_tuning_curve([0, 1], minimize=minimize)
             with self.assertRaises(ValueError):
-                dist.average_tuning_curve([-2, 1])
+                dist.v_tuning_curve([-2, 1], minimize=minimize)
             with self.assertRaises(ValueError):
-                dist.average_tuning_curve([[0], [1]])
+                dist.v_tuning_curve([[0], [1]], minimize=minimize)
             with self.assertRaises(ValueError):
-                dist.average_tuning_curve([[-2], [1]])
+                dist.v_tuning_curve([[-2], [1]], minimize=minimize)
 
             # Test when ys has duplicates.
             ys = [0., 0., 50., 0., 100.]
-            ws = (
-                np.random.dirichlet(np.ones_like(ys))
-                if use_weights else
-                None
-            )
-            dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+            dist = nonparametric.EmpiricalDistribution(ys)
             curve = np.mean(
+                np.minimum.accumulate(
+                    np.random.choice(ys, size=(2_500, 7), replace=True),
+                    axis=1,
+                )
+                if minimize else
                 np.maximum.accumulate(
-                    np.random.choice(ys, p=ws, size=(2_500, 7), replace=True),
+                    np.random.choice(ys, size=(2_500, 7), replace=True),
                     axis=1,
                 ),
                 axis=0,
@@ -808,37 +1686,40 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             #   Test 0 < ns <= len(ys).
             #     scalar
             self.assertAlmostEqual(
-                dist.average_tuning_curve(1),
+                dist.v_tuning_curve(1, minimize=minimize),
                 curve[0],
                 delta=5.,
             )
             self.assertAlmostEqual(
-                dist.average_tuning_curve(3),
+                dist.v_tuning_curve(3, minimize=minimize),
                 curve[2],
                 delta=5.,
             )
             self.assertAlmostEqual(
-                dist.average_tuning_curve(5),
+                dist.v_tuning_curve(5, minimize=minimize),
                 curve[4],
                 delta=5.,
             )
             #     1D array
             self.assertTrue(np.allclose(
-                dist.average_tuning_curve([1, 2, 3, 4, 5]),
+                dist.v_tuning_curve([1, 2, 3, 4, 5], minimize=minimize),
                 curve[:5],
                 atol=5.,
             ))
             self.assertTrue(np.allclose(
-                dist.average_tuning_curve([2, 4, 1, 3, 5]),
+                dist.v_tuning_curve([2, 4, 1, 3, 5], minimize=minimize),
                 [curve[1], curve[3], curve[0], curve[2], curve[4]],
                 atol=5.,
             ))
             #     2D array
             self.assertTrue(np.allclose(
-                dist.average_tuning_curve([
-                    [1, 2, 3, 4, 5],
-                    [2, 4, 1, 3, 5],
-                ]),
+                dist.v_tuning_curve(
+                    [
+                        [1, 2, 3, 4, 5],
+                        [2, 4, 1, 3, 5],
+                    ],
+                    minimize=minimize,
+                ),
                 [
                     curve[:5],
                     [curve[1], curve[3], curve[0], curve[2], curve[4]],
@@ -848,27 +1729,30 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             #   Test ns > len(ys).
             #     scalar
             self.assertAlmostEqual(
-                dist.average_tuning_curve(6),
+                dist.v_tuning_curve(6, minimize=minimize),
                 curve[5],
                 delta=5.,
             )
             self.assertAlmostEqual(
-                dist.average_tuning_curve(7),
+                dist.v_tuning_curve(7, minimize=minimize),
                 curve[6],
                 delta=5.,
             )
             #     1D array
             self.assertTrue(np.allclose(
-                dist.average_tuning_curve([1, 2, 7]),
+                dist.v_tuning_curve([1, 2, 7], minimize=minimize),
                 [curve[0], curve[1], curve[6]],
                 atol=5.,
             ))
             #     2D array
             self.assertTrue(np.allclose(
-                dist.average_tuning_curve([
-                    [1, 2, 7],
-                    [6, 2, 1],
-                ]),
+                dist.v_tuning_curve(
+                    [
+                        [1, 2, 7],
+                        [6, 2, 1],
+                    ],
+                    minimize=minimize,
+                ),
                 [
                     [curve[0], curve[1], curve[6]],
                     [curve[5], curve[1], curve[0]],
@@ -876,612 +1760,279 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 atol=5.,
             ))
 
-            # Test when n is non-integral.
-            n_trials = 10_000
-            ys = [0., 50., 25., 100., 75.]
-            ws = (
-                np.random.dirichlet(np.ones_like(ys))
-                if use_weights else
-                None
-            )
+            # Test when ws != None.
+            ys = [-1, 0, 1]
+            ws = [0.1, 0.5, 0.4]
             dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-            # Generate ground truth values along the tuning curve.
-            ys_sorted, ws_sorted = utils.sort_by_first(
-                ys,
-                ws if ws is not None else np.ones_like(ys) / len(ys),
-            )
-            ws_sorted_cumsum = np.cumsum(ws_sorted)
-            # NOTE: Make sure to include 0 < ns <= len(ys) and ns > len(ys).
-            ns = np.arange(10) + 0.5
-            ts = np.mean([
-                np.random.choice(
-                    ys_sorted,
-                    p=(
-                        ws_sorted_cumsum**n
-                        - np.concatenate([[0], ws_sorted_cumsum[:-1]**n])
-                    ),
-                    size=n_trials,
-                )
-                for n in ns
-            ], axis=1)
-            # Compute a bound on the standard error for our ground truth.
-            err = 6 * (
-                0.25 * (np.max(ys) - np.min(ys))**2  # Popoviciu's inequality
-                / n_trials                           # divided by sample size
-            )
-            #   scalar
-            for n, t in zip(ns, ts):
-                self.assertAlmostEqual(
-                    dist.average_tuning_curve(n), t, delta=err,
-                )
-            #   1D array
-            self.assertTrue(np.allclose(
-                dist.average_tuning_curve([ns[0], ns[-1]]),
-                np.array([ts[0], ts[-1]]),
-                atol=err,
-            ))
-            #   2D array
-            self.assertTrue(np.allclose(
-                dist.average_tuning_curve([
-                    [ ns[0], ns[3], ns[-1]],
-                    [ns[-1], ns[0],  ns[3]],
-                ]),
-                np.array([
-                    [ ts[0], ts[3], ts[-1]],
-                    [ts[-1], ts[0],  ts[3]],
-                ]),
-                atol=err,
-            ))
 
-    def test_naive_tuning_curve(self):
-        # Test when len(ys) == 1.
-        ys = [42.]
-        dist = nonparametric.EmpiricalDistribution(ys)
-
-        self.assertEqual(dist.naive_tuning_curve(1), 42.)
-        self.assertEqual(dist.naive_tuning_curve(10), 42.)
-        self.assertEqual(
-            dist.naive_tuning_curve([1, 10]).tolist(),
-            [42., 42.],
-        )
-        self.assertEqual(
-            dist.naive_tuning_curve([
-                [1, 10],
-                [10, 1],
-            ]).tolist(),
-            [
-                [42., 42.],
-                [42., 42.],
-            ],
-        )
-
-        # Test when len(ys) > 1.
-        ys = [0., 50., 25., 100., 75.]
-        dist = nonparametric.EmpiricalDistribution(ys)
-        #   Test 0 < ns <= len(ys).
-        #     scalar
-        self.assertEqual(dist.naive_tuning_curve(1), 0.)
-        self.assertEqual(dist.naive_tuning_curve(3), 50.)
-        self.assertEqual(dist.naive_tuning_curve(5), 100.)
-        #     1D array
-        self.assertEqual(
-            dist.naive_tuning_curve([1, 2, 3, 4, 5]).tolist(),
-            [0., 50., 50., 100., 100.],
-        )
-        self.assertEqual(
-            dist.naive_tuning_curve([2, 4, 1, 3, 5]).tolist(),
-            [50., 100., 0., 50., 100.],
-        )
-        #     2D array
-        self.assertEqual(
-            dist.naive_tuning_curve([
-                [1, 2, 3, 4, 5],
-                [2, 4, 1, 3, 5],
-            ]).tolist(),
-            [
-                [0., 50., 50., 100., 100.],
-                [50., 100., 0., 50., 100.],
-            ],
-        )
-        #   Test ns > len(ys).
-        #     scalar
-        self.assertEqual(dist.naive_tuning_curve(6), 100.)
-        self.assertEqual(dist.naive_tuning_curve(10), 100.)
-        #     1D array
-        self.assertEqual(
-            dist.naive_tuning_curve([1, 2, 10]).tolist(),
-            [0., 50., 100.],
-        )
-        #     2D array
-        self.assertEqual(
-            dist.naive_tuning_curve([
-                [1, 2, 10],
-                [10, 2, 1],
-            ]).tolist(),
-            [
-                [0., 50., 100.],
-                [100., 50., 0.],
-            ],
-        )
-        #   Test non-integer ns.
-        for n in range(1, 11):
-            self.assertEqual(
-                dist.naive_tuning_curve(int(n)),
-                dist.naive_tuning_curve(float(n)),
-            )
-        for n in [0.5, 1.5, 10.5]:
             with self.assertRaises(ValueError):
-                dist.naive_tuning_curve(n)
+                dist.v_tuning_curve(1, minimize=minimize)
             with self.assertRaises(ValueError):
-                dist.naive_tuning_curve([n])
+                dist.v_tuning_curve([1], minimize=minimize)
             with self.assertRaises(ValueError):
-                dist.naive_tuning_curve([n, 1])
+                dist.v_tuning_curve([2, 1], minimize=minimize)
             with self.assertRaises(ValueError):
-                dist.naive_tuning_curve([[n], [1]])
-        #   Test ns <= 0.
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve(0)
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve(-1)
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([0])
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([-2])
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([0, 1])
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([-2, 1])
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([[0], [1]])
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([[-2], [1]])
-
-        # Test when ys has duplicates.
-        ys = [0., 0., 50., 0., 100.]
-        dist = nonparametric.EmpiricalDistribution(ys)
-        #   Test 0 < ns <= len(ys).
-        #     scalar
-        self.assertEqual(dist.naive_tuning_curve(1), 0.)
-        self.assertEqual(dist.naive_tuning_curve(2), 0.)
-        self.assertEqual(dist.naive_tuning_curve(3), 50.)
-        self.assertEqual(dist.naive_tuning_curve(4), 50.)
-        self.assertEqual(dist.naive_tuning_curve(5), 100.)
-        #     1D array
-        self.assertEqual(
-            dist.naive_tuning_curve([1, 2, 3, 4, 5]).tolist(),
-            [0., 0., 50., 50., 100.],
-        )
-        self.assertEqual(
-            dist.naive_tuning_curve([2, 4, 1, 3, 5]).tolist(),
-            [0., 50., 0., 50., 100.],
-        )
-        #     2D array
-        self.assertEqual(
-            dist.naive_tuning_curve([
-                [1, 2, 3, 4, 5],
-                [2, 4, 1, 3, 5],
-            ]).tolist(),
-            [
-                [0., 0., 50., 50., 100.],
-                [0., 50., 0., 50., 100.],
-            ],
-        )
-        #   Test ns > len(ys).
-        #     scalar
-        self.assertEqual(dist.naive_tuning_curve(6), 100.)
-        self.assertEqual(dist.naive_tuning_curve(10), 100.)
-        #     1D array
-        self.assertEqual(
-            dist.naive_tuning_curve([1, 2, 10]).tolist(),
-            [0., 0., 100.],
-        )
-        #     2D array
-        self.assertEqual(
-            dist.naive_tuning_curve([
-                [1, 2, 10],
-                [10, 2, 1],
-            ]).tolist(),
-            [
-                [0., 0., 100.],
-                [100., 0., 0.],
-            ],
-        )
-
-        # Test when ws != None.
-        ys = [-1, 0, 1]
-        ws = [0.1, 0.5, 0.4]
-        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve(1)
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([1])
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([2, 1])
-        with self.assertRaises(ValueError):
-            dist.naive_tuning_curve([[2], [1]])
-
-    def test_v_tuning_curve(self):
-        # Test when len(ys) == 1.
-        ys = [42.]
-        dist = nonparametric.EmpiricalDistribution(ys)
-
-        self.assertEqual(dist.v_tuning_curve(1), 42.)
-        self.assertEqual(dist.v_tuning_curve(10), 42.)
-        self.assertEqual(
-            dist.v_tuning_curve([1, 10]).tolist(),
-            [42., 42.],
-        )
-        self.assertEqual(
-            dist.v_tuning_curve([
-                [1, 10],
-                [10, 1],
-            ]).tolist(),
-            [
-                [42., 42.],
-                [42., 42.],
-            ],
-        )
-
-        # Test when len(ys) > 1.
-        ys = [0., 50., 25., 100., 75.]
-        dist = nonparametric.EmpiricalDistribution(ys)
-        curve = np.mean(
-            np.maximum.accumulate(
-                np.random.choice(ys, size=(2_500, 7), replace=True),
-                axis=1,
-            ),
-            axis=0,
-        )
-        #   Test 0 < ns <= len(ys).
-        #     scalar
-        self.assertAlmostEqual(dist.v_tuning_curve(1), curve[0], delta=5.)
-        self.assertAlmostEqual(dist.v_tuning_curve(3), curve[2], delta=5.)
-        self.assertAlmostEqual(dist.v_tuning_curve(5), curve[4], delta=5.)
-        #     1D array
-        self.assertTrue(np.allclose(
-            dist.v_tuning_curve([1, 2, 3, 4, 5]),
-            curve[:5],
-            atol=5.,
-        ))
-        self.assertTrue(np.allclose(
-            dist.v_tuning_curve([2, 4, 1, 3, 5]),
-            [curve[1], curve[3], curve[0], curve[2], curve[4]],
-            atol=5.,
-        ))
-        #     2D array
-        self.assertTrue(np.allclose(
-            dist.v_tuning_curve([
-                [1, 2, 3, 4, 5],
-                [2, 4, 1, 3, 5],
-            ]),
-            [
-                curve[:5],
-                [curve[1], curve[3], curve[0], curve[2], curve[4]],
-            ],
-            atol=5.,
-        ))
-        #   Test ns > len(ys).
-        #     scalar
-        self.assertAlmostEqual(dist.v_tuning_curve(6), curve[5], delta=5.)
-        self.assertAlmostEqual(dist.v_tuning_curve(7), curve[6], delta=5.)
-        #     1D array
-        self.assertTrue(np.allclose(
-            dist.v_tuning_curve([1, 2, 7]),
-            [curve[0], curve[1], curve[6]],
-            atol=5.,
-        ))
-        #     2D array
-        self.assertTrue(np.allclose(
-            dist.v_tuning_curve([
-                [1, 2, 7],
-                [6, 2, 1],
-            ]),
-            [
-                [curve[0], curve[1], curve[6]],
-                [curve[5], curve[1], curve[0]],
-            ],
-            atol=5.,
-        ))
-        #   Test non-integer ns.
-        for n in range(1, 11):
-            self.assertEqual(
-                dist.v_tuning_curve(int(n)),
-                dist.v_tuning_curve(float(n)),
-            )
-        for n in [0.5, 1.5, 10.5]:
-            with self.assertRaises(ValueError):
-                dist.v_tuning_curve(n)
-            with self.assertRaises(ValueError):
-                dist.v_tuning_curve([n])
-            with self.assertRaises(ValueError):
-                dist.v_tuning_curve([n, 1])
-            with self.assertRaises(ValueError):
-                dist.v_tuning_curve([[n], [1]])
-        #   Test ns <= 0.
-        with self.assertRaises(ValueError):
-            dist.v_tuning_curve(0)
-        with self.assertRaises(ValueError):
-            dist.v_tuning_curve(-1)
-        with self.assertRaises(ValueError):
-            dist.v_tuning_curve([0])
-        with self.assertRaises(ValueError):
-            dist.v_tuning_curve([-2])
-        with self.assertRaises(ValueError):
-            dist.v_tuning_curve([0, 1])
-        with self.assertRaises(ValueError):
-            dist.v_tuning_curve([-2, 1])
-        with self.assertRaises(ValueError):
-            dist.v_tuning_curve([[0], [1]])
-        with self.assertRaises(ValueError):
-            dist.v_tuning_curve([[-2], [1]])
-
-        # Test when ys has duplicates.
-        ys = [0., 0., 50., 0., 100.]
-        dist = nonparametric.EmpiricalDistribution(ys)
-        curve = np.mean(
-            np.maximum.accumulate(
-                np.random.choice(ys, size=(2_500, 7), replace=True),
-                axis=1,
-            ),
-            axis=0,
-        )
-        #   Test 0 < ns <= len(ys).
-        #     scalar
-        self.assertAlmostEqual(dist.v_tuning_curve(1), curve[0], delta=5.)
-        self.assertAlmostEqual(dist.v_tuning_curve(3), curve[2], delta=5.)
-        self.assertAlmostEqual(dist.v_tuning_curve(5), curve[4], delta=5.)
-        #     1D array
-        self.assertTrue(np.allclose(
-            dist.v_tuning_curve([1, 2, 3, 4, 5]),
-            curve[:5],
-            atol=5.,
-        ))
-        self.assertTrue(np.allclose(
-            dist.v_tuning_curve([2, 4, 1, 3, 5]),
-            [curve[1], curve[3], curve[0], curve[2], curve[4]],
-            atol=5.,
-        ))
-        #     2D array
-        self.assertTrue(np.allclose(
-            dist.v_tuning_curve([
-                [1, 2, 3, 4, 5],
-                [2, 4, 1, 3, 5],
-            ]),
-            [
-                curve[:5],
-                [curve[1], curve[3], curve[0], curve[2], curve[4]],
-            ],
-            atol=5.,
-        ))
-        #   Test ns > len(ys).
-        #     scalar
-        self.assertAlmostEqual(dist.v_tuning_curve(6), curve[5], delta=5.)
-        self.assertAlmostEqual(dist.v_tuning_curve(7), curve[6], delta=5.)
-        #     1D array
-        self.assertTrue(np.allclose(
-            dist.v_tuning_curve([1, 2, 7]),
-            [curve[0], curve[1], curve[6]],
-            atol=5.,
-        ))
-        #     2D array
-        self.assertTrue(np.allclose(
-            dist.v_tuning_curve([
-                [1, 2, 7],
-                [6, 2, 1],
-            ]),
-            [
-                [curve[0], curve[1], curve[6]],
-                [curve[5], curve[1], curve[0]],
-            ],
-            atol=5.,
-        ))
-
-        # Test when ws != None.
-        ys = [-1, 0, 1]
-        ws = [0.1, 0.5, 0.4]
-        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-
-        with self.assertRaises(ValueError):
-            dist.v_tuning_curve(1)
-        with self.assertRaises(ValueError):
-            dist.v_tuning_curve([1])
-        with self.assertRaises(ValueError):
-            dist.v_tuning_curve([2, 1])
-        with self.assertRaises(ValueError):
-            dist.v_tuning_curve([[2], [1]])
+                dist.v_tuning_curve([[2], [1]], minimize=minimize)
 
     def test_u_tuning_curve(self):
-        # Test when len(ys) == 1.
-        ys = [42.]
-        dist = nonparametric.EmpiricalDistribution(ys)
+        for minimize in [False, True]:
+            # Test when len(ys) == 1.
+            ys = [42.]
+            dist = nonparametric.EmpiricalDistribution(ys)
 
-        self.assertEqual(dist.u_tuning_curve(1), 42.)
-        self.assertEqual(dist.u_tuning_curve(10), 42.)
-        self.assertEqual(
-            dist.u_tuning_curve([1, 10]).tolist(),
-            [42., 42.],
-        )
-        self.assertEqual(
-            dist.u_tuning_curve([
-                [1, 10],
-                [10, 1],
-            ]).tolist(),
-            [
-                [42., 42.],
-                [42., 42.],
-            ],
-        )
-
-        # Test when len(ys) > 1.
-        ys = [0., 50., 25., 100., 75.]
-        dist = nonparametric.EmpiricalDistribution(ys)
-        curve = np.mean(
-            np.maximum.accumulate(
-                # Sort random numbers to batch sampling without replacement.
-                np.array(ys)[np.argsort(np.random.rand(2_500, 5), axis=1)],
-                axis=1,
-            ),
-            axis=0,
-        )
-        #   Test 0 < ns <= len(ys).
-        #     scalar
-        self.assertAlmostEqual(dist.u_tuning_curve(1), curve[0], delta=5.)
-        self.assertAlmostEqual(dist.u_tuning_curve(3), curve[2], delta=5.)
-        self.assertAlmostEqual(dist.u_tuning_curve(5), curve[4], delta=5.)
-        #     1D array
-        self.assertTrue(np.allclose(
-            dist.u_tuning_curve([1, 2, 3, 4, 5]),
-            curve,
-            atol=5.,
-        ))
-        self.assertTrue(np.allclose(
-            dist.u_tuning_curve([2, 4, 1, 3, 5]),
-            [curve[1], curve[3], curve[0], curve[2], curve[4]],
-            atol=5.,
-        ))
-        #     2D array
-        self.assertTrue(np.allclose(
-            dist.u_tuning_curve([
-                [1, 2, 3, 4, 5],
-                [2, 4, 1, 3, 5],
-            ]),
-            [
-                curve,
-                [curve[1], curve[3], curve[0], curve[2], curve[4]],
-            ],
-            atol=5.,
-        ))
-        #   Test ns > len(ys).
-        #     scalar
-        self.assertAlmostEqual(dist.u_tuning_curve(6), curve[4], delta=5.)
-        self.assertAlmostEqual(dist.u_tuning_curve(7), curve[4], delta=5.)
-        #     1D array
-        self.assertTrue(np.allclose(
-            dist.u_tuning_curve([1, 2, 7]),
-            [curve[0], curve[1], curve[4]],
-            atol=5.,
-        ))
-        #     2D array
-        self.assertTrue(np.allclose(
-            dist.u_tuning_curve([
-                [1, 2, 7],
-                [6, 2, 1],
-            ]),
-            [
-                [curve[0], curve[1], curve[4]],
-                [curve[4], curve[1], curve[0]],
-            ],
-            atol=5.,
-        ))
-        #   Test non-integer ns.
-        for n in range(1, 11):
+            self.assertEqual(dist.u_tuning_curve(1, minimize=minimize), 42.)
+            self.assertEqual(dist.u_tuning_curve(10, minimize=minimize), 42.)
             self.assertEqual(
-                dist.u_tuning_curve(int(n)),
-                dist.u_tuning_curve(float(n)),
+                dist.u_tuning_curve([1, 10], minimize=minimize).tolist(),
+                [42., 42.],
             )
-        for n in [0.5, 1.5, 10.5]:
-            with self.assertRaises(ValueError):
-                dist.u_tuning_curve(n)
-            with self.assertRaises(ValueError):
-                dist.u_tuning_curve([n])
-            with self.assertRaises(ValueError):
-                dist.u_tuning_curve([n, 1])
-            with self.assertRaises(ValueError):
-                dist.u_tuning_curve([[n], [1]])
-        #   Test ns <= 0.
-        with self.assertRaises(ValueError):
-            dist.u_tuning_curve(0)
-        with self.assertRaises(ValueError):
-            dist.u_tuning_curve(-1)
-        with self.assertRaises(ValueError):
-            dist.u_tuning_curve([0])
-        with self.assertRaises(ValueError):
-            dist.u_tuning_curve([-2])
-        with self.assertRaises(ValueError):
-            dist.u_tuning_curve([0, 1])
-        with self.assertRaises(ValueError):
-            dist.u_tuning_curve([-2, 1])
-        with self.assertRaises(ValueError):
-            dist.u_tuning_curve([[0], [1]])
-        with self.assertRaises(ValueError):
-            dist.u_tuning_curve([[-2], [1]])
+            self.assertEqual(
+                dist.u_tuning_curve(
+                    [
+                        [1, 10],
+                        [10, 1],
+                    ],
+                    minimize=minimize,
+                ).tolist(),
+                [
+                    [42., 42.],
+                    [42., 42.],
+                ],
+            )
 
-        # Test when ys has duplicates.
-        ys = [0., 0., 50., 0., 100.]
-        dist = nonparametric.EmpiricalDistribution(ys)
-        curve = np.mean(
-            np.maximum.accumulate(
-                # Sort random numbers to batch sampling without replacement.
-                np.array(ys)[np.argsort(np.random.rand(2_500, 5), axis=1)],
-                axis=1,
-            ),
-            axis=0,
-        )
-        #   Test 0 < ns <= len(ys).
-        #     scalar
-        self.assertAlmostEqual(dist.u_tuning_curve(1), curve[0], delta=5.)
-        self.assertAlmostEqual(dist.u_tuning_curve(3), curve[2], delta=5.)
-        self.assertAlmostEqual(dist.u_tuning_curve(5), curve[4], delta=5.)
-        #     1D array
-        self.assertTrue(np.allclose(
-            dist.u_tuning_curve([1, 2, 3, 4, 5]),
-            curve,
-            atol=5.,
-        ))
-        self.assertTrue(np.allclose(
-            dist.u_tuning_curve([2, 4, 1, 3, 5]),
-            [curve[1], curve[3], curve[0], curve[2], curve[4]],
-            atol=5.,
-        ))
-        #     2D array
-        self.assertTrue(np.allclose(
-            dist.u_tuning_curve([
-                [1, 2, 3, 4, 5],
-                [2, 4, 1, 3, 5],
-            ]),
-            [
+            # Test when len(ys) > 1.
+            ys = [0., 50., 25., 100., 75.]
+            dist = nonparametric.EmpiricalDistribution(ys)
+            curve = np.mean(
+                np.minimum.accumulate(
+                    # Sort random numbers to batch sampling without replacement.
+                    np.array(ys)[np.argsort(np.random.rand(2_500, 5), axis=1)],
+                    axis=1,
+                )
+                if minimize else
+                np.maximum.accumulate(
+                    # Sort random numbers to batch sampling without replacement.
+                    np.array(ys)[np.argsort(np.random.rand(2_500, 5), axis=1)],
+                    axis=1,
+                ),
+                axis=0,
+            )
+            #   Test 0 < ns <= len(ys).
+            #     scalar
+            self.assertAlmostEqual(
+                dist.u_tuning_curve(1, minimize=minimize),
+                curve[0],
+                delta=5.,
+            )
+            self.assertAlmostEqual(
+                dist.u_tuning_curve(3, minimize=minimize),
+                curve[2],
+                delta=5.,
+            )
+            self.assertAlmostEqual(
+                dist.u_tuning_curve(5, minimize=minimize),
+                curve[4],
+                delta=5.,
+            )
+            #     1D array
+            self.assertTrue(np.allclose(
+                dist.u_tuning_curve([1, 2, 3, 4, 5], minimize=minimize),
                 curve,
+                atol=5.,
+            ))
+            self.assertTrue(np.allclose(
+                dist.u_tuning_curve([2, 4, 1, 3, 5], minimize=minimize),
                 [curve[1], curve[3], curve[0], curve[2], curve[4]],
-            ],
-            atol=5.,
-        ))
-        #   Test ns > len(ys).
-        #     scalar
-        self.assertAlmostEqual(dist.u_tuning_curve(6), curve[4], delta=5.)
-        self.assertAlmostEqual(dist.u_tuning_curve(7), curve[4], delta=5.)
-        #     1D array
-        self.assertTrue(np.allclose(
-            dist.u_tuning_curve([1, 2, 7]),
-            [curve[0], curve[1], curve[4]],
-            atol=5.,
-        ))
-        #     2D array
-        self.assertTrue(np.allclose(
-            dist.u_tuning_curve([
-                [1, 2, 7],
-                [6, 2, 1],
-            ]),
-            [
+                atol=5.,
+            ))
+            #     2D array
+            self.assertTrue(np.allclose(
+                dist.u_tuning_curve(
+                    [
+                        [1, 2, 3, 4, 5],
+                        [2, 4, 1, 3, 5],
+                    ],
+                    minimize=minimize,
+                ),
+                [
+                    curve,
+                    [curve[1], curve[3], curve[0], curve[2], curve[4]],
+                ],
+                atol=5.,
+            ))
+            #   Test ns > len(ys).
+            #     scalar
+            self.assertAlmostEqual(
+                dist.u_tuning_curve(6, minimize=minimize),
+                curve[4],
+                delta=5.,
+            )
+            self.assertAlmostEqual(
+                dist.u_tuning_curve(7, minimize=minimize),
+                curve[4],
+                delta=5.,
+            )
+            #     1D array
+            self.assertTrue(np.allclose(
+                dist.u_tuning_curve([1, 2, 7], minimize=minimize),
                 [curve[0], curve[1], curve[4]],
-                [curve[4], curve[1], curve[0]],
-            ],
-            atol=5.,
-        ))
+                atol=5.,
+            ))
+            #     2D array
+            self.assertTrue(np.allclose(
+                dist.u_tuning_curve(
+                    [
+                        [1, 2, 7],
+                        [6, 2, 1],
+                    ],
+                    minimize=minimize,
+                ),
+                [
+                    [curve[0], curve[1], curve[4]],
+                    [curve[4], curve[1], curve[0]],
+                ],
+                atol=5.,
+            ))
+            #   Test non-integer ns.
+            for n in range(1, 11):
+                self.assertEqual(
+                    dist.u_tuning_curve(int(n), minimize=minimize),
+                    dist.u_tuning_curve(float(n), minimize=minimize),
+                )
+            for n in [0.5, 1.5, 10.5]:
+                with self.assertRaises(ValueError):
+                    dist.u_tuning_curve(n, minimize=minimize)
+                with self.assertRaises(ValueError):
+                    dist.u_tuning_curve([n], minimize=minimize)
+                with self.assertRaises(ValueError):
+                    dist.u_tuning_curve([n, 1], minimize=minimize)
+                with self.assertRaises(ValueError):
+                    dist.u_tuning_curve([[n], [1]], minimize=minimize)
+            #   Test ns <= 0.
+            with self.assertRaises(ValueError):
+                dist.u_tuning_curve(0, minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.u_tuning_curve(-1, minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.u_tuning_curve([0], minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.u_tuning_curve([-2], minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.u_tuning_curve([0, 1], minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.u_tuning_curve([-2, 1], minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.u_tuning_curve([[0], [1]], minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.u_tuning_curve([[-2], [1]], minimize=minimize)
 
-        # Test when ws != None.
-        ys = [-1, 0, 1]
-        ws = [0.1, 0.5, 0.4]
-        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+            # Test when ys has duplicates.
+            ys = [0., 0., 50., 0., 100.]
+            dist = nonparametric.EmpiricalDistribution(ys)
+            curve = np.mean(
+                np.minimum.accumulate(
+                    # Sort random numbers to batch sampling without replacement.
+                    np.array(ys)[np.argsort(np.random.rand(2_500, 5), axis=1)],
+                    axis=1,
+                )
+                if minimize else
+                np.maximum.accumulate(
+                    # Sort random numbers to batch sampling without replacement.
+                    np.array(ys)[np.argsort(np.random.rand(2_500, 5), axis=1)],
+                    axis=1,
+                ),
+                axis=0,
+            )
+            #   Test 0 < ns <= len(ys).
+            #     scalar
+            self.assertAlmostEqual(
+                dist.u_tuning_curve(1, minimize=minimize),
+                curve[0],
+                delta=5.,
+            )
+            self.assertAlmostEqual(
+                dist.u_tuning_curve(3, minimize=minimize),
+                curve[2],
+                delta=5.,
+            )
+            self.assertAlmostEqual(
+                dist.u_tuning_curve(5, minimize=minimize),
+                curve[4],
+                delta=5.,
+            )
+            #     1D array
+            self.assertTrue(np.allclose(
+                dist.u_tuning_curve([1, 2, 3, 4, 5], minimize=minimize),
+                curve,
+                atol=5.,
+            ))
+            self.assertTrue(np.allclose(
+                dist.u_tuning_curve([2, 4, 1, 3, 5], minimize=minimize),
+                [curve[1], curve[3], curve[0], curve[2], curve[4]],
+                atol=5.,
+            ))
+            #     2D array
+            self.assertTrue(np.allclose(
+                dist.u_tuning_curve(
+                    [
+                        [1, 2, 3, 4, 5],
+                        [2, 4, 1, 3, 5],
+                    ],
+                    minimize=minimize,
+                ),
+                [
+                    curve,
+                    [curve[1], curve[3], curve[0], curve[2], curve[4]],
+                ],
+                atol=5.,
+            ))
+            #   Test ns > len(ys).
+            #     scalar
+            self.assertAlmostEqual(
+                dist.u_tuning_curve(6, minimize=minimize),
+                curve[4],
+                delta=5.,
+            )
+            self.assertAlmostEqual(
+                dist.u_tuning_curve(7, minimize=minimize),
+                curve[4],
+                delta=5.,
+            )
+            #     1D array
+            self.assertTrue(np.allclose(
+                dist.u_tuning_curve([1, 2, 7], minimize=minimize),
+                [curve[0], curve[1], curve[4]],
+                atol=5.,
+            ))
+            #     2D array
+            self.assertTrue(np.allclose(
+                dist.u_tuning_curve(
+                    [
+                        [1, 2, 7],
+                        [6, 2, 1],
+                    ],
+                    minimize=minimize,
+                ),
+                [
+                    [curve[0], curve[1], curve[4]],
+                    [curve[4], curve[1], curve[0]],
+                ],
+                atol=5.,
+            ))
 
-        with self.assertRaises(ValueError):
-            dist.u_tuning_curve(1)
-        with self.assertRaises(ValueError):
-            dist.u_tuning_curve([1])
-        with self.assertRaises(ValueError):
-            dist.u_tuning_curve([2, 1])
-        with self.assertRaises(ValueError):
-            dist.u_tuning_curve([[2], [1]])
+            # Test when ws != None.
+            ys = [-1, 0, 1]
+            ws = [0.1, 0.5, 0.4]
+            dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+
+            with self.assertRaises(ValueError):
+                dist.u_tuning_curve(1, minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.u_tuning_curve([1], minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.u_tuning_curve([2, 1], minimize=minimize)
+            with self.assertRaises(ValueError):
+                dist.u_tuning_curve([[2], [1]], minimize=minimize)
 
     @pytest.mark.level(2)
     def test_confidence_bands(self):
@@ -1622,73 +2173,154 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 self.assertEqual(dist.ppf(1.), 0.)
                 self.assertEqual(dist.ppf(1. + 1e-12), 0.)
 
-    def test_quantile_tuning_curve_with_probability_mass_at_infinity(self):
-        for ys, n, expected in [
-                ([-np.inf, 100],                   1,  -np.inf),
-                ([-np.inf, 100],                   2,      100),
-                ([-np.inf, -10., 0., 10.,   100.], 1,        0),
-                ([  -100., -10., 0., 10., np.inf], 1,        0),
-                ([  -100., -10., 0., 10., np.inf], 4,   np.inf),
-                ([-np.inf, np.inf],                1,  -np.inf),
-                ([-np.inf, np.inf],                2,   np.inf),
-                ([-np.inf, 0., np.inf],            1,        0),
-                ([-np.inf, 0., np.inf],            2,   np.inf),
-        ]:
+    def test_quantile_tuning_curve_minimize_is_dual_to_maximize(self):
+        for _ in range(4):
             for use_weights in [False, True]:
+                ys = np.random.normal(size=7)
+                # NOTE: This test must use an _odd_ number of ys. When
+                # the sample size is even, there is no exact
+                # median. Our definition takes the order statistic to
+                # the left of the middle. Thus, the median for ys and
+                # -ys differs. Avoid this issue by using an odd number.
                 ws = (
-                    np.ones_like(ys) / len(ys)
+                    np.random.dirichlet(np.ones_like(ys))
                     if use_weights else
                     None
                 )
-                dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-                # Test 0 < ns <= len(ys).
-                #   scalar
-                self.assertTrue(np.isclose(
-                    dist.quantile_tuning_curve(n),
-                    expected,
-                    equal_nan=True,
-                ))
-                #   1D array
+                ns = np.arange(1, 17)
+
                 self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([n] * 10),
-                    expected,
-                    equal_nan=True,
+                    nonparametric
+                      .EmpiricalDistribution(ys, ws=ws)
+                      .quantile_tuning_curve(ns, minimize=False),
+                    -nonparametric
+                      .EmpiricalDistribution(-ys, ws=ws)
+                      .quantile_tuning_curve(ns, minimize=True),
                 ))
-                #   2D array
                 self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([
-                        [n] * 10,
-                        [n] * 10,
-                    ]),
-                    expected,
-                    equal_nan=True,
+                    nonparametric
+                      .EmpiricalDistribution(ys, ws=ws)
+                      .quantile_tuning_curve(ns, minimize=True),
+                    -nonparametric
+                      .EmpiricalDistribution(-ys, ws=ws)
+                      .quantile_tuning_curve(ns, minimize=False),
                 ))
-                # Test ns > len(ys).
-                #   scalar
-                self.assertTrue(np.isclose(
-                    dist.quantile_tuning_curve(6),
-                    ys[-1],
-                    equal_nan=True,
-                ))
-                self.assertTrue(np.isclose(
-                    dist.quantile_tuning_curve(7),
-                    ys[-1],
-                    equal_nan=True,
-                ))
-                #   1D array
+
+    def test_quantile_tuning_curve_with_probability_mass_at_infinity(self):
+        for ys, n, expected_minimize, expected_maximize in [
+                #            ys,                   n, minimize, maximize
+                ([-np.inf, 100],                   1,  -np.inf,  -np.inf),
+                ([-np.inf, 100],                   2,  -np.inf,      100),
+                ([100, np.inf],                    1,      100,      100),
+                ([100, np.inf],                    2,      100,   np.inf),
+                ([-np.inf, -10., 0., 10.,   100.], 1,        0,        0),
+                ([-np.inf, -10., 0., 10.,   100.], 4,  -np.inf,      100),
+                ([  -100., -10., 0., 10., np.inf], 1,        0,        0),
+                ([  -100., -10., 0., 10., np.inf], 4,     -100,   np.inf),
+                ([-np.inf, np.inf],                1,  -np.inf,  -np.inf),
+                ([-np.inf, np.inf],                2,  -np.inf,   np.inf),
+                ([-np.inf, 0., np.inf],            1,        0,        0),
+                ([-np.inf, 0., np.inf],            2,  -np.inf,   np.inf),
+        ]:
+            for use_weights in [False, True]:
+                for minimize in [False, True]:
+                    expected = expected_minimize if minimize else expected_maximize
+                    ws = (
+                        np.ones_like(ys) / len(ys)
+                        if use_weights else
+                        None
+                    )
+                    dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+                    # Test 0 < ns <= len(ys).
+                    #   scalar
+                    self.assertTrue(np.isclose(
+                        dist.quantile_tuning_curve(
+                            n,
+                            minimize=minimize,
+                        ),
+                        expected,
+                        equal_nan=True,
+                    ))
+                    #   1D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [n] * 10,
+                            minimize=minimize,
+                        ),
+                        expected,
+                        equal_nan=True,
+                    ))
+                    #   2D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [
+                                [n] * 10,
+                                [n] * 10,
+                            ],
+                            minimize=minimize,
+                        ),
+                        expected,
+                        equal_nan=True,
+                    ))
+                    # Test ns > len(ys).
+                    #   scalar
+                    self.assertTrue(np.isclose(
+                        dist.quantile_tuning_curve(6, minimize=minimize),
+                        ys[0] if minimize else ys[-1],
+                        equal_nan=True,
+                    ))
+                    self.assertTrue(np.isclose(
+                        dist.quantile_tuning_curve(7, minimize=minimize),
+                        ys[0] if minimize else ys[-1],
+                        equal_nan=True,
+                    ))
+                    #   1D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [6, 7, 8],
+                            minimize=minimize,
+                        ),
+                        ys[0] if minimize else ys[-1],
+                        equal_nan=True,
+                    ))
+                    #   2D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [
+                                [6, 7, 8],
+                                [9, 8, 7],
+                            ],
+                            minimize=minimize,
+                        ),
+                        ys[0] if minimize else ys[-1],
+                        equal_nan=True,
+                    ))
+
+    def test_average_tuning_curve_minimize_is_dual_to_maximize(self):
+        for _ in range(4):
+            for use_weights in [False, True]:
+                ys = np.random.normal(size=8)
+                ws = (
+                    np.random.dirichlet(np.ones_like(ys))
+                    if use_weights else
+                    None
+                )
+                ns = np.arange(1, 17)
                 self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([6, 7, 8]),
-                    ys[-1],
-                    equal_nan=True,
+                    nonparametric
+                      .EmpiricalDistribution(ys, ws=ws)
+                      .average_tuning_curve(ns, minimize=False),
+                    -nonparametric
+                      .EmpiricalDistribution(-ys, ws=ws)
+                      .average_tuning_curve(ns, minimize=True),
                 ))
-                #   2D array
                 self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([
-                        [6, 7, 8],
-                        [9, 8, 7],
-                    ]),
-                    ys[-1],
-                    equal_nan=True,
+                    nonparametric
+                      .EmpiricalDistribution(ys, ws=ws)
+                      .average_tuning_curve(ns, minimize=True),
+                    -nonparametric
+                      .EmpiricalDistribution(-ys, ws=ws)
+                      .average_tuning_curve(ns, minimize=False),
                 ))
 
     def test_average_tuning_curve_with_probability_mass_at_infinity(self):
@@ -1698,88 +2330,102 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 ([-np.inf, -10., 0., 10., np.inf],  np.nan),
         ]:
             for use_weights in [False, True]:
-                ws = (
-                    np.random.dirichlet(np.ones_like(ys))
-                    if use_weights else
-                    None
-                )
-                dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+                for minimize in [False, True]:
+                    ws = (
+                        np.random.dirichlet(np.ones_like(ys))
+                        if use_weights else
+                        None
+                    )
+                    dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
 
-                with warnings.catch_warnings():
-                    if np.isnan(expected):
-                        # If both infinity and negative infinity are
-                        # present in ys then numpy will log a warning
-                        # when taking a weighted sum over the
-                        # samples. This warning is useful because if
-                        # both infinity and negative infinity have
-                        # non-zero probability then the average tuning
-                        # curve is undefined. Suppress this warning in
-                        # the test though, since it is expected.
-                        warnings.filterwarnings(
-                            'ignore',
-                            message=r'invalid value encountered in reduce',
-                            category=RuntimeWarning,
-                        )
+                    with warnings.catch_warnings():
+                        if np.isnan(expected):
+                            # If both infinity and negative infinity are
+                            # present in ys then numpy will log a
+                            # warning when taking a weighted sum over
+                            # the samples. This warning is useful because
+                            # if both infinity and negative infinity have
+                            # non-zero probability then the average
+                            # tuning curve is undefined. Suppress this
+                            # warning in the test though, since it is
+                            # expected.
+                            warnings.filterwarnings(
+                                'ignore',
+                                message=r'invalid value encountered in reduce',
+                                category=RuntimeWarning,
+                            )
 
-                    # Test 0 < ns <= len(ys).
-                    #   scalar
-                    self.assertTrue(np.isclose(
-                        dist.average_tuning_curve(1),
-                        expected,
-                        equal_nan=True,
-                    ))
-                    self.assertTrue(np.isclose(
-                        dist.average_tuning_curve(3),
-                        expected,
-                        equal_nan=True,
-                    ))
-                    self.assertTrue(np.isclose(
-                        dist.average_tuning_curve(5),
-                        expected,
-                        equal_nan=True,
-                    ))
-                    #   1D array
-                    self.assertTrue(np.allclose(
-                        dist.average_tuning_curve([1, 2, 3, 4, 5]),
-                        expected,
-                        equal_nan=True,
-                    ))
-                    #   2D array
-                    self.assertTrue(np.allclose(
-                        dist.average_tuning_curve([
-                            [1, 2, 3, 4, 5],
-                            [2, 4, 1, 3, 5],
-                        ]),
-                        expected,
-                        equal_nan=True,
-                    ))
-                    # Test ns > len(ys).
-                    #   scalar
-                    self.assertTrue(np.isclose(
-                        dist.average_tuning_curve(6),
-                        expected,
-                        equal_nan=True,
-                    ))
-                    self.assertTrue(np.isclose(
-                        dist.average_tuning_curve(7),
-                        expected,
-                        equal_nan=True,
-                    ))
-                    #   1D array
-                    self.assertTrue(np.allclose(
-                        dist.average_tuning_curve([1, 2, 7]),
-                        expected,
-                        equal_nan=True,
-                    ))
-                    #   2D array
-                    self.assertTrue(np.allclose(
-                        dist.average_tuning_curve([
-                            [1, 2, 7],
-                            [6, 2, 1],
-                        ]),
-                        expected,
-                        equal_nan=True,
-                    ))
+                        # Test 0 < ns <= len(ys).
+                        #   scalar
+                        self.assertTrue(np.isclose(
+                            dist.average_tuning_curve(1, minimize=minimize),
+                            expected,
+                            equal_nan=True,
+                        ))
+                        self.assertTrue(np.isclose(
+                            dist.average_tuning_curve(3, minimize=minimize),
+                            expected,
+                            equal_nan=True,
+                        ))
+                        self.assertTrue(np.isclose(
+                            dist.average_tuning_curve(5, minimize=minimize),
+                            expected,
+                            equal_nan=True,
+                        ))
+                        #   1D array
+                        self.assertTrue(np.allclose(
+                            dist.average_tuning_curve(
+                                [1, 2, 3, 4, 5],
+                                minimize=minimize,
+                            ),
+                            expected,
+                            equal_nan=True,
+                        ))
+                        #   2D array
+                        self.assertTrue(np.allclose(
+                            dist.average_tuning_curve(
+                                [
+                                    [1, 2, 3, 4, 5],
+                                    [2, 4, 1, 3, 5],
+                                ],
+                                minimize=minimize,
+                            ),
+                            expected,
+                            equal_nan=True,
+                        ))
+                        # Test ns > len(ys).
+                        #   scalar
+                        self.assertTrue(np.isclose(
+                            dist.average_tuning_curve(6, minimize=minimize),
+                            expected,
+                            equal_nan=True,
+                        ))
+                        self.assertTrue(np.isclose(
+                            dist.average_tuning_curve(7, minimize=minimize),
+                            expected,
+                            equal_nan=True,
+                        ))
+                        #   1D array
+                        self.assertTrue(np.allclose(
+                            dist.average_tuning_curve(
+                                [1, 2, 7],
+                                minimize=minimize,
+                            ),
+                            expected,
+                            equal_nan=True,
+                        ))
+                        #   2D array
+                        self.assertTrue(np.allclose(
+                            dist.average_tuning_curve(
+                                [
+                                    [1, 2, 7],
+                                    [6, 2, 1],
+                                ],
+                                minimize=minimize,
+                            ),
+                            expected,
+                            equal_nan=True,
+                        ))
 
     @pytest.mark.level(3)
     def test_dkw_bands_have_correct_coverage(self):

@@ -289,8 +289,11 @@ class EmpiricalDistribution:
         self._n = len(self.ys)
         self._ns = np.arange(1, self._n + 1)
 
+        self._original_ys_cummin = np.minimum.accumulate(self.ys)
         self._original_ys_cummax = np.maximum.accumulate(self.ys)
+
         self._original_ys_sorted = np.sort(self.ys)
+        self._original_ys_reverse_sorted = self._original_ys_sorted[::-1]
 
     def sample(self, size):
         """Return a sample from the empirical distribution.
@@ -397,7 +400,7 @@ class EmpiricalDistribution:
             self._a,
         )
 
-    def quantile_tuning_curve(self, ns, q=0.5):
+    def quantile_tuning_curve(self, ns, q=0.5, *, minimize=False):
         """Return the quantile tuning curve evaluated at ``ns``.
 
         Since the empirical distribution is discrete, its exact
@@ -410,6 +413,9 @@ class EmpiricalDistribution:
             The points at which to evaluate the tuning curve.
         q : float, optional (default=0.5)
             The quantile at which to evaluate the tuning curve.
+        minimize : bool, optional (default=False)
+            Whether or not to compute the tuning curve for minimizing a
+            metric as opposed to maximizing it.
 
         Returns
         -------
@@ -424,16 +430,26 @@ class EmpiricalDistribution:
         if q < 0. or q > 1.:
             raise ValueError(f'q must be between 0 and 1, inclusive.')
 
-        # Compute the quantile tuning curve.
-        return self.ppf(q**(1/ns))
+        if not isinstance(minimize, bool):
+            raise ValueError('minimize must be a boolean.')
 
-    def average_tuning_curve(self, ns):
+        # Compute the quantile tuning curve.
+        return self.ppf(
+            1 - (1 - q)**(1/ns)
+            if minimize else  # maximize
+            q**(1/ns)
+        )
+
+    def average_tuning_curve(self, ns, *, minimize=False):
         """Return the average tuning curve evaluated at ``ns``.
 
         Parameters
         ----------
         ns : array of positive floats, required
             The points at which to evaluate the tuning curve.
+        minimize : bool, optional (default=False)
+            Whether or not to compute the tuning curve for minimizing a
+            metric as opposed to maximizing it.
 
         Returns
         -------
@@ -445,17 +461,27 @@ class EmpiricalDistribution:
         if np.any(ns <= 0):
             raise ValueError('ns must be positive.')
 
+        if not isinstance(minimize, bool):
+            raise ValueError('minimize must be a boolean.')
+
         # Compute the average tuning curve.
-        ws = (
-            self._ws_cumsum**ns[..., None]
-            - self._ws_cumsum_prev**ns[..., None]
-        )
+        if minimize:
+            ws = (
+                (1 - self._ws_cumsum_prev)**ns[..., None]
+                - (1 - self._ws_cumsum)**ns[..., None]
+            )
+        else:  # maximize
+            ws = (
+                self._ws_cumsum**ns[..., None]
+                - self._ws_cumsum_prev**ns[..., None]
+            )
+
         return np.sum(
             ws * np.where(ws != 0., self._ys, 0.),
             axis=-1,
         )
 
-    def naive_tuning_curve(self, ns):
+    def naive_tuning_curve(self, ns, *, minimize=False):
         """Return the naive estimate for the tuning curve at ``ns``.
 
         The naive tuning curve estimate assigns to n the maximum value
@@ -468,6 +494,9 @@ class EmpiricalDistribution:
         ns : array of positive ints, required
             The values at which to evaluate the naive tuning curve
             estimate.
+        minimize : bool, optional (default=False)
+            Whether or not to estimate the tuning curve for minimizing a
+            metric as opposed to maximizing it.
 
         Returns
         -------
@@ -487,12 +516,19 @@ class EmpiricalDistribution:
             raise ValueError('ns must be positive.')
         ns = ns.astype(int)
 
+        if not isinstance(minimize, bool):
+            raise ValueError('minimize must be a boolean.')
+
         # Compute the naive tuning curve estimate.
         ns = np.clip(ns, None, self._n)
 
-        return self._original_ys_cummax[ns - 1]
+        return (
+            self._original_ys_cummin
+            if minimize else  # maximize
+            self._original_ys_cummax
+        )[ns - 1]
 
-    def v_tuning_curve(self, ns):
+    def v_tuning_curve(self, ns, *, minimize=False):
         """Return the v estimate for the tuning curve at ``ns``.
 
         The v statistic tuning curve estimate assigns to n the average
@@ -504,6 +540,9 @@ class EmpiricalDistribution:
         ns : array of positive ints, required
             The values at which to evaluate the v statistic tuning curve
             estimate.
+        minimize : bool, optional (default=False)
+            Whether or not to estimate the tuning curve for minimizing a
+            metric as opposed to maximizing it.
 
         Returns
         -------
@@ -523,16 +562,23 @@ class EmpiricalDistribution:
             raise ValueError('ns must be positive.')
         ns = ns.astype(int)
 
+        if not isinstance(minimize, bool):
+            raise ValueError('minimize must be a boolean.')
+
         # Compute the v statistic tuning curve estimate.
         return np.sum(
             (
                 (self._ns / self._n)**ns[..., None]
                 - ((self._ns - 1) / self._n)**ns[..., None]
-            ) * self._original_ys_sorted,
+            ) * (
+                self._original_ys_reverse_sorted
+                if minimize else  # maximize
+                self._original_ys_sorted
+            ),
             axis=-1,
         )
 
-    def u_tuning_curve(self, ns):
+    def u_tuning_curve(self, ns, *, minimize=False):
         """Return the u estimate for the tuning curve at ``ns``.
 
         The u statistic tuning curve estimate assigns to n the average
@@ -546,6 +592,9 @@ class EmpiricalDistribution:
         ns : array of positive ints, required
             The values at which to evaluate the u statistic tuning curve
             estimate.
+        minimize : bool, optional (default=False)
+            Whether or not to estimate the tuning curve for minimizing a
+            metric as opposed to maximizing it.
 
         Returns
         -------
@@ -565,6 +614,9 @@ class EmpiricalDistribution:
             raise ValueError('ns must be positive.')
         ns = ns.astype(int)
 
+        if not isinstance(minimize, bool):
+            raise ValueError('minimize must be a boolean.')
+
         # Compute the u statistic tuning curve estimate.
         ns = np.clip(ns, None, self._n)
 
@@ -573,7 +625,11 @@ class EmpiricalDistribution:
                 special.comb(self._ns, ns[..., None])
                 - special.comb(self._ns - 1, ns[..., None])
             ) / special.comb(self._n, ns[..., None])
-            * self._original_ys_sorted,
+            * (
+                self._original_ys_reverse_sorted
+                if minimize else  # maximize
+                self._original_ys_sorted
+            ),
             axis=-1,
         )
 

@@ -102,10 +102,6 @@ class QuadraticDistributionTestCase(unittest.TestCase):
             for n in range(6):
                 # When c = 1., the distribution is uniform.
                 self.assertAlmostEqual(dist.ppf(n / 5.), a + (n / 5.) * (b - a))
-            self.assertEqual(dist.ppf(0. - 1e-10), a)
-            self.assertEqual(dist.ppf(0.), a)
-            self.assertEqual(dist.ppf(1.), b)
-            self.assertEqual(dist.ppf(1. + 1e-10), b)
             # broadcasting
             for _ in range(7):
                 us = np.random.uniform(0, 1, size=5)
@@ -128,212 +124,399 @@ class QuadraticDistributionTestCase(unittest.TestCase):
         a, b = 0., 1.
         for c in [0.5, 10.]:
             for convex in [False, True]:
-                dist = parametric.QuadraticDistribution(a, b, c)
-                yss = dist.sample((2_000, 5))
-                curve = np.median(np.maximum.accumulate(yss, axis=1), axis=0)
-
-                # Test when n is integral.
-                #   scalar
-                for n in range(1, 6):
-                    self.assertAlmostEqual(
-                        dist.quantile_tuning_curve(n, q=0.5),
-                        curve[n-1],
-                        delta=0.075,
+                for minimize in [None, False, True]:
+                    # NOTE: When minimize is None, default to convex.
+                    expect_minimize = (
+                        minimize
+                        if minimize is not None else
+                        convex
                     )
-                    self.assertEqual(
+
+                    dist = parametric.QuadraticDistribution(
+                        a,
+                        b,
+                        c,
+                        convex=convex,
+                    )
+                    yss = dist.sample((2_000, 5))
+                    curve = np.median(
+                        np.minimum.accumulate(yss, axis=1)
+                        if expect_minimize else
+                        np.maximum.accumulate(yss, axis=1),
+                        axis=0,
+                    )
+
+                    # Test when n is integral.
+                    #   scalar
+                    for n in range(1, 6):
+                        self.assertAlmostEqual(
+                            dist.quantile_tuning_curve(
+                                n,
+                                q=0.5,
+                                minimize=minimize,
+                            ),
+                            curve[n-1],
+                            delta=0.075,
+                        )
+                        self.assertEqual(
+                            dist.quantile_tuning_curve(
+                                [n],
+                                q=0.5,
+                                minimize=minimize,
+                            ).tolist(),
+                            [
+                                dist.quantile_tuning_curve(
+                                    n,
+                                    q=0.5,
+                                    minimize=minimize,
+                                )
+                            ],
+                        )
+                    #   1D array
+                    self.assertTrue(np.allclose(
                         dist.quantile_tuning_curve(
-                            [n],
+                            [1, 2, 3, 4, 5],
                             q=0.5,
-                        ).tolist(),
-                        [dist.quantile_tuning_curve(n, q=0.5)],
-                    )
-                #   1D array
-                self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([1, 2, 3, 4, 5], q=0.5),
-                    curve,
-                    atol=0.075,
-                ))
-                self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([3, 1, 5], q=0.5),
-                    [curve[2], curve[0], curve[4]],
-                    atol=0.075,
-                ))
-                #   2D array
-                self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([
-                        [1, 2, 3],
-                        [3, 1, 5],
-                    ], q=0.5),
-                    [
-                        [curve[0], curve[1], curve[2]],
-                        [curve[2], curve[0], curve[4]],
-                    ],
-                    atol=0.075,
-                ))
-
-                # Test when n is non-integral.
-                #   scalar
-                for n in range(1, 6):
-                    self.assertAlmostEqual(
-                        dist.quantile_tuning_curve(n/10., q=0.5**(1/10)),
-                        curve[n-1],
-                        delta=0.075,
-                    )
-                    self.assertEqual(
+                            minimize=minimize,
+                        ),
+                        curve,
+                        atol=0.075,
+                    ))
+                    self.assertTrue(np.allclose(
                         dist.quantile_tuning_curve(
-                            [n/10],
-                            q=0.5**(1/10),
-                        ).tolist(),
-                        [dist.quantile_tuning_curve(n/10., q=0.5**(1/10))],
-                    )
-                #   1D array
-                self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve(
-                        [0.1, 0.2, 0.3, 0.4, 0.5],
-                        q=0.5**(1/10),
-                    ),
-                    curve,
-                    atol=0.075,
-                ))
-                self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([0.3, 0.1, 0.5], q=0.5**(1/10)),
-                    [curve[2], curve[0], curve[4]],
-                    atol=0.075,
-                ))
-                #   2D array
-                self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([
-                        [0.1, 0.2, 0.3],
-                        [0.3, 0.1, 0.5],
-                    ], q=0.5**(1/10)),
-                    [
-                        [curve[0], curve[1], curve[2]],
+                            [3, 1, 5],
+                            q=0.5,
+                            minimize=minimize,
+                        ),
                         [curve[2], curve[0], curve[4]],
-                    ],
-                    atol=0.075,
-                ))
+                        atol=0.075,
+                    ))
+                    #   2D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [
+                                [1, 2, 3],
+                                [3, 1, 5],
+                            ],
+                            q=0.5,
+                            minimize=minimize,
+                        ),
+                        [
+                            [curve[0], curve[1], curve[2]],
+                            [curve[2], curve[0], curve[4]],
+                        ],
+                        atol=0.075,
+                    ))
 
-                # Test ns <= 0.
-                with self.assertRaises(ValueError):
-                    dist.quantile_tuning_curve(0, q=0.5)
-                with self.assertRaises(ValueError):
-                    dist.quantile_tuning_curve(-1, q=0.5)
-                with self.assertRaises(ValueError):
-                    dist.quantile_tuning_curve([0], q=0.5)
-                with self.assertRaises(ValueError):
-                    dist.quantile_tuning_curve([-2], q=0.5)
-                with self.assertRaises(ValueError):
-                    dist.quantile_tuning_curve([0, 1], q=0.5)
-                with self.assertRaises(ValueError):
-                    dist.quantile_tuning_curve([-2, 1], q=0.5)
-                with self.assertRaises(ValueError):
-                    dist.quantile_tuning_curve([[0], [1]], q=0.5)
-                with self.assertRaises(ValueError):
-                    dist.quantile_tuning_curve([[-2], [1]], q=0.5)
+                    # Test when n is non-integral.
+                    #   scalar
+                    for n in range(1, 6):
+                        self.assertAlmostEqual(
+                            dist.quantile_tuning_curve(
+                                n/10.,
+                                q=0.5**(1/10),
+                                minimize=minimize,
+                            ),
+                            curve[n-1],
+                            delta=0.075,
+                        )
+                        self.assertEqual(
+                            dist.quantile_tuning_curve(
+                                [n/10],
+                                q=0.5**(1/10),
+                                minimize=minimize,
+                            ).tolist(),
+                            [
+                                dist.quantile_tuning_curve(
+                                    n/10.,
+                                    q=0.5**(1/10),
+                                    minimize=minimize,
+                                )
+                            ],
+                        )
+                    #   1D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [0.1, 0.2, 0.3, 0.4, 0.5],
+                            q=0.5**(1/10),
+                            minimize=minimize,
+                        ),
+                        curve,
+                        atol=0.075,
+                    ))
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [0.3, 0.1, 0.5],
+                            q=0.5**(1/10),
+                            minimize=minimize,
+                        ),
+                        [curve[2], curve[0], curve[4]],
+                        atol=0.075,
+                    ))
+                    #   2D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [
+                                [0.1, 0.2, 0.3],
+                                [0.3, 0.1, 0.5],
+                            ],
+                            q=0.5**(1/10),
+                            minimize=minimize,
+                        ),
+                        [
+                            [curve[0], curve[1], curve[2]],
+                            [curve[2], curve[0], curve[4]],
+                        ],
+                        atol=0.075,
+                    ))
+
+                    # Test ns <= 0.
+                    with self.assertRaises(ValueError):
+                        dist.quantile_tuning_curve(
+                            0,
+                            q=0.5,
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.quantile_tuning_curve(
+                            -1,
+                            q=0.5,
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.quantile_tuning_curve(
+                            [0],
+                            q=0.5,
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.quantile_tuning_curve(
+                            [-2],
+                            q=0.5,
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.quantile_tuning_curve(
+                            [0, 1],
+                            q=0.5,
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.quantile_tuning_curve(
+                            [-2, 1],
+                            q=0.5,
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.quantile_tuning_curve(
+                            [[0], [1]],
+                            q=0.5,
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.quantile_tuning_curve(
+                            [[-2], [1]],
+                            q=0.5,
+                            minimize=minimize,
+                        )
 
     def test_average_tuning_curve(self):
         a, b = 0., 1.
         for c in [0.5, 10.]:
             for convex in [False, True]:
-                dist = parametric.QuadraticDistribution(a, b, c)
-                yss = dist.sample((2_000, 5))
-                curve = np.mean(np.maximum.accumulate(yss, axis=1), axis=0)
+                for minimize in [None, False, True]:
+                    # NOTE: When minimize is None, default to convex.
+                    expect_minimize = (
+                        minimize
+                        if minimize is not None else
+                        convex
+                    )
 
-                # Test when n is integral.
-                #   scalar
-                for n in range(1, 6):
-                    self.assertAlmostEqual(
-                        dist.average_tuning_curve(n),
-                        curve[n-1],
-                        delta=0.075,
+                    dist = parametric.QuadraticDistribution(
+                        a,
+                        b,
+                        c,
+                        convex=convex,
                     )
-                    self.assertEqual(
-                        dist.average_tuning_curve([n]).tolist(),
-                        [dist.average_tuning_curve(n)],
+                    yss = dist.sample((2_000, 5))
+                    curve = np.mean(
+                        np.minimum.accumulate(yss, axis=1)
+                        if expect_minimize else
+                        np.maximum.accumulate(yss, axis=1),
+                        axis=0,
                     )
-                #   1D array
-                self.assertTrue(np.allclose(
-                    dist.average_tuning_curve([1, 2, 3, 4, 5]),
-                    curve,
-                    atol=0.075,
-                ))
-                self.assertTrue(np.allclose(
-                    dist.average_tuning_curve([3, 1, 5]),
-                    [curve[2], curve[0], curve[4]],
-                    atol=0.075,
-                ))
-                #   2D array
-                self.assertTrue(np.allclose(
-                    dist.average_tuning_curve([
-                        [1, 2, 3],
-                        [3, 1, 5],
-                    ]),
-                    [
-                        [curve[0], curve[1], curve[2]],
+
+                    # Test when n is integral.
+                    #   scalar
+                    for n in range(1, 6):
+                        self.assertAlmostEqual(
+                            dist.average_tuning_curve(
+                                n,
+                                minimize=minimize,
+                            ),
+                            curve[n-1],
+                            delta=0.075,
+                        )
+                        self.assertEqual(
+                            dist.average_tuning_curve(
+                                [n],
+                                minimize=minimize,
+                            ).tolist(),
+                            [
+                                dist.average_tuning_curve(
+                                    n,
+                                    minimize=minimize,
+                                )],
+                        )
+                    #   1D array
+                    self.assertTrue(np.allclose(
+                        dist.average_tuning_curve(
+                            [1, 2, 3, 4, 5],
+                            minimize=minimize,
+                        ),
+                        curve,
+                        atol=0.075,
+                    ))
+                    self.assertTrue(np.allclose(
+                        dist.average_tuning_curve(
+                            [3, 1, 5],
+                            minimize=minimize,
+                        ),
                         [curve[2], curve[0], curve[4]],
-                    ],
-                    atol=0.075,
-                ))
+                        atol=0.075,
+                    ))
+                    #   2D array
+                    self.assertTrue(np.allclose(
+                        dist.average_tuning_curve(
+                            [
+                                [1, 2, 3],
+                                [3, 1, 5],
+                            ],
+                            minimize=minimize,
+                        ),
+                        [
+                            [curve[0], curve[1], curve[2]],
+                            [curve[2], curve[0], curve[4]],
+                        ],
+                        atol=0.075,
+                    ))
 
-                # Test when n is non-integral.
-                #   scalar
-                for n in range(1, 6):
-                    self.assertLess(
-                        dist.average_tuning_curve(n - 0.5),
-                        dist.average_tuning_curve(n),
-                    )
-                    self.assertEqual(
-                        dist.average_tuning_curve([n - 0.5]).tolist(),
-                        [dist.average_tuning_curve(n - 0.5)],
-                    )
-                #   1D array
-                self.assertTrue(np.all(
-                    dist.average_tuning_curve(np.arange(1, 6) - 0.5)
-                    < dist.average_tuning_curve(np.arange(1, 6))
-                ))
-                #   2D array
-                self.assertTrue(np.all(
-                    dist.average_tuning_curve(
-                        np.arange(1, 11).reshape(5, 2) - 0.5
-                    ) < dist.average_tuning_curve(
-                        np.arange(1, 11).reshape(5, 2)
-                    )
-                ))
+                    # Test when n is non-integral.
+                    #   scalar
+                    for n in range(1, 6):
+                        self.assertLess(
+                            dist.average_tuning_curve(
+                                n + (0.5 if expect_minimize else -0.5),
+                                minimize=minimize,
+                            ),
+                            dist.average_tuning_curve(
+                                n,
+                                minimize=minimize,
+                            ),
+                        )
+                        self.assertEqual(
+                            dist.average_tuning_curve(
+                                [n - 0.5],
+                                minimize=minimize,
+                            ).tolist(),
+                            [
+                                dist.average_tuning_curve(
+                                    n - 0.5,
+                                    minimize=minimize,
+                                )
+                            ],
+                        )
+                    #   1D array
+                    self.assertTrue(np.all(
+                        dist.average_tuning_curve(
+                            np.arange(1, 6)
+                              + (0.5 if expect_minimize else -0.5),
+                            minimize=minimize,
+                        )
+                        < dist.average_tuning_curve(
+                            np.arange(1, 6),
+                            minimize=minimize,
+                        )
+                    ))
+                    #   2D array
+                    self.assertTrue(np.all(
+                        dist.average_tuning_curve(
+                            np.arange(1, 11).reshape(5, 2)
+                              + (0.5 if expect_minimize else -0.5),
+                            minimize=minimize,
+                        ) < dist.average_tuning_curve(
+                            np.arange(1, 11).reshape(5, 2),
+                            minimize=minimize,
+                        )
+                    ))
 
-                # Test ns <= 0.
-                with self.assertRaises(ValueError):
-                    dist.average_tuning_curve(0)
-                with self.assertRaises(ValueError):
-                    dist.average_tuning_curve(-1)
-                with self.assertRaises(ValueError):
-                    dist.average_tuning_curve([0])
-                with self.assertRaises(ValueError):
-                    dist.average_tuning_curve([-2])
-                with self.assertRaises(ValueError):
-                    dist.average_tuning_curve([0, 1])
-                with self.assertRaises(ValueError):
-                    dist.average_tuning_curve([-2, 1])
-                with self.assertRaises(ValueError):
-                    dist.average_tuning_curve([[0], [1]])
-                with self.assertRaises(ValueError):
-                    dist.average_tuning_curve([[-2], [1]])
+                    # Test ns <= 0.
+                    with self.assertRaises(ValueError):
+                        dist.average_tuning_curve(
+                            0,
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.average_tuning_curve(
+                            -1,
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.average_tuning_curve(
+                            [0],
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.average_tuning_curve(
+                            [-2],
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.average_tuning_curve(
+                            [0, 1],
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.average_tuning_curve(
+                            [-2, 1],
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.average_tuning_curve(
+                            [[0], [1]],
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.average_tuning_curve(
+                            [[-2], [1]],
+                            minimize=minimize,
+                        )
 
     def test_estimate_initial_parameters_and_bounds(self):
-        a, b, c = 0., 1., 1.
-        ys = parametric.QuadraticDistribution(a, b, c).sample(1_000)
-        for fraction in [0.5, 1.]:
-            for convex in [False, True]:
-                init_params, bounds = parametric.QuadraticDistribution\
-                    .estimate_initial_parameters_and_bounds(ys, fraction=1.)
-                self.assertLess(abs(init_params[0] - a), 0.1)
-                self.assertLess(abs(init_params[1] - b), 0.1)
-                self.assertLess(abs(init_params[2] - c), 0.25)
-                self.assertGreater(a, bounds[0, 0])
-                self.assertLess(a, bounds[0, 1])
-                self.assertGreater(b, bounds[1, 0])
-                self.assertLess(b, bounds[1, 1])
-                self.assertGreater(c, bounds[2, 0])
-                self.assertLess(c, bounds[2, 1])
+        for a, b, c in [(0., 1., 0.5), (-1., 1., 1.)]:
+            for fraction in [0.5, 1.]:
+                for convex in [False, True]:
+                    ys = parametric.QuadraticDistribution(
+                        a,
+                        b,
+                        c,
+                        convex=convex,
+                    ).sample(5_000)
+                    init_params, bounds = parametric.QuadraticDistribution\
+                        .estimate_initial_parameters_and_bounds(
+                            ys,
+                            fraction=fraction,
+                            convex=convex,
+                        )
+                    self.assertLess(abs(init_params[0] - a), 0.35)
+                    self.assertLess(abs(init_params[1] - b), 0.35)
+                    self.assertLess(abs(init_params[2] - c), 0.25)
+                    self.assertGreaterEqual(a, bounds[0, 0])
+                    self.assertLessEqual(a, bounds[0, 1])
+                    self.assertGreaterEqual(b, bounds[1, 0])
+                    self.assertLessEqual(b, bounds[1, 1])
+                    self.assertGreaterEqual(c, bounds[2, 0])
+                    self.assertLessEqual(c, bounds[2, 1])
 
     def test_pdf_on_boundary_of_support(self):
         for convex in [False, True]:
@@ -382,3 +565,49 @@ class QuadraticDistributionTestCase(unittest.TestCase):
                 self.assertEqual(dist.ppf(0.), a)
                 self.assertEqual(dist.ppf(1.), b)
                 self.assertEqual(dist.ppf(1. + 1e-12), b)
+
+    def test_quantile_tuning_curve_minimize_is_dual_to_maximize(self):
+        for _ in range(4):
+            for a, b, c in [(-1., 1., 0.5), (-1., 1., 1.)]:
+                for convex in [False, True]:
+                    ns = np.arange(1, 17)
+
+                    self.assertTrue(np.allclose(
+                        parametric
+                          .QuadraticDistribution(a, b, c, convex=convex)
+                          .quantile_tuning_curve(ns, minimize=False),
+                        -parametric
+                          .QuadraticDistribution(-b, -a, c, convex=not convex)
+                          .quantile_tuning_curve(ns, minimize=True),
+                    ))
+                    self.assertTrue(np.allclose(
+                        parametric
+                          .QuadraticDistribution(a, b, c, convex=convex)
+                          .quantile_tuning_curve(ns, minimize=True),
+                        -parametric
+                          .QuadraticDistribution(-b, -a, c, convex=not convex)
+                          .quantile_tuning_curve(ns, minimize=False),
+                    ))
+
+    def test_average_tuning_curve_minimize_is_dual_to_maximize(self):
+        for _ in range(4):
+            for a, b, c in [(-1., 1., 0.5), (-1., 1., 1.)]:
+                for convex in [False, True]:
+                    ns = np.arange(1, 17)
+
+                    self.assertTrue(np.allclose(
+                        parametric
+                          .QuadraticDistribution(a, b, c, convex=convex)
+                          .average_tuning_curve(ns, minimize=False),
+                        -parametric
+                          .QuadraticDistribution(-b, -a, c, convex=not convex)
+                          .average_tuning_curve(ns, minimize=True),
+                    ))
+                    self.assertTrue(np.allclose(
+                        parametric
+                          .QuadraticDistribution(a, b, c, convex=convex)
+                          .average_tuning_curve(ns, minimize=True),
+                        -parametric
+                          .QuadraticDistribution(-b, -a, c, convex=not convex)
+                          .average_tuning_curve(ns, minimize=False),
+                    ))
