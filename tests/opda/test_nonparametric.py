@@ -406,266 +406,466 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         )
 
     def test_quantile_tuning_curve(self):
-        for quantile in [0.25, 0.5, 0.75]:
-            for use_weights in [False, True]:
-                # Test when len(ys) == 1.
-                ys = [42.]
-                ws = [1.] if use_weights else None
-                dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+        for use_weights in [False, True]:
+            for quantile in [0.25, 0.5, 0.75]:
+                for minimize in [False, True]:
+                    # Test when len(ys) == 1.
+                    ys = [42.]
+                    ws = [1.] if use_weights else None
+                    dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
 
-                self.assertEqual(
-                    dist.quantile_tuning_curve(1, q=quantile),
-                    42.,
-                )
-                self.assertEqual(
-                    dist.quantile_tuning_curve(10, q=quantile),
-                    42.,
-                )
-                self.assertEqual(
-                    dist.quantile_tuning_curve([1, 10], q=quantile).tolist(),
-                    [42., 42.],
-                )
-                self.assertEqual(
-                    dist.quantile_tuning_curve([
-                        [1, 10],
-                        [10, 1],
-                    ], q=quantile).tolist(),
-                    [
+                    self.assertEqual(
+                        dist.quantile_tuning_curve(
+                            1,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        42.,
+                    )
+                    self.assertEqual(
+                        dist.quantile_tuning_curve(
+                            10,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        42.,
+                    )
+                    self.assertEqual(
+                        dist.quantile_tuning_curve(
+                            [1, 10],
+                            q=quantile,
+                            minimize=minimize,
+                        ).tolist(),
                         [42., 42.],
-                        [42., 42.],
-                    ],
-                )
+                    )
+                    self.assertEqual(
+                        dist.quantile_tuning_curve(
+                            [
+                                [1, 10],
+                                [10, 1],
+                            ],
+                            q=quantile,
+                            minimize=minimize,
+                        ).tolist(),
+                        [
+                            [42., 42.],
+                            [42., 42.],
+                        ],
+                    )
 
-                # Test when len(ys) > 1.
-                ys = [0., 50., 25., 100., 75.]
-                ws = (
-                    np.random.dirichlet(np.full_like(ys, 5))
-                    if use_weights else
-                    None
-                )
-                dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-                curve = np.quantile(
-                    np.maximum.accumulate(
-                        np.random.choice(ys, p=ws, size=(1_000, 7), replace=True),
-                        axis=1,
-                    ),
-                    quantile,
-                    method='inverted_cdf',
-                    axis=0,
-                )
-                #   Test 0 < ns <= len(ys).
-                #     scalar
-                self.assertAlmostEqual(
-                    dist.quantile_tuning_curve(1, q=quantile),
-                    curve[0],
-                    delta=25.,
-                )
-                self.assertAlmostEqual(
-                    dist.quantile_tuning_curve(3, q=quantile),
-                    curve[2],
-                    delta=25.,
-                )
-                self.assertAlmostEqual(
-                    dist.quantile_tuning_curve(5, q=quantile),
-                    curve[4],
-                    delta=25.,
-                )
-                #     1D array
-                self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([1, 2, 3, 4, 5], q=quantile),
-                    curve[:5],
-                    atol=25.,
-                ))
-                self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([2, 4, 1, 3, 5], q=quantile),
-                    [curve[1], curve[3], curve[0], curve[2], curve[4]],
-                    atol=25.,
-                ))
-                #     2D array
-                self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([
-                        [1, 2, 3, 4, 5],
-                        [2, 4, 1, 3, 5],
-                    ], q=quantile),
-                    [
+                    # Test when len(ys) > 1.
+                    ys = [0., 50., 25., 100., 75.]
+                    ws = (
+                        np.random.dirichlet(np.full_like(ys, 5))
+                        if use_weights else
+                        None
+                    )
+                    dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+                    curve = np.quantile(
+                        np.minimum.accumulate(
+                            np.random.choice(
+                                ys,
+                                p=ws,
+                                size=(1_000, 7),
+                                replace=True,
+                            ),
+                            axis=1,
+                        )
+                        if minimize else
+                        np.maximum.accumulate(
+                            np.random.choice(
+                                ys,
+                                p=ws,
+                                size=(1_000, 7),
+                                replace=True,
+                            ),
+                            axis=1,
+                        ),
+                        quantile,
+                        method='inverted_cdf',
+                        axis=0,
+                    )
+                    #   Test 0 < ns <= len(ys).
+                    #     scalar
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(
+                            1,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        curve[0],
+                        delta=25.,
+                    )
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(
+                            3,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        curve[2],
+                        delta=25.,
+                    )
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(
+                            5,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        curve[4],
+                        delta=25.,
+                    )
+                    #     1D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [1, 2, 3, 4, 5],
+                            q=quantile,
+                            minimize=minimize,
+                        ),
                         curve[:5],
+                        atol=25.,
+                    ))
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [2, 4, 1, 3, 5],
+                            q=quantile,
+                            minimize=minimize,
+                        ),
                         [curve[1], curve[3], curve[0], curve[2], curve[4]],
-                    ],
-                    atol=25.,
-                ))
-                #   Test ns > len(ys).
-                #     scalar
-                self.assertAlmostEqual(
-                    dist.quantile_tuning_curve(6, q=quantile),
-                    curve[5],
-                    delta=25.,
-                )
-                self.assertAlmostEqual(
-                    dist.quantile_tuning_curve(7, q=quantile),
-                    curve[6],
-                    delta=25.,
-                )
-                #     1D array
-                self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([1, 2, 7], q=quantile),
-                    [curve[0], curve[1], curve[6]],
-                    atol=25.,
-                ))
-                #     2D array
-                self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([
-                        [1, 2, 7],
-                        [6, 2, 1],
-                    ], q=quantile),
-                    [
+                        atol=25.,
+                    ))
+                    #     2D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [
+                                [1, 2, 3, 4, 5],
+                                [2, 4, 1, 3, 5],
+                            ],
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        [
+                            curve[:5],
+                            [curve[1], curve[3], curve[0], curve[2], curve[4]],
+                        ],
+                        atol=25.,
+                    ))
+                    #   Test ns > len(ys).
+                    #     scalar
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(
+                            6,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        curve
+                        [5],
+                        delta=25.,
+                    )
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(
+                            7,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        curve[6],
+                        delta=25.,
+                    )
+                    #     1D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [1, 2, 7],
+                            q=quantile,
+                            minimize=minimize,
+                        ),
                         [curve[0], curve[1], curve[6]],
-                        [curve[5], curve[1], curve[0]],
-                    ],
-                    atol=25.,
-                ))
-                #   Test ns <= 0.
-                with self.assertRaises(ValueError):
-                    dist.quantile_tuning_curve(0, q=quantile)
-                with self.assertRaises(ValueError):
-                    dist.quantile_tuning_curve(-1, q=quantile)
-                with self.assertRaises(ValueError):
-                    dist.quantile_tuning_curve([0], q=quantile)
-                with self.assertRaises(ValueError):
-                    dist.quantile_tuning_curve([-2], q=quantile)
-                with self.assertRaises(ValueError):
-                    dist.quantile_tuning_curve([0, 1], q=quantile)
-                with self.assertRaises(ValueError):
-                    dist.quantile_tuning_curve([-2, 1], q=quantile)
-                with self.assertRaises(ValueError):
-                    dist.quantile_tuning_curve([[0], [1]], q=quantile)
-                with self.assertRaises(ValueError):
-                    dist.quantile_tuning_curve([[-2], [1]], q=quantile)
+                        atol=25.,
+                    ))
+                    #     2D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [
+                                [1, 2, 7],
+                                [6, 2, 1],
+                            ],
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        [
+                            [curve[0], curve[1], curve[6]],
+                            [curve[5], curve[1], curve[0]],
+                        ],
+                        atol=25.,
+                    ))
+                    #   Test ns <= 0.
+                    with self.assertRaises(ValueError):
+                        dist.quantile_tuning_curve(
+                            0,
+                            q=quantile,
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.quantile_tuning_curve(
+                            -1,
+                            q=quantile,
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.quantile_tuning_curve(
+                            [0],
+                            q=quantile,
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.quantile_tuning_curve(
+                            [-2],
+                            q=quantile,
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.quantile_tuning_curve(
+                            [0, 1],
+                            q=quantile,
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.quantile_tuning_curve(
+                            [-2, 1],
+                            q=quantile,
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.quantile_tuning_curve(
+                            [[0], [1]],
+                            q=quantile,
+                            minimize=minimize,
+                        )
+                    with self.assertRaises(ValueError):
+                        dist.quantile_tuning_curve(
+                            [[-2], [1]],
+                            q=quantile,
+                            minimize=minimize,
+                        )
 
-                # Test when ys has duplicates.
-                ys = [0., 0., 50., 0., 25.]
-                ws = (
-                    np.random.dirichlet(np.full_like(ys, 5))
-                    if use_weights else
-                    None
-                )
-                dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-                curve = np.quantile(
-                    np.maximum.accumulate(
-                        np.random.choice(ys, p=ws, size=(1_000, 7), replace=True),
-                        axis=1,
-                    ),
-                    quantile,
-                    method='inverted_cdf',
-                    axis=0,
-                )
-                #   Test 0 < ns <= len(ys).
-                #     scalar
-                self.assertAlmostEqual(
-                    dist.quantile_tuning_curve(1, q=quantile),
-                    curve[0],
-                    delta=25.,
-                )
-                self.assertAlmostEqual(
-                    dist.quantile_tuning_curve(3, q=quantile),
-                    curve[2],
-                    delta=25.,
-                )
-                self.assertAlmostEqual(
-                    dist.quantile_tuning_curve(5, q=quantile),
-                    curve[4],
-                    delta=25.,
-                )
-                #     1D array
-                self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([1, 2, 3, 4, 5], q=quantile),
-                    curve[:5],
-                    atol=25.,
-                ))
-                self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([2, 4, 1, 3, 5], q=quantile),
-                    [curve[1], curve[3], curve[0], curve[2], curve[4]],
-                    atol=25.,
-                ))
-                #     2D array
-                self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([
-                        [1, 2, 3, 4, 5],
-                        [2, 4, 1, 3, 5],
-                    ], q=quantile),
-                    [
+                    # Test when ys has duplicates.
+                    ys = [0., 0., 50., 0., 25.]
+                    ws = (
+                        np.random.dirichlet(np.full_like(ys, 5))
+                        if use_weights else
+                        None
+                    )
+                    dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+                    curve = np.quantile(
+                        np.minimum.accumulate(
+                            np.random.choice(
+                                ys,
+                                p=ws,
+                                size=(1_000, 7),
+                                replace=True,
+                            ),
+                            axis=1,
+                        )
+                        if minimize else
+                        np.maximum.accumulate(
+                            np.random.choice(
+                                ys,
+                                p=ws,
+                                size=(1_000, 7),
+                                replace=True,
+                            ),
+                            axis=1,
+                        ),
+                        quantile,
+                        method='inverted_cdf',
+                        axis=0,
+                    )
+                    #   Test 0 < ns <= len(ys).
+                    #     scalar
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(
+                            1,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        curve[0],
+                        delta=25.,
+                    )
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(
+                            3,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        curve[2],
+                        delta=25.,
+                    )
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(
+                            5,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        curve[4],
+                        delta=25.,
+                    )
+                    #     1D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [1, 2, 3, 4, 5],
+                            q=quantile,
+                            minimize=minimize,
+                        ),
                         curve[:5],
+                        atol=25.,
+                    ))
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [2, 4, 1, 3, 5],
+                            q=quantile,
+                            minimize=minimize,
+                        ),
                         [curve[1], curve[3], curve[0], curve[2], curve[4]],
-                    ],
-                    atol=25.,
-                ))
-                #   Test ns > len(ys).
-                #     scalar
-                self.assertAlmostEqual(
-                    dist.quantile_tuning_curve(6, q=quantile),
-                    curve[5],
-                    delta=25.,
-                )
-                self.assertAlmostEqual(
-                    dist.quantile_tuning_curve(7, q=quantile),
-                    curve[6],
-                    delta=25.,
-                )
-                #     1D array
-                self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([1, 2, 7], q=quantile),
-                    [curve[0], curve[1], curve[6]],
-                    atol=25.,
-                ))
-                #     2D array
-                self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([
-                        [1, 2, 7],
-                        [6, 2, 1],
-                    ], q=quantile),
-                    [
+                        atol=25.,
+                    ))
+                    #     2D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [
+                                [1, 2, 3, 4, 5],
+                                [2, 4, 1, 3, 5],
+                            ],
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        [
+                            curve[:5],
+                            [curve[1], curve[3], curve[0], curve[2], curve[4]],
+                        ],
+                        atol=25.,
+                    ))
+                    #   Test ns > len(ys).
+                    #     scalar
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(
+                            6,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        curve[5],
+                        delta=25.,
+                    )
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(
+                            7,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        curve[6],
+                        delta=25.,
+                    )
+                    #     1D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [1, 2, 7],
+                            q=quantile,
+                            minimize=minimize,
+                        ),
                         [curve[0], curve[1], curve[6]],
-                        [curve[5], curve[1], curve[0]],
-                    ],
-                    atol=25.,
-                ))
+                        atol=25.,
+                    ))
+                    #     2D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [
+                                [1, 2, 7],
+                                [6, 2, 1],
+                            ],
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        [
+                            [curve[0], curve[1], curve[6]],
+                            [curve[5], curve[1], curve[0]],
+                        ],
+                        atol=25.,
+                    ))
 
-                # Test when n is non-integral.
-                ys = [0., 50., 25., 100., 75.]
-                ws = (
-                    np.random.dirichlet(np.full_like(ys, 5))
-                    if use_weights else
-                    None
-                )
-                dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-                #   scalar
-                #     0 < ns <= len(ys)
-                self.assertAlmostEqual(
-                    dist.quantile_tuning_curve(0.5, q=quantile),
-                    dist.quantile_tuning_curve(1, q=quantile**(1/0.5)),
-                )
-                #     ns > len(ys)
-                self.assertAlmostEqual(
-                    dist.quantile_tuning_curve(10.5, q=quantile),
-                    dist.quantile_tuning_curve(1, q=quantile**(1/10.5)),
-                )
-                #   1D array
-                #     0 < ns <= len(ys) and ns > len(ys)
-                self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([0.5, 10.5], q=quantile),
-                    dist.quantile_tuning_curve([1, 21], q=quantile**2),
-                ))
-                #   2D array
-                #     0 < ns <= len(ys) and ns > len(ys)
-                self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([
-                        [0.5, 10.5, 2.5],
-                        [2.5,  3.5, 0.5],
-                    ], q=quantile),
-                    dist.quantile_tuning_curve([
-                        [1, 21, 5],
-                        [5,  7, 1],
-                    ], q=quantile**2),
-                ))
+                    # Test when n is non-integral.
+                    ys = [0., 50., 25., 100., 75.]
+                    ws = (
+                        np.random.dirichlet(np.full_like(ys, 5))
+                        if use_weights else
+                        None
+                    )
+                    dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+                    #   scalar
+                    #     0 < ns <= len(ys)
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(
+                            0.5,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        dist.quantile_tuning_curve(
+                            1,
+                            q=1-(1-quantile)**(1/0.5)
+                              if minimize else
+                              quantile**(1/0.5),
+                            minimize=minimize,
+                        ),
+                    )
+                    #     ns > len(ys)
+                    self.assertAlmostEqual(
+                        dist.quantile_tuning_curve(
+                            10.5,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        dist.quantile_tuning_curve(
+                            1,
+                            q=1-(1-quantile)**(1/10.5)
+                              if minimize else
+                              quantile**(1/10.5),
+                            minimize=minimize,
+                        ),
+                    )
+                    #   1D array
+                    #     0 < ns <= len(ys) and ns > len(ys)
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [0.5, 10.5],
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        dist.quantile_tuning_curve(
+                            [1, 21],
+                            q=1-(1-quantile)**2
+                              if minimize else
+                              quantile**2,
+                            minimize=minimize,
+                        ),
+                    ))
+                    #   2D array
+                    #     0 < ns <= len(ys) and ns > len(ys)
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [
+                                [0.5, 10.5, 2.5],
+                                [2.5,  3.5, 0.5],
+                            ],
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                        dist.quantile_tuning_curve(
+                            [
+                                [1, 21, 5],
+                                [5,  7, 1],
+                            ],
+                            q=1-(1-quantile)**2
+                              if minimize else
+                              quantile**2,
+                            minimize=minimize,
+                        ),
+                    ))
 
     def test_average_tuning_curve(self):
         for use_weights in [False, True]:
@@ -1623,73 +1823,94 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 self.assertEqual(dist.ppf(1. + 1e-12), 0.)
 
     def test_quantile_tuning_curve_with_probability_mass_at_infinity(self):
-        for ys, n, expected in [
-                ([-np.inf, 100],                   1,  -np.inf),
-                ([-np.inf, 100],                   2,      100),
-                ([-np.inf, -10., 0., 10.,   100.], 1,        0),
-                ([  -100., -10., 0., 10., np.inf], 1,        0),
-                ([  -100., -10., 0., 10., np.inf], 4,   np.inf),
-                ([-np.inf, np.inf],                1,  -np.inf),
-                ([-np.inf, np.inf],                2,   np.inf),
-                ([-np.inf, 0., np.inf],            1,        0),
-                ([-np.inf, 0., np.inf],            2,   np.inf),
+        for ys, n, expected_minimize, expected_maximize in [
+                #            ys,                   n, minimize, maximize
+                ([-np.inf, 100],                   1,  -np.inf,  -np.inf),
+                ([-np.inf, 100],                   2,  -np.inf,      100),
+                ([100, np.inf],                    1,      100,      100),
+                ([100, np.inf],                    2,      100,   np.inf),
+                ([-np.inf, -10., 0., 10.,   100.], 1,        0,        0),
+                ([-np.inf, -10., 0., 10.,   100.], 4,  -np.inf,      100),
+                ([  -100., -10., 0., 10., np.inf], 1,        0,        0),
+                ([  -100., -10., 0., 10., np.inf], 4,     -100,   np.inf),
+                ([-np.inf, np.inf],                1,  -np.inf,  -np.inf),
+                ([-np.inf, np.inf],                2,  -np.inf,   np.inf),
+                ([-np.inf, 0., np.inf],            1,        0,        0),
+                ([-np.inf, 0., np.inf],            2,  -np.inf,   np.inf),
         ]:
             for use_weights in [False, True]:
-                ws = (
-                    np.ones_like(ys) / len(ys)
-                    if use_weights else
-                    None
-                )
-                dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-                # Test 0 < ns <= len(ys).
-                #   scalar
-                self.assertTrue(np.isclose(
-                    dist.quantile_tuning_curve(n),
-                    expected,
-                    equal_nan=True,
-                ))
-                #   1D array
-                self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([n] * 10),
-                    expected,
-                    equal_nan=True,
-                ))
-                #   2D array
-                self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([
-                        [n] * 10,
-                        [n] * 10,
-                    ]),
-                    expected,
-                    equal_nan=True,
-                ))
-                # Test ns > len(ys).
-                #   scalar
-                self.assertTrue(np.isclose(
-                    dist.quantile_tuning_curve(6),
-                    ys[-1],
-                    equal_nan=True,
-                ))
-                self.assertTrue(np.isclose(
-                    dist.quantile_tuning_curve(7),
-                    ys[-1],
-                    equal_nan=True,
-                ))
-                #   1D array
-                self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([6, 7, 8]),
-                    ys[-1],
-                    equal_nan=True,
-                ))
-                #   2D array
-                self.assertTrue(np.allclose(
-                    dist.quantile_tuning_curve([
-                        [6, 7, 8],
-                        [9, 8, 7],
-                    ]),
-                    ys[-1],
-                    equal_nan=True,
-                ))
+                for minimize in [False, True]:
+                    expected = expected_minimize if minimize else expected_maximize
+                    ws = (
+                        np.ones_like(ys) / len(ys)
+                        if use_weights else
+                        None
+                    )
+                    dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+                    # Test 0 < ns <= len(ys).
+                    #   scalar
+                    self.assertTrue(np.isclose(
+                        dist.quantile_tuning_curve(
+                            n,
+                            minimize=minimize,
+                        ),
+                        expected,
+                        equal_nan=True,
+                    ))
+                    #   1D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [n] * 10,
+                            minimize=minimize,
+                        ),
+                        expected,
+                        equal_nan=True,
+                    ))
+                    #   2D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [
+                                [n] * 10,
+                                [n] * 10,
+                            ],
+                            minimize=minimize,
+                        ),
+                        expected,
+                        equal_nan=True,
+                    ))
+                    # Test ns > len(ys).
+                    #   scalar
+                    self.assertTrue(np.isclose(
+                        dist.quantile_tuning_curve(6, minimize=minimize),
+                        ys[0] if minimize else ys[-1],
+                        equal_nan=True,
+                    ))
+                    self.assertTrue(np.isclose(
+                        dist.quantile_tuning_curve(7, minimize=minimize),
+                        ys[0] if minimize else ys[-1],
+                        equal_nan=True,
+                    ))
+                    #   1D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [6, 7, 8],
+                            minimize=minimize,
+                        ),
+                        ys[0] if minimize else ys[-1],
+                        equal_nan=True,
+                    ))
+                    #   2D array
+                    self.assertTrue(np.allclose(
+                        dist.quantile_tuning_curve(
+                            [
+                                [6, 7, 8],
+                                [9, 8, 7],
+                            ],
+                            minimize=minimize,
+                        ),
+                        ys[0] if minimize else ys[-1],
+                        equal_nan=True,
+                    ))
 
     def test_average_tuning_curve_with_probability_mass_at_infinity(self):
         for ys, expected in [

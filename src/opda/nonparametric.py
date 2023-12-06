@@ -397,7 +397,7 @@ class EmpiricalDistribution:
             self._a,
         )
 
-    def quantile_tuning_curve(self, ns, q=0.5):
+    def quantile_tuning_curve(self, ns, q=0.5, *, minimize=False):
         """Return the quantile tuning curve evaluated at ``ns``.
 
         Since the empirical distribution is discrete, its exact
@@ -410,6 +410,9 @@ class EmpiricalDistribution:
             The points at which to evaluate the tuning curve.
         q : float, optional (default=0.5)
             The quantile at which to evaluate the tuning curve.
+        minimize : bool, optional (default=False)
+            Whether or not to compute the tuning curve for minimizing a
+            metric as opposed to maximizing it.
 
         Returns
         -------
@@ -424,8 +427,15 @@ class EmpiricalDistribution:
         if q < 0. or q > 1.:
             raise ValueError(f'q must be between 0 and 1, inclusive.')
 
+        if not isinstance(minimize, bool):
+            raise ValueError('minimize must be a boolean.')
+
         # Compute the quantile tuning curve.
-        return self.ppf(q**(1/ns))
+        return self.ppf(
+            1 - (1 - q)**(1/ns)
+            if minimize else  # maximize
+            q**(1/ns)
+        )
 
     def average_tuning_curve(self, ns):
         """Return the average tuning curve evaluated at ``ns``.
