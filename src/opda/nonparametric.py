@@ -437,13 +437,16 @@ class EmpiricalDistribution:
             q**(1/ns)
         )
 
-    def average_tuning_curve(self, ns):
+    def average_tuning_curve(self, ns, *, minimize=False):
         """Return the average tuning curve evaluated at ``ns``.
 
         Parameters
         ----------
         ns : array of positive floats, required
             The points at which to evaluate the tuning curve.
+        minimize : bool, optional (default=False)
+            Whether or not to compute the tuning curve for minimizing a
+            metric as opposed to maximizing it.
 
         Returns
         -------
@@ -455,11 +458,21 @@ class EmpiricalDistribution:
         if np.any(ns <= 0):
             raise ValueError('ns must be positive.')
 
+        if not isinstance(minimize, bool):
+            raise ValueError('minimize must be a boolean.')
+
         # Compute the average tuning curve.
-        ws = (
-            self._ws_cumsum**ns[..., None]
-            - self._ws_cumsum_prev**ns[..., None]
-        )
+        if minimize:
+            ws = (
+                (1 - self._ws_cumsum_prev)**ns[..., None]
+                - (1 - self._ws_cumsum)**ns[..., None]
+            )
+        else:  # maximize
+            ws = (
+                self._ws_cumsum**ns[..., None]
+                - self._ws_cumsum_prev**ns[..., None]
+            )
+
         return np.sum(
             ws * np.where(ws != 0., self._ys, 0.),
             axis=-1,
