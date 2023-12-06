@@ -588,3 +588,26 @@ class QuadraticDistributionTestCase(unittest.TestCase):
                           .QuadraticDistribution(-b, -a, c, convex=not convex)
                           .quantile_tuning_curve(ns, minimize=False),
                     ))
+
+    def test_average_tuning_curve_minimize_is_dual_to_maximize(self):
+        for _ in range(4):
+            for a, b, c in [(-1., 1., 0.5), (-1., 1., 1.)]:
+                for convex in [False, True]:
+                    ns = np.arange(1, 17)
+
+                    self.assertTrue(np.allclose(
+                        parametric
+                          .QuadraticDistribution(a, b, c, convex=convex)
+                          .average_tuning_curve(ns, minimize=False),
+                        -parametric
+                          .QuadraticDistribution(-b, -a, c, convex=not convex)
+                          .average_tuning_curve(ns, minimize=True),
+                    ))
+                    self.assertTrue(np.allclose(
+                        parametric
+                          .QuadraticDistribution(a, b, c, convex=convex)
+                          .average_tuning_curve(ns, minimize=True),
+                        -parametric
+                          .QuadraticDistribution(-b, -a, c, convex=not convex)
+                          .average_tuning_curve(ns, minimize=False),
+                    ))
