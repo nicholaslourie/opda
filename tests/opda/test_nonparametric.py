@@ -2063,6 +2063,33 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                         equal_nan=True,
                     ))
 
+    def test_average_tuning_curve_minimize_is_dual_to_maximize(self):
+        for _ in range(4):
+            for use_weights in [False, True]:
+                ys = np.random.normal(size=8)
+                ws = (
+                    np.random.dirichlet(np.ones_like(ys))
+                    if use_weights else
+                    None
+                )
+                ns = np.arange(1, 17)
+                self.assertTrue(np.allclose(
+                    nonparametric
+                      .EmpiricalDistribution(ys, ws=ws)
+                      .average_tuning_curve(ns, minimize=False),
+                    -nonparametric
+                      .EmpiricalDistribution(-ys, ws=ws)
+                      .average_tuning_curve(ns, minimize=True),
+                ))
+                self.assertTrue(np.allclose(
+                    nonparametric
+                      .EmpiricalDistribution(ys, ws=ws)
+                      .average_tuning_curve(ns, minimize=True),
+                    -nonparametric
+                      .EmpiricalDistribution(-ys, ws=ws)
+                      .average_tuning_curve(ns, minimize=False),
+                ))
+
     def test_average_tuning_curve_with_probability_mass_at_infinity(self):
         for ys, expected in [
                 ([-np.inf, -10., 0., 10.,   100.], -np.inf),
