@@ -293,6 +293,7 @@ class EmpiricalDistribution:
         self._original_ys_cummax = np.maximum.accumulate(self.ys)
 
         self._original_ys_sorted = np.sort(self.ys)
+        self._original_ys_reverse_sorted = self._original_ys_sorted[::-1]
 
     def sample(self, size):
         """Return a sample from the empirical distribution.
@@ -527,7 +528,7 @@ class EmpiricalDistribution:
             self._original_ys_cummax
         )[ns - 1]
 
-    def v_tuning_curve(self, ns):
+    def v_tuning_curve(self, ns, *, minimize=False):
         """Return the v estimate for the tuning curve at ``ns``.
 
         The v statistic tuning curve estimate assigns to n the average
@@ -539,6 +540,9 @@ class EmpiricalDistribution:
         ns : array of positive ints, required
             The values at which to evaluate the v statistic tuning curve
             estimate.
+        minimize : bool, optional (default=False)
+            Whether or not to estimate the tuning curve for minimizing a
+            metric as opposed to maximizing it.
 
         Returns
         -------
@@ -558,12 +562,19 @@ class EmpiricalDistribution:
             raise ValueError('ns must be positive.')
         ns = ns.astype(int)
 
+        if not isinstance(minimize, bool):
+            raise ValueError('minimize must be a boolean.')
+
         # Compute the v statistic tuning curve estimate.
         return np.sum(
             (
                 (self._ns / self._n)**ns[..., None]
                 - ((self._ns - 1) / self._n)**ns[..., None]
-            ) * self._original_ys_sorted,
+            ) * (
+                self._original_ys_reverse_sorted
+                if minimize else  # maximize
+                self._original_ys_sorted
+            ),
             axis=-1,
         )
 
