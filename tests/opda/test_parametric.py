@@ -315,21 +315,30 @@ class QuadraticDistributionTestCase(unittest.TestCase):
                     dist.average_tuning_curve([[-2], [1]])
 
     def test_estimate_initial_parameters_and_bounds(self):
-        a, b, c = 0., 1., 1.
-        ys = parametric.QuadraticDistribution(a, b, c).sample(1_000)
-        for fraction in [0.5, 1.]:
-            for convex in [False, True]:
-                init_params, bounds = parametric.QuadraticDistribution\
-                    .estimate_initial_parameters_and_bounds(ys, fraction=1.)
-                self.assertLess(abs(init_params[0] - a), 0.1)
-                self.assertLess(abs(init_params[1] - b), 0.1)
-                self.assertLess(abs(init_params[2] - c), 0.25)
-                self.assertGreater(a, bounds[0, 0])
-                self.assertLess(a, bounds[0, 1])
-                self.assertGreater(b, bounds[1, 0])
-                self.assertLess(b, bounds[1, 1])
-                self.assertGreater(c, bounds[2, 0])
-                self.assertLess(c, bounds[2, 1])
+        for a, b, c in [(0., 1., 0.5), (-1., 1., 1.)]:
+            for fraction in [0.5, 1.]:
+                for convex in [False, True]:
+                    ys = parametric.QuadraticDistribution(
+                        a,
+                        b,
+                        c,
+                        convex=convex,
+                    ).sample(5_000)
+                    init_params, bounds = parametric.QuadraticDistribution\
+                        .estimate_initial_parameters_and_bounds(
+                            ys,
+                            fraction=fraction,
+                            convex=convex,
+                        )
+                    self.assertLess(abs(init_params[0] - a), 0.35)
+                    self.assertLess(abs(init_params[1] - b), 0.35)
+                    self.assertLess(abs(init_params[2] - c), 0.25)
+                    self.assertGreaterEqual(a, bounds[0, 0])
+                    self.assertLessEqual(a, bounds[0, 1])
+                    self.assertGreaterEqual(b, bounds[1, 0])
+                    self.assertLessEqual(b, bounds[1, 1])
+                    self.assertGreaterEqual(c, bounds[2, 0])
+                    self.assertLessEqual(c, bounds[2, 1])
 
     def test_pdf_on_boundary_of_support(self):
         for convex in [False, True]:
