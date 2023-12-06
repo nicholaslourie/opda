@@ -182,7 +182,7 @@ class QuadraticDistribution:
 
         return ys
 
-    def quantile_tuning_curve(self, ns, q=0.5):
+    def quantile_tuning_curve(self, ns, q=0.5, *, minimize=None):
         """Return the quantile tuning curve evaluated at ``ns``.
 
         Parameters
@@ -191,6 +191,12 @@ class QuadraticDistribution:
             The points at which to evaluate the tuning curve.
         q : float between 0 and 1, optional (default=0.5)
             The quantile at which to evaluate the tuning curve.
+        minimize : bool or None, optional (default=None)
+            Whether or not to compute the tuning curve for minimizing a
+            metric as opposed to maximizing it. Defaults to
+           ``None``, in which case it is taken to be the same as
+           ``self.convex``, so convex quadratic distributions will
+            minimize and concave ones will maximize.
 
         Returns
         -------
@@ -207,12 +213,22 @@ class QuadraticDistribution:
         if q < 0. or q > 1.:
             raise ValueError('q must be between 0 and 1, inclusive.')
 
+        minimize = minimize if minimize is not None else self.convex
+        if not isinstance(minimize, bool):
+            raise ValueError('minimize must be a boolean.')
+
         a, b, c = self.a, self.b, self.c
 
         if self.convex:
-            ys = a + (b - a) * q**(1/(c * ns))
+            if minimize:
+                ys = a + (b - a) * (1 - q**(1/ns))**(1/c)
+            else:  # maximize
+                ys = a + (b - a) * q**(1/(c * ns))
         else:  # concave
-            ys = b - (b - a) * (1 - q**(1/ns))**(1/c)
+            if minimize:
+                ys = b - (b - a) * q**(1/(c * ns))
+            else:  # maximize
+                ys = b - (b - a) * (1 - q**(1/ns))**(1/c)
 
         return ys
 
