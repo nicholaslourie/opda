@@ -26,8 +26,9 @@ class QuadraticDistribution:
         Half the dimension of distribution's search space.
     convex : bool, optional (default=False)
         Whether or not to use the convex form of the quadratic
-        distribution. The convex form should be used for minimization
-        while the concave form should be used for maximization.
+        distribution, as opposed to the concave form. When optimizing
+        via random search, the tail of the score distribution approaches
+        the convex form when minimizing and the concave when maximizing.
     """
     def __init__(
             self,
