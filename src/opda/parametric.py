@@ -232,13 +232,19 @@ class QuadraticDistribution:
 
         return ys
 
-    def average_tuning_curve(self, ns):
+    def average_tuning_curve(self, ns, *, minimize=None):
         """Return the average tuning curve evaluated at ``ns``.
 
         Parameters
         ----------
         ns : array of positive floats, required
             The points at which to evaluate the tuning curve.
+        minimize : bool or None, optional (default=None)
+            Whether or not to compute the tuning curve for minimizing a
+            metric as opposed to maximizing it. Defaults to
+           ``None``, in which case it is taken to be the same as
+           ``self.convex``, so convex quadratic distributions will
+            minimize and concave ones will maximize.
 
         Returns
         -------
@@ -250,20 +256,30 @@ class QuadraticDistribution:
         if np.any(ns <= 0):
             raise ValueError('ns must be positive.')
 
+        minimize = minimize if minimize is not None else self.convex
+        if not isinstance(minimize, bool):
+            raise ValueError('minimize must be a boolean.')
+
         a, b, c = self.a, self.b, self.c
 
         if self.convex:
-            ys = a + (b - a) * np.exp(
-                special.loggamma(ns + 1)
-                + special.loggamma((c + 1) / c)
-                - special.loggamma(ns + (c + 1) / c)
-            )
+            if minimize:
+                ys = a + (b - a) * np.exp(
+                    special.loggamma(ns + 1)
+                    + special.loggamma((c + 1) / c)
+                    - special.loggamma(ns + (c + 1) / c)
+                )
+            else:  # maximize
+                ys = a + (b - a) * ns / (ns + 1/c)
         else:  # concave
-            ys = b - (b - a) * np.exp(
-                special.loggamma(ns + 1)
-                + special.loggamma((c + 1) / c)
-                - special.loggamma(ns + (c + 1) / c)
-            )
+            if minimize:
+                ys = b - (b - a) * ns / (ns + 1/c)
+            else:  # maximize
+                ys = b - (b - a) * np.exp(
+                    special.loggamma(ns + 1)
+                    + special.loggamma((c + 1) / c)
+                    - special.loggamma(ns + (c + 1) / c)
+                )
 
         return ys
 
