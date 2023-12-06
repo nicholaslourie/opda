@@ -1822,6 +1822,39 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 self.assertEqual(dist.ppf(1.), 0.)
                 self.assertEqual(dist.ppf(1. + 1e-12), 0.)
 
+    def test_quantile_tuning_curve_minimize_is_dual_to_maximize(self):
+        for _ in range(4):
+            for use_weights in [False, True]:
+                ys = np.random.normal(size=7)
+                # NOTE: This test must use an _odd_ number of ys. When
+                # the sample size is even, there is no exact
+                # median. Our definition takes the order statistic to
+                # the left of the middle. Thus, the median for ys and
+                # -ys differs. Avoid this issue by using an odd number.
+                ws = (
+                    np.random.dirichlet(np.ones_like(ys))
+                    if use_weights else
+                    None
+                )
+                ns = np.arange(1, 17)
+
+                self.assertTrue(np.allclose(
+                    nonparametric
+                      .EmpiricalDistribution(ys, ws=ws)
+                      .quantile_tuning_curve(ns, minimize=False),
+                    -nonparametric
+                      .EmpiricalDistribution(-ys, ws=ws)
+                      .quantile_tuning_curve(ns, minimize=True),
+                ))
+                self.assertTrue(np.allclose(
+                    nonparametric
+                      .EmpiricalDistribution(ys, ws=ws)
+                      .quantile_tuning_curve(ns, minimize=True),
+                    -nonparametric
+                      .EmpiricalDistribution(-ys, ws=ws)
+                      .quantile_tuning_curve(ns, minimize=False),
+                ))
+
     def test_quantile_tuning_curve_with_probability_mass_at_infinity(self):
         for ys, n, expected_minimize, expected_maximize in [
                 #            ys,                   n, minimize, maximize
