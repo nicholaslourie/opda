@@ -2136,11 +2136,15 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                                 stats.kstwo(n).ppf(confidence)
                             )
                             self.assertTrue(np.allclose(
-                                (dist.cdf(ys) - lo.cdf(ys))[dist.cdf(ys) > epsilon],
+                                (dist.cdf(ys) - lo.cdf(ys))[
+                                    dist.cdf(ys) > epsilon
+                                ],
                                 epsilon,
                             ))
                             self.assertTrue(np.allclose(
-                                (hi.cdf(ys) - dist.cdf(ys))[1. - dist.cdf(ys) > epsilon],
+                                (hi.cdf(ys) - dist.cdf(ys))[
+                                    1. - dist.cdf(ys) > epsilon
+                                ],
                                 epsilon,
                             ))
 
@@ -2227,7 +2231,11 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         ]:
             for use_weights in [False, True]:
                 for minimize in [False, True]:
-                    expected = expected_minimize if minimize else expected_maximize
+                    expected = (
+                        expected_minimize
+                        if minimize else
+                        expected_maximize
+                    )
                     ws = (
                         np.ones_like(ys) / len(ys)
                         if use_weights else

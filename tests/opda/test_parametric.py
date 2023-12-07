@@ -68,7 +68,10 @@ class QuadraticDistributionTestCase(unittest.TestCase):
             # not broadcasting
             for n in range(6):
                 # When c = 1., the distribution is uniform.
-                self.assertAlmostEqual(dist.cdf(a + (n / 5.) * (b - a)), np.array(n / 5.))
+                self.assertAlmostEqual(
+                    dist.cdf(a + (n / 5.) * (b - a)),
+                    np.array(n / 5.),
+                )
             # broadcasting
             for _ in range(7):
                 us = np.random.uniform(0, 1, size=5)

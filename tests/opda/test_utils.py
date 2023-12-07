@@ -350,7 +350,10 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
                     self.assertEqual(lo.shape, ())
                     self.assertEqual(hi.shape, ())
                     self.assertLessEqual(lo, hi)
-                    self.assertAlmostEqual(beta.cdf(hi) - beta.cdf(lo), coverage)
+                    self.assertAlmostEqual(
+                        beta.cdf(hi) - beta.cdf(lo),
+                        coverage,
+                    )
                     self.assertLessEqual(lo, beta.ppf(0.5))
                     self.assertGreaterEqual(hi, beta.ppf(0.5))
 
@@ -622,7 +625,10 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
                     self.assertEqual(lo.shape, ())
                     self.assertEqual(hi.shape, ())
                     self.assertLessEqual(lo, hi)
-                    self.assertAlmostEqual(beta.cdf(hi) - beta.cdf(lo), coverage)
+                    self.assertAlmostEqual(
+                        beta.cdf(hi) - beta.cdf(lo),
+                        coverage,
+                    )
                     self.assertLessEqual(lo, mode)
                     self.assertGreaterEqual(hi, mode)
 
