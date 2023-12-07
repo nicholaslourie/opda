@@ -49,7 +49,7 @@ class QuadraticDistribution:
             raise ValueError('c must be a scalar.')
 
         if not isinstance(convex, bool):
-            raise ValueError('convex must be a boolean.')
+            raise TypeError('convex must be a boolean.')
 
         if a > b:
             raise ValueError('a must be less than or equal to b.')
@@ -215,7 +215,7 @@ class QuadraticDistribution:
 
         minimize = minimize if minimize is not None else self.convex
         if not isinstance(minimize, bool):
-            raise ValueError('minimize must be a boolean.')
+            raise TypeError('minimize must be a boolean.')
 
         a, b, c = self.a, self.b, self.c
 
@@ -258,7 +258,7 @@ class QuadraticDistribution:
 
         minimize = minimize if minimize is not None else self.convex
         if not isinstance(minimize, bool):
-            raise ValueError('minimize must be a boolean.')
+            raise TypeError('minimize must be a boolean.')
 
         a, b, c = self.a, self.b, self.c
 
@@ -331,7 +331,7 @@ class QuadraticDistribution:
             )
 
         if not isinstance(convex, bool):
-            raise ValueError('convex must be a boolean.')
+            raise TypeError('convex must be a boolean.')
 
         # Compute the initial parameters and bounds.
         ys_fraction = (

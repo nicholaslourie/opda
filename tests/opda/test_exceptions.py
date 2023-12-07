@@ -5,5 +5,5 @@ import unittest
 from opda import exceptions
 
 
-class OptimizationExceptionTestCase(unittest.TestCase):
-    """Test opda.exceptions.OptimizationException."""
+class OptimizationErrorTestCase(unittest.TestCase):
+    """Test opda.exceptions.OptimizationError."""

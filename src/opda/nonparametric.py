@@ -327,7 +327,7 @@ class EmpiricalDistribution:
         array of floats
             The probability mass at ``ys``.
         """
-        indices = np.searchsorted(self._ys, ys, side='left'),
+        indices = np.searchsorted(self._ys, ys, side='left')
         return np.where(
             self._ys[indices] == ys,
             self._ws[indices],
@@ -428,10 +428,10 @@ class EmpiricalDistribution:
             raise ValueError('ns must be positive.')
 
         if q < 0. or q > 1.:
-            raise ValueError(f'q must be between 0 and 1, inclusive.')
+            raise ValueError('q must be between 0 and 1, inclusive.')
 
         if not isinstance(minimize, bool):
-            raise ValueError('minimize must be a boolean.')
+            raise TypeError('minimize must be a boolean.')
 
         # Compute the quantile tuning curve.
         return self.ppf(
@@ -462,7 +462,7 @@ class EmpiricalDistribution:
             raise ValueError('ns must be positive.')
 
         if not isinstance(minimize, bool):
-            raise ValueError('minimize must be a boolean.')
+            raise TypeError('minimize must be a boolean.')
 
         # Compute the average tuning curve.
         if minimize:
@@ -517,7 +517,7 @@ class EmpiricalDistribution:
         ns = ns.astype(int)
 
         if not isinstance(minimize, bool):
-            raise ValueError('minimize must be a boolean.')
+            raise TypeError('minimize must be a boolean.')
 
         # Compute the naive tuning curve estimate.
         ns = np.clip(ns, None, self._n)
@@ -563,7 +563,7 @@ class EmpiricalDistribution:
         ns = ns.astype(int)
 
         if not isinstance(minimize, bool):
-            raise ValueError('minimize must be a boolean.')
+            raise TypeError('minimize must be a boolean.')
 
         # Compute the v statistic tuning curve estimate.
         return np.sum(
@@ -615,7 +615,7 @@ class EmpiricalDistribution:
         ns = ns.astype(int)
 
         if not isinstance(minimize, bool):
-            raise ValueError('minimize must be a boolean.')
+            raise TypeError('minimize must be a boolean.')
 
         # Compute the u statistic tuning curve estimate.
         ns = np.clip(ns, None, self._n)
@@ -737,10 +737,10 @@ class EmpiricalDistribution:
                 and method in ['ks', 'ld_equal_tailed', 'ld_highest_density']
         ):
             warnings.warn(
-                f'Duplicates detected in ys. confidence_bands with the'
-                f' ks, ld_equal_tailed, or ld_highest_density methods'
-                f' requires the underlying distribution to be continuous'
-                f' in order to achieve exact coverage.',
+                'Duplicates detected in ys. confidence_bands with the'
+                ' ks, ld_equal_tailed, or ld_highest_density methods'
+                ' requires the underlying distribution to be continuous'
+                ' in order to achieve exact coverage.',
                 RuntimeWarning,
                 stacklevel=2,
             )

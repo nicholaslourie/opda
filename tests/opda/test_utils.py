@@ -13,7 +13,8 @@ class SortByFirstTestCase(unittest.TestCase):
     """Test opda.utils.sort_by_first."""
 
     def test_sort_by_first(self):
-        tolist = lambda a: a.tolist()
+        def tolist(a):
+            return a.tolist()
 
         # Test on no arguments.
         self.assertEqual(utils.sort_by_first(), ())

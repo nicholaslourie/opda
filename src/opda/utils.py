@@ -3,8 +3,6 @@
 import numpy as np
 from scipy import stats
 
-from opda import exceptions
-
 
 def sort_by_first(*args):
     """Return the arrays sorted by the first array.
@@ -417,7 +415,7 @@ def binomial_confidence_interval(n_successes, n_total, confidence):
     ----------
     .. [1] Clopper, C. and Pearson, E. S., "The Use of Confidence or
        Fiducial Limits Illustrated in the Case of the Binomial"
-       (1934). Biometrika. 26 (4): 404–413. doi:10.1093/biomet/26.4.404.
+       (1934). Biometrika. 26 (4): 404-413. doi:10.1093/biomet/26.4.404.
     """
     # Validate the arguments.
     n_successes = np.array(n_successes)
@@ -440,7 +438,7 @@ def binomial_confidence_interval(n_successes, n_total, confidence):
     confidence = np.array(confidence)
     if np.any((confidence < 0.) | (confidence > 1.)):
         raise ValueError(
-            f'confidence must be between 0 and 1, inclusive.'
+            'confidence must be between 0 and 1, inclusive.'
         )
 
     if np.any(n_successes > n_total):
