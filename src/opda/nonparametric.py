@@ -327,7 +327,7 @@ class EmpiricalDistribution:
         array of floats
             The probability mass at ``ys``.
         """
-        indices = np.searchsorted(self._ys, ys, side='left'),
+        indices = np.searchsorted(self._ys, ys, side='left')
         return np.where(
             self._ys[indices] == ys,
             self._ws[indices],
