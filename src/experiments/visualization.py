@@ -197,7 +197,7 @@ def plot_distribution_approximation(
         approximating_distribution,
         n,
         *,
-        axes = None
+        axes = None,
 ):
     """Return a plot of the approximation to the max's distribution.
 

@@ -111,7 +111,7 @@ def _ld_band_weights(n, confidence, kind, n_trials=100_000, n_jobs=None):
     else:
         raise ValueError(
             f'kind must be one of "equal_tailed" or "highest_density",'
-            f' not {kind}.'
+            f' not {kind}.',
         )
 
     ns = np.arange(1, n + 1)
@@ -219,7 +219,7 @@ class EmpiricalDistribution:
             if ws.shape != ys.shape:
                 raise ValueError(
                     f'ws must have the same shape as ys: {ys.shape},'
-                    f' not {ws.shape}.'
+                    f' not {ws.shape}.',
                 )
             if np.any(ws < 0):
                 raise ValueError('ws must be non-negative.')
@@ -230,14 +230,14 @@ class EmpiricalDistribution:
             raise ValueError('a must be a scalar.')
         if a is not None and a > np.min(ys):
             raise ValueError(
-                f'a ({a}) cannot be greater than the min of ys ({np.min(ys)}).'
+                f'a ({a}) cannot be greater than the min of ys ({np.min(ys)}).',
             )
 
         if b is not None and not np.isscalar(b):
             raise ValueError('b must be a scalar.')
         if b is not None and b < np.max(ys):
             raise ValueError(
-                f'b ({b}) cannot be less than the max of ys ({np.max(ys)}).'
+                f'b ({b}) cannot be less than the max of ys ({np.max(ys)}).',
             )
 
         # Bind arguments to attributes.
@@ -437,7 +437,7 @@ class EmpiricalDistribution:
         return self.ppf(
             1 - (1 - q)**(1/ns)
             if minimize else  # maximize
-            q**(1/ns)
+            q**(1/ns),
         )
 
     def average_tuning_curve(self, ns, *, minimize=False):
@@ -506,7 +506,7 @@ class EmpiricalDistribution:
         # Validate the instance and arguments.
         if self._has_ws:
             raise ValueError(
-                'naive_tuning_curve cannot be called when ws is not None.'
+                'naive_tuning_curve cannot be called when ws is not None.',
             )
 
         ns = np.array(ns)
@@ -552,7 +552,7 @@ class EmpiricalDistribution:
         # Validate the instance and arguments.
         if self._has_ws:
             raise ValueError(
-                'v_tuning_curve cannot be called when ws is not None.'
+                'v_tuning_curve cannot be called when ws is not None.',
             )
 
         ns = np.array(ns)
@@ -604,7 +604,7 @@ class EmpiricalDistribution:
         # Validate the instance and arguments.
         if self._has_ws:
             raise ValueError(
-                'u_tuning_curve cannot be called when ws is not None.'
+                'u_tuning_curve cannot be called when ws is not None.',
             )
 
         ns = np.array(ns)
@@ -749,7 +749,7 @@ class EmpiricalDistribution:
             raise ValueError('confidence must be a scalar.')
         if confidence < 0. or confidence > 1.:
             raise ValueError(
-                'confidence must be between 0 and 1, inclusive.'
+                'confidence must be between 0 and 1, inclusive.',
             )
 
         a = a if a is not None else -np.inf
@@ -757,7 +757,7 @@ class EmpiricalDistribution:
             raise ValueError('a must be a scalar.')
         if a > np.min(ys):
             raise ValueError(
-                f'a ({a}) cannot be greater than the min of ys ({np.min(ys)}).'
+                f'a ({a}) cannot be greater than the min of ys ({np.min(ys)}).',
             )
 
         b = b if b is not None else np.inf
@@ -765,7 +765,7 @@ class EmpiricalDistribution:
             raise ValueError('b must be a scalar.')
         if b < np.max(ys):
             raise ValueError(
-                f'b ({b}) cannot be less than the max of ys ({np.max(ys)}).'
+                f'b ({b}) cannot be less than the max of ys ({np.max(ys)}).',
             )
 
         if n_jobs is not None and n_jobs < 1:
@@ -795,7 +795,7 @@ class EmpiricalDistribution:
         else:
             raise ValueError(
                 'method must be one of "dkw", "ks", "ld_equal_tailed",'
-                ' or "ld_highest_density".'
+                ' or "ld_highest_density".',
             )
 
         ws_lo = np.diff(ws_lo_cumsum, prepend=[0.], append=[1.])[unsorting]

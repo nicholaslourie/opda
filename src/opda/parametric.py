@@ -267,7 +267,7 @@ class QuadraticDistribution:
                 ys = a + (b - a) * np.exp(
                     special.loggamma(ns + 1)
                     + special.loggamma((c + 1) / c)
-                    - special.loggamma(ns + (c + 1) / c)
+                    - special.loggamma(ns + (c + 1) / c),
                 )
             else:  # maximize
                 ys = a + (b - a) * ns / (ns + 1/c)
@@ -278,7 +278,7 @@ class QuadraticDistribution:
                 ys = b - (b - a) * np.exp(
                     special.loggamma(ns + 1)
                     + special.loggamma((c + 1) / c)
-                    - special.loggamma(ns + (c + 1) / c)
+                    - special.loggamma(ns + (c + 1) / c),
                 )
 
         return ys
@@ -327,7 +327,7 @@ class QuadraticDistribution:
             raise ValueError('fraction must be a scalar.')
         if fraction < 0. or fraction > 1.:
             raise ValueError(
-                'fraction must be between 0 and 1, inclusive.'
+                'fraction must be between 0 and 1, inclusive.',
             )
 
         if not isinstance(convex, bool):

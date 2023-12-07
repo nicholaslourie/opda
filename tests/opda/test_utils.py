@@ -21,7 +21,7 @@ class SortByFirstTestCase(unittest.TestCase):
         # Test on empty lists.
         self.assertEqual(
             tuple(map(tolist, utils.sort_by_first([]))),
-            ([],)
+            ([],),
         )
         self.assertEqual(
             tuple(map(tolist, utils.sort_by_first([], []))),
@@ -143,15 +143,15 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
                     coverage,
                 ))
                 self.assertTrue(np.all(
-                    (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5))
+                    (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5)),
                 ))
                 self.assertTrue(np.all(
                     np.abs(beta.cdf(lo) - (1. - coverage) / 2.)
-                    < 1e-10
+                    < 1e-10,
                 ))
                 self.assertTrue(np.all(
                     np.abs(beta.cdf(hi) - (1. + coverage) / 2.)
-                    < 1e-10
+                    < 1e-10,
                 ))
         # Test when a and b are 1D arrays.
         n = 10
@@ -165,18 +165,18 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
             self.assertEqual(hi.shape, (n,))
             self.assertTrue(np.all(
                 np.abs((beta.cdf(hi) - beta.cdf(lo)) - coverage)
-                < 1e-10
+                < 1e-10,
             ))
             self.assertTrue(np.all(
-                (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5))
+                (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5)),
             ))
             self.assertTrue(np.all(
                 np.abs(beta.cdf(lo) - (1. - coverage) / 2.)
-                < 1e-10
+                < 1e-10,
             ))
             self.assertTrue(np.all(
                 np.abs(beta.cdf(hi) - (1. + coverage) / 2.)
-                < 1e-10
+                < 1e-10,
             ))
         #   when coverage is an array.
         coverage = np.random.rand(n)
@@ -188,15 +188,15 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
             coverage,
         ))
         self.assertTrue(np.all(
-            (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5))
+            (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5)),
         ))
         self.assertTrue(np.all(
             np.abs(beta.cdf(lo) - (1. - coverage) / 2.)
-            < 1e-10
+            < 1e-10,
         ))
         self.assertTrue(np.all(
             np.abs(beta.cdf(hi) - (1. + coverage) / 2.)
-            < 1e-10
+            < 1e-10,
         ))
         # Test when a and b are 2D arrays.
         n, m = 5, 2
@@ -210,18 +210,18 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
             self.assertEqual(hi.shape, (n, m))
             self.assertTrue(np.all(
                 np.abs((beta.cdf(hi) - beta.cdf(lo)) - coverage)
-                < 1e-10
+                < 1e-10,
             ))
             self.assertTrue(np.all(
-                (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5))
+                (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5)),
             ))
             self.assertTrue(np.all(
                 np.abs(beta.cdf(lo) - (1. - coverage) / 2.)
-                < 1e-10
+                < 1e-10,
             ))
             self.assertTrue(np.all(
                 np.abs(beta.cdf(hi) - (1. + coverage) / 2.)
-                < 1e-10
+                < 1e-10,
             ))
         #   when coverage is an array.
         coverage = np.random.rand(n, m)
@@ -233,15 +233,15 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
             coverage,
         ))
         self.assertTrue(np.all(
-            (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5))
+            (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5)),
         ))
         self.assertTrue(np.all(
             np.abs(beta.cdf(lo) - (1. - coverage) / 2.)
-            < 1e-10
+            < 1e-10,
         ))
         self.assertTrue(np.all(
             np.abs(beta.cdf(hi) - (1. + coverage) / 2.)
-            < 1e-10
+            < 1e-10,
         ))
         # Test when a and b broadcast over each other.
         n, m = 5, 2
@@ -255,18 +255,18 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
             self.assertEqual(hi.shape, (n, m))
             self.assertTrue(np.all(
                 np.abs((beta.cdf(hi) - beta.cdf(lo)) - coverage)
-                < 1e-10
+                < 1e-10,
             ))
             self.assertTrue(np.all(
-                (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5))
+                (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5)),
             ))
             self.assertTrue(np.all(
                 np.abs(beta.cdf(lo) - (1. - coverage) / 2.)
-                < 1e-10
+                < 1e-10,
             ))
             self.assertTrue(np.all(
                 np.abs(beta.cdf(hi) - (1. + coverage) / 2.)
-                < 1e-10
+                < 1e-10,
             ))
         #   when coverage is an array.
         coverage = np.random.rand(n, m)
@@ -278,15 +278,15 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
             coverage,
         ))
         self.assertTrue(np.all(
-            (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5))
+            (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5)),
         ))
         self.assertTrue(np.all(
             np.abs(beta.cdf(lo) - (1. - coverage) / 2.)
-            < 1e-10
+            < 1e-10,
         ))
         self.assertTrue(np.all(
             np.abs(beta.cdf(hi) - (1. + coverage) / 2.)
-            < 1e-10
+            < 1e-10,
         ))
         # Test when coverage broadcasts over a and b.
         #   when a and b have the same shape.
@@ -301,18 +301,18 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
         self.assertEqual(hi.shape, (n, k))
         self.assertTrue(np.allclose(
             beta.cdf(hi) - beta.cdf(lo),
-            np.tile(coverage, (n, 1))
+            np.tile(coverage, (n, 1)),
         ))
         self.assertTrue(np.all(
-            (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5))
+            (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5)),
         ))
         self.assertTrue(np.all(
             np.abs(beta.cdf(lo) - (1. - coverage) / 2.)
-            < 1e-10
+            < 1e-10,
         ))
         self.assertTrue(np.all(
             np.abs(beta.cdf(hi) - (1. + coverage) / 2.)
-            < 1e-10
+            < 1e-10,
         ))
         #   when a and b broadcast over each other.
         n, m = 3, 2
@@ -326,18 +326,18 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
         self.assertEqual(hi.shape, (n, m, k))
         self.assertTrue(np.allclose(
             beta.cdf(hi) - beta.cdf(lo),
-            np.tile(coverage, (n, m, 1))
+            np.tile(coverage, (n, m, 1)),
         ))
         self.assertTrue(np.all(
-            (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5))
+            (lo < beta.ppf(0.5)) & (hi > beta.ppf(0.5)),
         ))
         self.assertTrue(np.all(
             np.abs(beta.cdf(lo) - (1. - coverage) / 2.)
-            < 1e-10
+            < 1e-10,
         ))
         self.assertTrue(np.all(
             np.abs(beta.cdf(hi) - (1. + coverage) / 2.)
-            < 1e-10
+            < 1e-10,
         ))
 
     @pytest.mark.level(1)
@@ -408,12 +408,12 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
                     coverage,
                 ))
                 self.assertTrue(np.all(
-                    (lo <= mode) & (hi >= mode)
+                    (lo <= mode) & (hi >= mode),
                 ))
                 equal_tailed_lo, equal_tailed_hi =\
                     utils.beta_equal_tailed_interval(a, b, coverage)
                 self.assertTrue(np.all(
-                    (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12
+                    (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12,
                 ))
         # Test when a and b are 1D arrays.
         n = 10
@@ -428,18 +428,18 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
             self.assertEqual(hi.shape, (n,))
             self.assertTrue(np.all(
                 np.abs((beta.cdf(hi) - beta.cdf(lo)) - coverage)
-                < 1e-10
+                < 1e-10,
             ))
             self.assertTrue(np.all(
-                (lo <= mode) & (hi >= mode)
+                (lo <= mode) & (hi >= mode),
             ))
             equal_tailed_lo, equal_tailed_hi =\
                 utils.beta_equal_tailed_interval(a, b, coverage)
             self.assertTrue(np.all(
-                (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12
+                (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12,
             ))
             self.assertTrue(np.any(
-                (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5
+                (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5,
             ))
         #   when coverage is an array.
         coverage = np.random.rand(n)
@@ -451,15 +451,15 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
             coverage,
         ))
         self.assertTrue(np.all(
-            (lo <= mode) & (hi >= mode)
+            (lo <= mode) & (hi >= mode),
         ))
         equal_tailed_lo, equal_tailed_hi =\
             utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertTrue(np.all(
-            (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12
+            (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12,
         ))
         self.assertTrue(np.any(
-            (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5
+            (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5,
         ))
         # Test when a and b are 2D arrays.
         n, m = 5, 2
@@ -474,18 +474,18 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
             self.assertEqual(hi.shape, (n, m))
             self.assertTrue(np.all(
                 np.abs((beta.cdf(hi) - beta.cdf(lo)) - coverage)
-                < 1e-10
+                < 1e-10,
             ))
             self.assertTrue(np.all(
-                (lo <= mode) & (hi >= mode)
+                (lo <= mode) & (hi >= mode),
             ))
             equal_tailed_lo, equal_tailed_hi =\
                 utils.beta_equal_tailed_interval(a, b, coverage)
             self.assertTrue(np.all(
-                (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12
+                (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12,
             ))
             self.assertTrue(np.any(
-                (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5
+                (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5,
             ))
         #   when coverage is an array.
         coverage = np.random.rand(n, m)
@@ -497,15 +497,15 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
             coverage,
         ))
         self.assertTrue(np.all(
-            (lo <= mode) & (hi >= mode)
+            (lo <= mode) & (hi >= mode),
         ))
         equal_tailed_lo, equal_tailed_hi =\
             utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertTrue(np.all(
-            (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12
+            (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12,
         ))
         self.assertTrue(np.any(
-            (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5
+            (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5,
         ))
         # Test when a and b broadcast over each other.
         n, m = 5, 2
@@ -520,18 +520,18 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
             self.assertEqual(hi.shape, (n, m))
             self.assertTrue(np.all(
                 np.abs((beta.cdf(hi) - beta.cdf(lo)) - coverage)
-                < 1e-10
+                < 1e-10,
             ))
             self.assertTrue(np.all(
-                (lo <= mode) & (hi >= mode)
+                (lo <= mode) & (hi >= mode),
             ))
             equal_tailed_lo, equal_tailed_hi =\
                 utils.beta_equal_tailed_interval(a, b, coverage)
             self.assertTrue(np.all(
-                (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12
+                (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12,
             ))
             self.assertTrue(np.any(
-                (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5
+                (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5,
             ))
         #   when coverage is an array.
         coverage = np.random.rand(n, m)
@@ -543,15 +543,15 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
             coverage,
         ))
         self.assertTrue(np.all(
-            (lo <= mode) & (hi >= mode)
+            (lo <= mode) & (hi >= mode),
         ))
         equal_tailed_lo, equal_tailed_hi =\
             utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertTrue(np.all(
-            (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12
+            (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12,
         ))
         self.assertTrue(np.any(
-            (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5
+            (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5,
         ))
         # Test when coverage broadcasts over a and b.
         #   when a and b have the same shape.
@@ -570,15 +570,15 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
             np.tile(coverage, (n, 1)),
         ))
         self.assertTrue(np.all(
-            (lo <= mode) & (hi >= mode)
+            (lo <= mode) & (hi >= mode),
         ))
         equal_tailed_lo, equal_tailed_hi =\
             utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertTrue(np.all(
-            (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12
+            (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12,
         ))
         self.assertTrue(np.any(
-            (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5
+            (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5,
         ))
         #   when a and b broadcast over each other.
         n, m = 3, 2
@@ -596,15 +596,15 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
             np.tile(coverage, (n, m, 1)),
         ))
         self.assertTrue(np.all(
-            (lo <= mode) & (hi >= mode)
+            (lo <= mode) & (hi >= mode),
         ))
         equal_tailed_lo, equal_tailed_hi =\
             utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertTrue(np.all(
-            (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12
+            (hi - lo) - (equal_tailed_hi - equal_tailed_lo) < 1e-12,
         ))
         self.assertTrue(np.any(
-            (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5
+            (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5,
         ))
 
     @pytest.mark.level(1)
@@ -657,7 +657,7 @@ class BetaEqualTailedCoverageTestCase(unittest.TestCase):
                     lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
                     self.assertEqual(coverage.shape, ())
                     self.assertTrue(np.all(
-                        np.isclose(lo, x) | np.isclose(hi, x)
+                        np.isclose(lo, x) | np.isclose(hi, x),
                     ))
                 # when x is an array.
                 k = 5
@@ -666,7 +666,7 @@ class BetaEqualTailedCoverageTestCase(unittest.TestCase):
                 lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
                 self.assertEqual(coverage.shape, (k,))
                 self.assertTrue(np.all(
-                    np.isclose(lo, x) | np.isclose(hi, x)
+                    np.isclose(lo, x) | np.isclose(hi, x),
                 ))
         # Test when a and b are 1D arrays.
         n = 3
@@ -678,7 +678,7 @@ class BetaEqualTailedCoverageTestCase(unittest.TestCase):
             lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
             self.assertEqual(coverage.shape, (n,))
             self.assertTrue(np.all(
-                np.isclose(lo, x) | np.isclose(hi, x)
+                np.isclose(lo, x) | np.isclose(hi, x),
             ))
         #   when x is an array.
         x = np.random.rand(n)
@@ -686,7 +686,7 @@ class BetaEqualTailedCoverageTestCase(unittest.TestCase):
         lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n,))
         self.assertTrue(np.all(
-            np.isclose(lo, x) | np.isclose(hi, x)
+            np.isclose(lo, x) | np.isclose(hi, x),
         ))
         # Test when a and b are 2D arrays.
         n, m = 3, 2
@@ -698,7 +698,7 @@ class BetaEqualTailedCoverageTestCase(unittest.TestCase):
             lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
             self.assertEqual(coverage.shape, (n, m))
             self.assertTrue(np.all(
-                np.isclose(lo, x) | np.isclose(hi, x)
+                np.isclose(lo, x) | np.isclose(hi, x),
             ))
         #   when x is an array.
         x = np.random.rand(n, m)
@@ -706,7 +706,7 @@ class BetaEqualTailedCoverageTestCase(unittest.TestCase):
         lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, m))
         self.assertTrue(np.all(
-            np.isclose(lo, x) | np.isclose(hi, x)
+            np.isclose(lo, x) | np.isclose(hi, x),
         ))
         # Test when a and b broadcast over each other.
         n, m = 3, 2
@@ -718,7 +718,7 @@ class BetaEqualTailedCoverageTestCase(unittest.TestCase):
             lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
             self.assertEqual(coverage.shape, (n, m))
             self.assertTrue(np.all(
-                np.isclose(lo, x) | np.isclose(hi, x)
+                np.isclose(lo, x) | np.isclose(hi, x),
             ))
         #   when x is an array.
         x = np.random.rand(n, m)
@@ -726,7 +726,7 @@ class BetaEqualTailedCoverageTestCase(unittest.TestCase):
         lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, m))
         self.assertTrue(np.all(
-            np.isclose(lo, x) | np.isclose(hi, x)
+            np.isclose(lo, x) | np.isclose(hi, x),
         ))
         # Test when x broadcasts over a and b.
         #   when a and b have the same shape.
@@ -739,7 +739,7 @@ class BetaEqualTailedCoverageTestCase(unittest.TestCase):
         lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, k))
         self.assertTrue(np.all(
-            np.isclose(lo, x) | np.isclose(hi, x)
+            np.isclose(lo, x) | np.isclose(hi, x),
         ))
         #   when a and b broadcast over each other.
         n, m = 3, 2
@@ -751,7 +751,7 @@ class BetaEqualTailedCoverageTestCase(unittest.TestCase):
         lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, m, k))
         self.assertTrue(np.all(
-            np.isclose(lo, x) | np.isclose(hi, x)
+            np.isclose(lo, x) | np.isclose(hi, x),
         ))
 
     @pytest.mark.level(1)
@@ -847,7 +847,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
                     lo, hi = utils.beta_highest_density_interval(a, b, coverage)
                     self.assertEqual(coverage.shape, ())
                     self.assertTrue(np.all(
-                        np.isclose(lo, x) | np.isclose(hi, x)
+                        np.isclose(lo, x) | np.isclose(hi, x),
                     ))
                 # when x is an array.
                 k = 5
@@ -856,7 +856,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
                 lo, hi = utils.beta_highest_density_interval(a, b, coverage)
                 self.assertEqual(coverage.shape, (k,))
                 self.assertTrue(np.all(
-                    np.isclose(lo, x) | np.isclose(hi, x)
+                    np.isclose(lo, x) | np.isclose(hi, x),
                 ))
         # Test when a and b are 1D arrays.
         n = 3
@@ -868,7 +868,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
             lo, hi = utils.beta_highest_density_interval(a, b, coverage)
             self.assertEqual(coverage.shape, (n,))
             self.assertTrue(np.all(
-                np.isclose(lo, x) | np.isclose(hi, x)
+                np.isclose(lo, x) | np.isclose(hi, x),
             ))
         #   when x is an array.
         x = np.random.uniform(x_lo, x_hi, size=n)
@@ -876,7 +876,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
         lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n,))
         self.assertTrue(np.all(
-            np.isclose(lo, x) | np.isclose(hi, x)
+            np.isclose(lo, x) | np.isclose(hi, x),
         ))
         # Test when a and b are 2D arrays.
         n, m = 3, 2
@@ -888,7 +888,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
             lo, hi = utils.beta_highest_density_interval(a, b, coverage)
             self.assertEqual(coverage.shape, (n, m))
             self.assertTrue(np.all(
-                np.isclose(lo, x) | np.isclose(hi, x)
+                np.isclose(lo, x) | np.isclose(hi, x),
             ))
         #   when x is an array.
         x = np.random.uniform(x_lo, x_hi, size=(n, m))
@@ -896,7 +896,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
         lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, m))
         self.assertTrue(np.all(
-            np.isclose(lo, x) | np.isclose(hi, x)
+            np.isclose(lo, x) | np.isclose(hi, x),
         ))
         # Test when a and b broadcast over each other.
         n, m = 3, 2
@@ -908,7 +908,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
             lo, hi = utils.beta_highest_density_interval(a, b, coverage)
             self.assertEqual(coverage.shape, (n, m))
             self.assertTrue(np.all(
-                np.isclose(lo, x) | np.isclose(hi, x)
+                np.isclose(lo, x) | np.isclose(hi, x),
             ))
         #   when x is an array.
         x = np.random.uniform(x_lo, x_hi, size=(n, m))
@@ -916,7 +916,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
         lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, m))
         self.assertTrue(np.all(
-            np.isclose(lo, x) | np.isclose(hi, x)
+            np.isclose(lo, x) | np.isclose(hi, x),
         ))
         # Test when x broadcasts over a and b.
         #   when a and b have the same shape.
@@ -929,7 +929,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
         lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, k))
         self.assertTrue(np.all(
-            np.isclose(lo, x) | np.isclose(hi, x)
+            np.isclose(lo, x) | np.isclose(hi, x),
         ))
         #   when a and b broadcast over each other.
         n, m = 3, 2
@@ -941,7 +941,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
         lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, m, k))
         self.assertTrue(np.all(
-            np.isclose(lo, x) | np.isclose(hi, x)
+            np.isclose(lo, x) | np.isclose(hi, x),
         ))
 
     @pytest.mark.level(1)

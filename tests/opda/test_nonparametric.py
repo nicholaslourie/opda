@@ -2450,7 +2450,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     # band and at the discontinuity for the lower band.
                     covered.append(
                         np.all(lo.cdf(ys) <= dist.cdf(ys))
-                        & np.all(dist.cdf(ys - 1e-15) <= hi.cdf(ys - 1e-15))
+                        & np.all(dist.cdf(ys - 1e-15) <= hi.cdf(ys - 1e-15)),
                     )
 
                 _, hi = utils.binomial_confidence_interval(
@@ -2480,7 +2480,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     # band and at the discontinuity for the lower band.
                     covered.append(
                         np.all(lo.cdf(ys) <= dist.cdf(ys))
-                        & np.all(dist.cdf(ys - 1e-15) <= hi.cdf(ys - 1e-15))
+                        & np.all(dist.cdf(ys - 1e-15) <= hi.cdf(ys - 1e-15)),
                     )
 
                 lo, hi = utils.binomial_confidence_interval(
@@ -2511,7 +2511,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     # band and at the discontinuity for the lower band.
                     covered.append(
                         np.all(lo.cdf(ys) <= dist.cdf(ys))
-                        & np.all(dist.cdf(ys - 1e-15) <= hi.cdf(ys - 1e-15))
+                        & np.all(dist.cdf(ys - 1e-15) <= hi.cdf(ys - 1e-15)),
                     )
 
                 lo, hi = utils.binomial_confidence_interval(
@@ -2542,7 +2542,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     # band and at the discontinuity for the lower band.
                     covered.append(
                         np.all(lo.cdf(ys) <= dist.cdf(ys))
-                        & np.all(dist.cdf(ys - 1e-15) <= hi.cdf(ys - 1e-15))
+                        & np.all(dist.cdf(ys - 1e-15) <= hi.cdf(ys - 1e-15)),
                     )
 
                 lo, hi = utils.binomial_confidence_interval(
