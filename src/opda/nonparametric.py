@@ -198,6 +198,7 @@ class EmpiricalDistribution:
     Note that the upper CDF band gives the lower tuning curve band and
     vice versa.
     """
+
     def __init__(
             self,
             ys,

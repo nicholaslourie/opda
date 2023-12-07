@@ -30,6 +30,7 @@ class QuadraticDistribution:
         via random search, the tail of the score distribution approaches
         the convex form when minimizing and the concave when maximizing.
     """
+
     def __init__(
             self,
             a,

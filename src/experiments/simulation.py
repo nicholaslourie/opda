@@ -116,6 +116,7 @@ class Simulation:
     ----------
     See `Parameters`_ for the attributes.
     """
+
     n_trials: int
     n_samples: int
     n_dims: int
