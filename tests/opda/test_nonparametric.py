@@ -1215,9 +1215,12 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     for n in ns
                 ], axis=1)
                 # Compute a bound on the standard error for our ground truth.
-                err = 6 * (
-                    0.25 * (np.max(ys) - np.min(ys))**2  # Popoviciu's inequality
-                    / n_trials                           # divided by sample size
+                err = 6 * np.sqrt(
+                    # Use Popoviciu's inequality on variances to bound the
+                    # variance of one sample, then divide by the sample size to
+                    # get an upper bound on the variance of the average tuning
+                    # curve estimate.
+                    0.25 * (np.max(ys) - np.min(ys))**2 / n_trials,
                 )
                 #   scalar
                 for n, t in zip(ns, ts):
