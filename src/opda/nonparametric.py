@@ -101,10 +101,10 @@ def _ld_band_weights(n, confidence, kind, n_trials=100_000, n_jobs=None):
     # samples, ``1 - confidence`` will be within about +/- 10% of the
     # true value, for typical usage (i.e., confidence up to 99%).
 
-    if kind == 'equal_tailed':
+    if kind == "equal_tailed":
         interval = utils.beta_equal_tailed_interval
         coverage = utils.beta_equal_tailed_coverage
-    elif kind == 'highest_density':
+    elif kind == "highest_density":
         interval = utils.beta_highest_density_interval
         coverage = utils.beta_highest_density_coverage
     else:
@@ -117,7 +117,7 @@ def _ld_band_weights(n, confidence, kind, n_trials=100_000, n_jobs=None):
 
     # Compute the critical value of the test statistic.
     us = np.random.rand(n_trials, n)
-    us.sort(kind='quicksort', axis=-1)
+    us.sort(kind="quicksort", axis=-1)
     if n_jobs == 1:
         ts = 0.
         for i, (a, b) in enumerate(zip(ns, n + 1 - ns)):
@@ -209,34 +209,34 @@ class EmpiricalDistribution:
         # Validate the arguments.
         ys = np.array(ys)
         if len(ys.shape) != 1:
-            raise ValueError(f'ys must be a 1D array, not {len(ys.shape)}D.')
+            raise ValueError(f"ys must be a 1D array, not {len(ys.shape)}D.")
         if len(ys) == 0:
-            raise ValueError('ys must be non-empty.')
+            raise ValueError("ys must be non-empty.")
 
         if ws is not None:
             ws = np.array(ws)
             if ws.shape != ys.shape:
                 raise ValueError(
-                    f'ws must have the same shape as ys: {ys.shape},'
-                    f' not {ws.shape}.',
+                    f"ws must have the same shape as ys: {ys.shape},"
+                    f" not {ws.shape}.",
                 )
             if np.any(ws < 0):
-                raise ValueError('ws must be non-negative.')
+                raise ValueError("ws must be non-negative.")
             if np.abs(np.sum(ws) - 1.) > 1e-10:
-                raise ValueError('ws must sum to 1.')
+                raise ValueError("ws must sum to 1.")
 
         if a is not None and not np.isscalar(a):
-            raise ValueError('a must be a scalar.')
+            raise ValueError("a must be a scalar.")
         if a is not None and a > np.min(ys):
             raise ValueError(
-                f'a ({a}) cannot be greater than the min of ys ({np.min(ys)}).',
+                f"a ({a}) cannot be greater than the min of ys ({np.min(ys)}).",
             )
 
         if b is not None and not np.isscalar(b):
-            raise ValueError('b must be a scalar.')
+            raise ValueError("b must be a scalar.")
         if b is not None and b < np.max(ys):
             raise ValueError(
-                f'b ({b}) cannot be less than the max of ys ({np.max(ys)}).',
+                f"b ({b}) cannot be less than the max of ys ({np.max(ys)}).",
             )
 
         # Bind arguments to attributes.
@@ -326,7 +326,7 @@ class EmpiricalDistribution:
         array of floats
             The probability mass at ``ys``.
         """
-        indices = np.searchsorted(self._ys, ys, side='left')
+        indices = np.searchsorted(self._ys, ys, side="left")
         return np.where(
             self._ys[indices] == ys,
             self._ws[indices],
@@ -354,7 +354,7 @@ class EmpiricalDistribution:
         array of floats
             The cumulative probability at ``ys``.
         """
-        indices = np.searchsorted(self._ys, ys, side='right') - 1
+        indices = np.searchsorted(self._ys, ys, side="right") - 1
         return self._ws_cumsum[indices]
 
     def ppf(self, qs):
@@ -390,7 +390,7 @@ class EmpiricalDistribution:
         # Validate the arguments.
         qs = np.array(qs)
         if np.any((qs < 0. - 1e-10) | (qs > 1. + 1e-10)):
-            raise ValueError('qs must be between 0 and 1, inclusive.')
+            raise ValueError("qs must be between 0 and 1, inclusive.")
         qs = np.clip(qs, 0., 1.)
 
         # Compute the quantiles.
@@ -424,13 +424,13 @@ class EmpiricalDistribution:
         # Validate the arguments.
         ns = np.array(ns)
         if np.any(ns <= 0):
-            raise ValueError('ns must be positive.')
+            raise ValueError("ns must be positive.")
 
         if q < 0. or q > 1.:
-            raise ValueError('q must be between 0 and 1, inclusive.')
+            raise ValueError("q must be between 0 and 1, inclusive.")
 
         if not isinstance(minimize, bool):
-            raise TypeError('minimize must be a boolean.')
+            raise TypeError("minimize must be a boolean.")
 
         # Compute the quantile tuning curve.
         return self.ppf(
@@ -458,10 +458,10 @@ class EmpiricalDistribution:
         # Validate the arguments.
         ns = np.array(ns)
         if np.any(ns <= 0):
-            raise ValueError('ns must be positive.')
+            raise ValueError("ns must be positive.")
 
         if not isinstance(minimize, bool):
-            raise TypeError('minimize must be a boolean.')
+            raise TypeError("minimize must be a boolean.")
 
         # Compute the average tuning curve.
         if minimize:
@@ -505,18 +505,18 @@ class EmpiricalDistribution:
         # Validate the instance and arguments.
         if self._has_ws:
             raise ValueError(
-                'naive_tuning_curve cannot be called when ws is not None.',
+                "naive_tuning_curve cannot be called when ws is not None.",
             )
 
         ns = np.array(ns)
         if not np.all(ns % 1 == 0):
-            raise ValueError('ns must only contain integers.')
+            raise ValueError("ns must only contain integers.")
         if np.any(ns <= 0):
-            raise ValueError('ns must be positive.')
+            raise ValueError("ns must be positive.")
         ns = ns.astype(int)
 
         if not isinstance(minimize, bool):
-            raise TypeError('minimize must be a boolean.')
+            raise TypeError("minimize must be a boolean.")
 
         # Compute the naive tuning curve estimate.
         ns = np.clip(ns, None, self._n)
@@ -551,18 +551,18 @@ class EmpiricalDistribution:
         # Validate the instance and arguments.
         if self._has_ws:
             raise ValueError(
-                'v_tuning_curve cannot be called when ws is not None.',
+                "v_tuning_curve cannot be called when ws is not None.",
             )
 
         ns = np.array(ns)
         if not np.all(ns % 1 == 0):
-            raise ValueError('ns must only contain integers.')
+            raise ValueError("ns must only contain integers.")
         if np.any(ns <= 0):
-            raise ValueError('ns must be positive.')
+            raise ValueError("ns must be positive.")
         ns = ns.astype(int)
 
         if not isinstance(minimize, bool):
-            raise TypeError('minimize must be a boolean.')
+            raise TypeError("minimize must be a boolean.")
 
         # Compute the v statistic tuning curve estimate.
         return np.sum(
@@ -603,18 +603,18 @@ class EmpiricalDistribution:
         # Validate the instance and arguments.
         if self._has_ws:
             raise ValueError(
-                'u_tuning_curve cannot be called when ws is not None.',
+                "u_tuning_curve cannot be called when ws is not None.",
             )
 
         ns = np.array(ns)
         if not np.all(ns % 1 == 0):
-            raise ValueError('ns must only contain integers.')
+            raise ValueError("ns must only contain integers.")
         if np.any(ns <= 0):
-            raise ValueError('ns must be positive.')
+            raise ValueError("ns must be positive.")
         ns = ns.astype(int)
 
         if not isinstance(minimize, bool):
-            raise TypeError('minimize must be a boolean.')
+            raise TypeError("minimize must be a boolean.")
 
         # Compute the u statistic tuning curve estimate.
         ns = np.clip(ns, None, self._n)
@@ -640,7 +640,7 @@ class EmpiricalDistribution:
             *,
             a = None,
             b = None,
-            method = 'ld_highest_density',
+            method = "ld_highest_density",
             n_jobs = None,
     ):
         """Return confidence bands for the CDF.
@@ -728,68 +728,68 @@ class EmpiricalDistribution:
         # Validate arguments and handle defaults.
         ys = np.array(ys)
         if len(ys.shape) != 1:
-            raise ValueError(f'ys must be a 1D array, not {len(ys.shape)}D.')
+            raise ValueError(f"ys must be a 1D array, not {len(ys.shape)}D.")
         if len(ys) == 0:
-            raise ValueError('ys must be non-empty.')
+            raise ValueError("ys must be non-empty.")
         if (
                 len(np.unique(ys)) != len(ys)
-                and method in ['ks', 'ld_equal_tailed', 'ld_highest_density']
+                and method in ["ks", "ld_equal_tailed", "ld_highest_density"]
         ):
             warnings.warn(
-                'Duplicates detected in ys. confidence_bands with the'
-                ' ks, ld_equal_tailed, or ld_highest_density methods'
-                ' requires the underlying distribution to be continuous'
-                ' in order to achieve exact coverage.',
+                "Duplicates detected in ys. confidence_bands with the"
+                " ks, ld_equal_tailed, or ld_highest_density methods"
+                " requires the underlying distribution to be continuous"
+                " in order to achieve exact coverage.",
                 RuntimeWarning,
                 stacklevel=2,
             )
 
         if not np.isscalar(confidence):
-            raise ValueError('confidence must be a scalar.')
+            raise ValueError("confidence must be a scalar.")
         if confidence < 0. or confidence > 1.:
             raise ValueError(
-                'confidence must be between 0 and 1, inclusive.',
+                "confidence must be between 0 and 1, inclusive.",
             )
 
         a = a if a is not None else -np.inf
         if not np.isscalar(a):
-            raise ValueError('a must be a scalar.')
+            raise ValueError("a must be a scalar.")
         if a > np.min(ys):
             raise ValueError(
-                f'a ({a}) cannot be greater than the min of ys ({np.min(ys)}).',
+                f"a ({a}) cannot be greater than the min of ys ({np.min(ys)}).",
             )
 
         b = b if b is not None else np.inf
         if not np.isscalar(b):
-            raise ValueError('b must be a scalar.')
+            raise ValueError("b must be a scalar.")
         if b < np.max(ys):
             raise ValueError(
-                f'b ({b}) cannot be less than the max of ys ({np.max(ys)}).',
+                f"b ({b}) cannot be less than the max of ys ({np.max(ys)}).",
             )
 
         if n_jobs is not None and n_jobs < 1:
-            raise ValueError('n_jobs must be a positive integer.')
+            raise ValueError("n_jobs must be a positive integer.")
 
         # Compute the confidence bands.
         n = len(ys)
         ys_extended = np.concatenate([[a], ys, [b]])
         unsorting = np.argsort(np.argsort(ys_extended))
 
-        if method == 'dkw':
+        if method == "dkw":
             ws_lo_cumsum, ws_hi_cumsum = _dkw_band_weights(
                 n, confidence,
             )
-        elif method == 'ks':
+        elif method == "ks":
             ws_lo_cumsum, ws_hi_cumsum = _ks_band_weights(
                 n, confidence,
             )
-        elif method == 'ld_equal_tailed':
+        elif method == "ld_equal_tailed":
             ws_lo_cumsum, ws_hi_cumsum = _ld_band_weights(
-                n, confidence, kind='equal_tailed', n_jobs=n_jobs,
+                n, confidence, kind="equal_tailed", n_jobs=n_jobs,
             )
-        elif method == 'ld_highest_density':
+        elif method == "ld_highest_density":
             ws_lo_cumsum, ws_hi_cumsum = _ld_band_weights(
-                n, confidence, kind='highest_density', n_jobs=n_jobs,
+                n, confidence, kind="highest_density", n_jobs=n_jobs,
             )
         else:
             raise ValueError(

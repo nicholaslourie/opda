@@ -39,7 +39,7 @@ def make_damped_linear_sin(
 
     if len(weights.shape) != 1:
         raise ValueError(
-            f'weights must be 1D, not {len(weights.shape)}D.',
+            f"weights must be 1D, not {len(weights.shape)}D.",
         )
 
     n_dim, = weights.shape
@@ -48,8 +48,8 @@ def make_damped_linear_sin(
         xs = npx.array(xs)
         if xs.shape[-1] != n_dim:
             raise ValueError(
-                f'The last dimension of xs should be length {n_dim}, not'
-                f' {xs.shape[-1]}.',
+                f"The last dimension of xs should be length {n_dim}, not"
+                f" {xs.shape[-1]}.",
             )
 
         zs = weights * xs + bias
@@ -172,8 +172,8 @@ class Simulation:
         bounds = np.array(bounds)
         if bounds.shape != (n_dims, 2):
             raise ValueError(
-                f'bounds should have shape {(n_dims, 2)}, not {bounds.shape}.'
-                f' Each dimension must have a lower and upper bound.',
+                f"bounds should have shape {(n_dims, 2)}, not {bounds.shape}."
+                f" Each dimension must have a lower and upper bound.",
             )
 
         y_argmin = optimize.differential_evolution(

@@ -40,19 +40,19 @@ class QuadraticDistribution:
     ):
         # Validate the arguments.
         if not np.isscalar(a):
-            raise ValueError('a must be a scalar.')
+            raise ValueError("a must be a scalar.")
 
         if not np.isscalar(b):
-            raise ValueError('b must be a scalar.')
+            raise ValueError("b must be a scalar.")
 
         if not np.isscalar(c):
-            raise ValueError('c must be a scalar.')
+            raise ValueError("c must be a scalar.")
 
         if not isinstance(convex, bool):
-            raise TypeError('convex must be a boolean.')
+            raise TypeError("convex must be a boolean.")
 
         if a > b:
-            raise ValueError('a must be less than or equal to b.')
+            raise ValueError("a must be less than or equal to b.")
 
         # Bind attributes to the instance.
         self.a = a
@@ -94,9 +94,9 @@ class QuadraticDistribution:
 
         with warnings.catch_warnings():
             warnings.filterwarnings(
-                'ignore',
-                message=r'(divide by zero|invalid value) encountered in scalar'
-                        r' power',
+                "ignore",
+                message=r"(divide by zero|invalid value) encountered in scalar"
+                        r" power",
                 category=RuntimeWarning,
             )
 
@@ -169,7 +169,7 @@ class QuadraticDistribution:
         # Validate the arguments.
         qs = np.array(qs)
         if np.any((qs < 0. - 1e-10) | (qs > 1. + 1e-10)):
-            raise ValueError('qs must be between 0 and 1, inclusive.')
+            raise ValueError("qs must be between 0 and 1, inclusive.")
         qs = np.clip(qs, 0., 1.)
 
         # Compute the quantiles.
@@ -206,16 +206,16 @@ class QuadraticDistribution:
         # Validate the arguments.
         ns = np.array(ns)
         if np.any(ns <= 0):
-            raise ValueError('ns must be positive.')
+            raise ValueError("ns must be positive.")
 
         if not np.isscalar(q):
-            raise ValueError('q must be a scalar.')
+            raise ValueError("q must be a scalar.")
         if q < 0. or q > 1.:
-            raise ValueError('q must be between 0 and 1, inclusive.')
+            raise ValueError("q must be between 0 and 1, inclusive.")
 
         minimize = minimize if minimize is not None else self.convex
         if not isinstance(minimize, bool):
-            raise TypeError('minimize must be a boolean.')
+            raise TypeError("minimize must be a boolean.")
 
         a, b, c = self.a, self.b, self.c
 
@@ -254,11 +254,11 @@ class QuadraticDistribution:
         # Validate the arguments.
         ns = np.array(ns)
         if np.any(ns <= 0):
-            raise ValueError('ns must be positive.')
+            raise ValueError("ns must be positive.")
 
         minimize = minimize if minimize is not None else self.convex
         if not isinstance(minimize, bool):
-            raise TypeError('minimize must be a boolean.')
+            raise TypeError("minimize must be a boolean.")
 
         a, b, c = self.a, self.b, self.c
 
@@ -319,19 +319,19 @@ class QuadraticDistribution:
         # Validate arguments.
         ys = np.array(ys)
         if len(ys.shape) != 1:
-            raise ValueError(f'ys must be a 1D array, not {len(ys.shape)}D.')
+            raise ValueError(f"ys must be a 1D array, not {len(ys.shape)}D.")
         if len(ys) == 0:
-            raise ValueError('ys must be non-empty.')
+            raise ValueError("ys must be non-empty.")
 
         if not np.isscalar(fraction):
-            raise ValueError('fraction must be a scalar.')
+            raise ValueError("fraction must be a scalar.")
         if fraction < 0. or fraction > 1.:
             raise ValueError(
-                'fraction must be between 0 and 1, inclusive.',
+                "fraction must be between 0 and 1, inclusive.",
             )
 
         if not isinstance(convex, bool):
-            raise TypeError('convex must be a boolean.')
+            raise TypeError("convex must be a boolean.")
 
         # Compute the initial parameters and bounds.
         ys_fraction = (
