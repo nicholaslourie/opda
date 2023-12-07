@@ -431,7 +431,7 @@ class EmpiricalDistribution:
             raise ValueError('q must be between 0 and 1, inclusive.')
 
         if not isinstance(minimize, bool):
-            raise ValueError('minimize must be a boolean.')
+            raise TypeError('minimize must be a boolean.')
 
         # Compute the quantile tuning curve.
         return self.ppf(
@@ -462,7 +462,7 @@ class EmpiricalDistribution:
             raise ValueError('ns must be positive.')
 
         if not isinstance(minimize, bool):
-            raise ValueError('minimize must be a boolean.')
+            raise TypeError('minimize must be a boolean.')
 
         # Compute the average tuning curve.
         if minimize:
@@ -517,7 +517,7 @@ class EmpiricalDistribution:
         ns = ns.astype(int)
 
         if not isinstance(minimize, bool):
-            raise ValueError('minimize must be a boolean.')
+            raise TypeError('minimize must be a boolean.')
 
         # Compute the naive tuning curve estimate.
         ns = np.clip(ns, None, self._n)
@@ -563,7 +563,7 @@ class EmpiricalDistribution:
         ns = ns.astype(int)
 
         if not isinstance(minimize, bool):
-            raise ValueError('minimize must be a boolean.')
+            raise TypeError('minimize must be a boolean.')
 
         # Compute the v statistic tuning curve estimate.
         return np.sum(
@@ -615,7 +615,7 @@ class EmpiricalDistribution:
         ns = ns.astype(int)
 
         if not isinstance(minimize, bool):
-            raise ValueError('minimize must be a boolean.')
+            raise TypeError('minimize must be a boolean.')
 
         # Compute the u statistic tuning curve estimate.
         ns = np.clip(ns, None, self._n)
