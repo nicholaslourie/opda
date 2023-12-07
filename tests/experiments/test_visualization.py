@@ -34,17 +34,17 @@ class ColorWithLightnessTestCase(unittest.TestCase):
 
     def test_color_with_lightness(self):
         colors_by = {
-            'name': [
-                'r',
-                'g',
-                'tab:blue',
+            "name": [
+                "r",
+                "g",
+                "tab:blue",
             ],
-            'hex': [
-                '#f00',
-                '#0f0',
-                '#00f',
+            "hex": [
+                "#f00",
+                "#0f0",
+                "#00f",
             ],
-            'rgb': [
+            "rgb": [
                 (0.25, 0.00, 0.00),
                 (0.00, 0.25, 0.00),
                 (0.00, 0.00, 0.25),
@@ -59,7 +59,7 @@ class ColorWithLightnessTestCase(unittest.TestCase):
                 for channel in visualization.color_with_lightness(color, 1.):
                     self.assertAlmostEqual(channel, 1.)
                 # Test intermediate lightness values
-                if by == 'rgb':
+                if by == "rgb":
                     for c1, c2 in zip(  # "c" for "channel"
                             color,
                             visualization.color_with_lightness(color, 0.1),

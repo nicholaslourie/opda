@@ -23,7 +23,7 @@ def sort_by_first(*args):
     args = tuple(map(np.array, args))
     if any(arg.shape != args[0].shape for arg in args):
         raise ValueError(
-            'All argument arrays must have the same shape.'
+            "All argument arrays must have the same shape.",
         )
 
     # Return sorted copies of the arrays.
@@ -61,18 +61,18 @@ def dkw_epsilon(n, confidence):
     # Validate the arguments.
     n = np.array(n)
     if n <= 0:
-        raise ValueError('n must be positive.')
+        raise ValueError("n must be positive.")
 
     confidence = np.array(confidence)
     if np.any((confidence < 0.) | (confidence > 1.)):
         raise ValueError(
-            'confidence must be between 0 and 1, inclusive.'
+            "confidence must be between 0 and 1, inclusive.",
         )
 
     # Compute the DKW epsilon.
     return np.sqrt(
         np.log(2. / (1. - confidence))
-        / (2. * n)
+        / (2. * n),
     )
 
 
@@ -103,16 +103,16 @@ def beta_equal_tailed_interval(a, b, coverage):
     # Validate the arguments.
     a = np.array(a)
     if np.any(a <= 0):
-        raise ValueError('a must be positive.')
+        raise ValueError("a must be positive.")
 
     b = np.array(b)
     if np.any(b <= 0):
-        raise ValueError('b must be positive.')
+        raise ValueError("b must be positive.")
 
     coverage = np.array(coverage)
     if np.any((coverage < 0.) | (coverage > 1.)):
         raise ValueError(
-            'coverage must be between 0 and 1, inclusive.'
+            "coverage must be between 0 and 1, inclusive.",
         )
 
     # Compute the equal-tailed interval.
@@ -165,22 +165,22 @@ def beta_highest_density_interval(a, b, coverage, atol=1e-10):
     # Validate the arguments.
     a = np.array(a)
     if np.any(a <= 0):
-        raise ValueError('a must be positive.')
+        raise ValueError("a must be positive.")
 
     b = np.array(b)
     if np.any(b <= 0):
-        raise ValueError('b must be positive.')
+        raise ValueError("b must be positive.")
 
     coverage = np.array(coverage)
     if np.any((coverage < 0.) | (coverage > 1.)):
         raise ValueError(
-            'coverage must be between 0 and 1, inclusive.'
+            "coverage must be between 0 and 1, inclusive.",
         )
 
     if np.any((a <= 1.) & (b <= 1.)):
         raise ValueError(
-            f'Either a ({a}) or b ({b}) must be greater than one to have'
-            f' a highest density interval.'
+            f"Either a ({a}) or b ({b}) must be greater than one to have"
+            f" a highest density interval.",
         )
 
     # Compute the highest density interval.
@@ -198,7 +198,7 @@ def beta_highest_density_interval(a, b, coverage, atol=1e-10):
     n_iter = int(np.ceil(
         # Even when the maximum bracket length is below atol, run at
         # least 1 iteration in order to compute the midpoint and y.
-        np.log2(max(2, np.max(x_hi - x_lo) / atol))
+        np.log2(max(2, np.max(x_hi - x_lo) / atol)),
     ))
     for _ in range(n_iter):
         x = (x_lo + x_hi) / 2.
@@ -220,7 +220,7 @@ def beta_highest_density_interval(a, b, coverage, atol=1e-10):
         # transformation is monotonic, so it doesn't affect the points at
         # which the density is equal; however, it means we can avoid using
         # an expensive power operation on the large arrays.
-        with np.errstate(divide='ignore'):
+        with np.errstate(divide="ignore"):
             x_pdf = x**((a-1)/(b-1)) * (1-x)
             y_pdf = y**((a-1)/(b-1)) * (1-y)
 
@@ -259,16 +259,16 @@ def beta_equal_tailed_coverage(a, b, x):
     # Validate the arguments.
     a = np.array(a)
     if np.any(a <= 0):
-        raise ValueError('a must be positive.')
+        raise ValueError("a must be positive.")
 
     b = np.array(b)
     if np.any(b <= 0):
-        raise ValueError('b must be positive.')
+        raise ValueError("b must be positive.")
 
     x = np.array(x)
     if np.any((x < 0.) | (x > 1.)):
         raise ValueError(
-            'x must be between 0 and 1, inclusive.'
+            "x must be between 0 and 1, inclusive.",
         )
 
     # Compute the equal-tailed coverage.
@@ -307,22 +307,22 @@ def beta_highest_density_coverage(a, b, x, atol=1e-10):
     # Validate the arguments.
     a = np.array(a)
     if np.any(a <= 0):
-        raise ValueError('a must be positive.')
+        raise ValueError("a must be positive.")
 
     b = np.array(b)
     if np.any(b <= 0):
-        raise ValueError('b must be positive.')
+        raise ValueError("b must be positive.")
 
     x = np.array(x)
     if np.any((x < 0.) | (x > 1.)):
         raise ValueError(
-            'x must be between 0 and 1, inclusive.'
+            "x must be between 0 and 1, inclusive.",
         )
 
     if np.any((a <= 1.) & (b <= 1.)):
         raise ValueError(
-            f'Either a ({a}) or b ({b}) must be greater than one to have'
-            f' a highest density interval.'
+            f"Either a ({a}) or b ({b}) must be greater than one to have"
+            f" a highest density interval.",
         )
 
     # Compute the highest density coverage.
@@ -345,7 +345,7 @@ def beta_highest_density_coverage(a, b, x, atol=1e-10):
     # which the density is equal; however, it means we can avoid using
     # a power operation on the large array of y's, which makes the
     # function significantly faster.
-    with np.errstate(divide='ignore'):
+    with np.errstate(divide="ignore"):
         x_pdf = x**((a-1)/(b-1)) * (1-x)
 
     # Initialize bounds.
@@ -359,12 +359,12 @@ def beta_highest_density_coverage(a, b, x, atol=1e-10):
         # Even when the maximum bracket length is below atol, run at
         # least 1 iteration in order to compute the midpoint and figure
         # out if x or y is the lower end.
-        np.log2(max(2, np.max(y_hi - y_lo) / atol))
+        np.log2(max(2, np.max(y_hi - y_lo) / atol)),
     ))
     for _ in range(n_iter):
         y = (y_lo + y_hi) / 2.
 
-        with np.errstate(divide='ignore'):
+        with np.errstate(divide="ignore"):
             y_is_lo = x_is_lower_end == (x_pdf < y**((a-1)/(b-1)) * (1-y))
 
         y_lo = np.where(y_is_lo, y, y_lo)
@@ -420,31 +420,31 @@ def binomial_confidence_interval(n_successes, n_total, confidence):
     # Validate the arguments.
     n_successes = np.array(n_successes)
     if not np.all(n_successes % 1 == 0):
-        raise ValueError('n_successes must only contain integers.')
+        raise ValueError("n_successes must only contain integers.")
     if np.any(n_successes < 0):
         raise ValueError(
-            f'n_successes ({n_successes}) must be greater than or equal'
-            f' to 0.'
+            f"n_successes ({n_successes}) must be greater than or equal"
+            f" to 0.",
         )
 
     n_total = np.array(n_total)
     if not np.all(n_total % 1 == 0):
-        raise ValueError('n_total must only contain integers.')
+        raise ValueError("n_total must only contain integers.")
     if np.any(n_total < 1):
         raise ValueError(
-            f'n_total ({n_total}) must be greater than or equal to 1.'
+            f"n_total ({n_total}) must be greater than or equal to 1.",
         )
 
     confidence = np.array(confidence)
     if np.any((confidence < 0.) | (confidence > 1.)):
         raise ValueError(
-            'confidence must be between 0 and 1, inclusive.'
+            "confidence must be between 0 and 1, inclusive.",
         )
 
     if np.any(n_successes > n_total):
         raise ValueError(
-            f'n_successes ({n_successes}) must be less than or equal to'
-            f' n_total ({n_total}).'
+            f"n_successes ({n_successes}) must be less than or equal to"
+            f" n_total ({n_total}).",
         )
 
     # Compute the binomial confidence interval.

@@ -2,7 +2,10 @@
 
 import colorsys
 
-from matplotlib import colors, pyplot as plt
+from matplotlib import (
+    colors,
+    pyplot as plt,
+)
 import numpy as np
 
 
@@ -52,24 +55,24 @@ def plot_random_search(
     ax.plot(
         grid,
         func(grid),
-        linestyle='-',
-        c='grey',
-        label='$y = f(x)$',
+        linestyle="-",
+        c="grey",
+        label="$y = f(x)$",
     )
     ax.axvline(
         y_argmax,
-        linestyle='--',
-        c='grey',
-        label='$\\operatorname{arg\\,max} f(x)$',
+        linestyle="--",
+        c="grey",
+        label="$\\operatorname{arg\\,max} f(x)$",
     )
-    ax.scatter(xs, ys, marker='x', c='k', s=50)
+    ax.scatter(xs, ys, marker="x", c="k", s=50)
     for x in xs:
-        ax.axvline(x, linestyle=':', c='grey')
+        ax.axvline(x, linestyle=":", c="grey")
 
     ax.legend()
-    ax.set_title('Random Search')
-    ax.set_xlabel('$x$')
-    ax.set_ylabel('$y$')
+    ax.set_title("Random Search")
+    ax.set_xlabel("$x$")
+    ax.set_ylabel("$y$")
 
     return fig, ax
 
@@ -108,9 +111,9 @@ def plot_cdf(
 
     ax.plot(np.sort(xs), (np.arange(n) + 1) / n)
 
-    ax.set_xlabel(f'${name.lower()}$')
-    ax.set_ylabel(f'$\\mathbb{{P}}({name.upper()} \\leq {name.lower()})$')
-    ax.set_title(f'CDF (${name}$)')
+    ax.set_xlabel(f"${name.lower()}$")
+    ax.set_ylabel(f"$\\mathbb{{P}}({name.upper()} \\leq {name.lower()})$")
+    ax.set_title(f"CDF (${name}$)")
 
     return fig, ax
 
@@ -149,9 +152,9 @@ def plot_pdf(
 
     ax.hist(xs, density=True)
 
-    ax.set_xlabel(f'${name.lower()}$')
-    ax.set_ylabel(f'$d\\mathbb{{P}}({name.upper()} = {name.lower()})$')
-    ax.set_title(f'PDF (${name}$)')
+    ax.set_xlabel(f"${name.lower()}$")
+    ax.set_ylabel(f"$d\\mathbb{{P}}({name.upper()} = {name.lower()})$")
+    ax.set_title(f"PDF (${name}$)")
 
     return fig, ax
 
@@ -197,7 +200,7 @@ def plot_distribution_approximation(
         approximating_distribution,
         n,
         *,
-        axes = None
+        axes = None,
 ):
     """Return a plot of the approximation to the max's distribution.
 
@@ -227,7 +230,7 @@ def plot_distribution_approximation(
     """
     fig, axes = plot_distribution(
         simulation.yss_cummax[:, n-1],
-        name=f'Y_{{({n})}}',
+        name=f"Y_{{({n})}}",
         axes=axes,
     )
 
@@ -238,14 +241,14 @@ def plot_distribution_approximation(
     axes[0].plot(
         grid,
         approximating_distribution.cdf(grid) ** n,
-        label='Approximation',
+        label="Approximation",
     )
     axes[1].plot(
         grid,
         # d/dy (F(y)^n) = n F(y)^(n - 1) dF(y)
         n * approximating_distribution.cdf(grid)**(n - 1)
           * approximating_distribution.pdf(grid),
-        label='Approximation',
+        label="Approximation",
     )
 
     for ax, xlim, ylim in zip(axes, xlims, ylims):
@@ -293,12 +296,12 @@ def plot_tuning_curve_approximation(
     axes[0].plot(
         simulation.ns,
         np.median(simulation.yss_cummax, axis=0),
-        label='Truth',
+        label="Truth",
     )
     axes[1].plot(
         simulation.ns,
         np.mean(simulation.yss_cummax, axis=0),
-        label='Truth',
+        label="Truth",
     )
 
     xlims = [ax.get_xlim() for ax in axes]
@@ -307,12 +310,12 @@ def plot_tuning_curve_approximation(
     axes[0].plot(
         simulation.ns,
         approximating_distribution.quantile_tuning_curve(simulation.ns),
-        label='Approximation',
+        label="Approximation",
     )
     axes[1].plot(
         simulation.ns,
         approximating_distribution.average_tuning_curve(simulation.ns),
-        label='Approximation',
+        label="Approximation",
     )
 
     for ax, xlim, ylim in zip(axes, xlims, ylims):
@@ -320,13 +323,13 @@ def plot_tuning_curve_approximation(
         ax.set_ylim(*ylim)
         ax.legend()
 
-    axes[0].set_xlabel('$n$')
-    axes[0].set_ylabel('$\\tau_m(n)$')
-    axes[0].set_title('Median Tuning Curve')
+    axes[0].set_xlabel("$n$")
+    axes[0].set_ylabel("$\\tau_m(n)$")
+    axes[0].set_title("Median Tuning Curve")
 
-    axes[1].set_xlabel('$n$')
-    axes[1].set_ylabel('$\\tau_e(n)$')
-    axes[1].set_title('Expected Tuning Curve')
+    axes[1].set_xlabel("$n$")
+    axes[1].set_ylabel("$\\tau_e(n)$")
+    axes[1].set_title("Expected Tuning Curve")
 
     return fig, axes
 

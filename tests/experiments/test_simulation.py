@@ -45,15 +45,15 @@ class SimulationTestCase(unittest.TestCase):
     @pytest.mark.level(1)
     def test_run(self):
         sim_kwargs = {
-            'n_trials': 7,
-            'n_samples': 5,
-            'n_dims': 3,
-            'func': simulation.make_damped_linear_sin(
+            "n_trials": 7,
+            "n_samples": 5,
+            "n_dims": 3,
+            "func": simulation.make_damped_linear_sin(
                 weights=[1., -1., 0.],
                 bias=0.,
                 scale=1.,
             ),
-            'bounds': [[-1., 1.]] * 3,
+            "bounds": [[-1., 1.]] * 3,
         }
         sim = simulation.Simulation.run(**sim_kwargs)
 

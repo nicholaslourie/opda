@@ -68,7 +68,10 @@ class QuadraticDistributionTestCase(unittest.TestCase):
             # not broadcasting
             for n in range(6):
                 # When c = 1., the distribution is uniform.
-                self.assertAlmostEqual(dist.cdf(a + (n / 5.) * (b - a)), np.array(n / 5.))
+                self.assertAlmostEqual(
+                    dist.cdf(a + (n / 5.) * (b - a)),
+                    np.array(n / 5.),
+                )
             # broadcasting
             for _ in range(7):
                 us = np.random.uniform(0, 1, size=5)
@@ -171,7 +174,7 @@ class QuadraticDistributionTestCase(unittest.TestCase):
                                     n,
                                     q=0.5,
                                     minimize=minimize,
-                                )
+                                ),
                             ],
                         )
                     #   1D array
@@ -233,7 +236,7 @@ class QuadraticDistributionTestCase(unittest.TestCase):
                                     n/10.,
                                     q=0.5**(1/10),
                                     minimize=minimize,
-                                )
+                                ),
                             ],
                         )
                     #   1D array
@@ -425,7 +428,7 @@ class QuadraticDistributionTestCase(unittest.TestCase):
                                 dist.average_tuning_curve(
                                     n - 0.5,
                                     minimize=minimize,
-                                )
+                                ),
                             ],
                         )
                     #   1D array
@@ -438,7 +441,7 @@ class QuadraticDistributionTestCase(unittest.TestCase):
                         < dist.average_tuning_curve(
                             np.arange(1, 6),
                             minimize=minimize,
-                        )
+                        ),
                     ))
                     #   2D array
                     self.assertTrue(np.all(
@@ -449,7 +452,7 @@ class QuadraticDistributionTestCase(unittest.TestCase):
                         ) < dist.average_tuning_curve(
                             np.arange(1, 11).reshape(5, 2),
                             minimize=minimize,
-                        )
+                        ),
                     ))
 
                     # Test ns <= 0.

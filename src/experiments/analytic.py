@@ -21,7 +21,7 @@ def ellipse_volume(cs):
     """
     cs = np.array(cs)
     if not len(cs.shape) == 1:
-        raise ValueError(f'cs must be a 1D array, not have shape {cs.shape}.')
+        raise ValueError(f"cs must be a 1D array, not have shape {cs.shape}.")
 
     n_dims, = cs.shape
 
@@ -59,13 +59,13 @@ def get_approximation_parameters(func, bounds):
         raise ValueError(
             f"bounds must be a d x 2 array of pairs, not have shape"
             f" {bounds.shape}, where d is the dimension of func's"
-            f" domain."
+            f" domain.",
         )
     if not bounds.shape[1] == 2:
         raise ValueError(
-            f'bounds must be an array of pairs, not have shape'
-            f' {bounds.shape}. Each pair, (lo, hi), must bound the'
-            f' corresponding coordinate of the input to func.'
+            f"bounds must be an array of pairs, not have shape"
+            f" {bounds.shape}. Each pair, (lo, hi), must bound the"
+            f" corresponding coordinate of the input to func.",
         )
 
     n_dims, _ = bounds.shape

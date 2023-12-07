@@ -482,7 +482,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                             axis=1,
                         ),
                         quantile,
-                        method='inverted_cdf',
+                        method="inverted_cdf",
                         axis=0,
                     )
                     #   Test 0 < ns <= len(ys).
@@ -675,7 +675,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                             axis=1,
                         ),
                         quantile,
-                        method='inverted_cdf',
+                        method="inverted_cdf",
                         axis=0,
                     )
                     #   Test 0 < ns <= len(ys).
@@ -2040,7 +2040,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
     @pytest.mark.level(2)
     def test_confidence_bands(self):
         n = 5
-        methods = ['dkw', 'ks', 'ld_equal_tailed', 'ld_highest_density']
+        methods = ["dkw", "ks", "ld_equal_tailed", "ld_highest_density"]
         for method in methods:
             for confidence in [0.5, 0.9]:
                 for a, b in [(0., 1.), (-np.inf, np.inf), (None, None)]:
@@ -2050,8 +2050,8 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                             ys = np.concatenate([ys[:n-n//3], ys[:n//3]])
                             with warnings.catch_warnings():
                                 warnings.filterwarnings(
-                                    'ignore',
-                                    message=r'Duplicates detected in ys',
+                                    "ignore",
+                                    message=r"Duplicates detected in ys",
                                     category=RuntimeWarning,
                                 )
                                 lo, dist, hi =\
@@ -2129,18 +2129,22 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                         self.assertLessEqual(dist.cdf(np.inf), 1.)
                         self.assertLessEqual(hi.cdf(np.inf), 1.)
                        # Check bands are proper distance from the empirical CDF.
-                        if method == 'dkw' or method == 'ks':
+                        if method == "dkw" or method == "ks":
                             epsilon = (
                                 utils.dkw_epsilon(n, confidence)
-                                if method == 'dkw' else
+                                if method == "dkw" else
                                 stats.kstwo(n).ppf(confidence)
                             )
                             self.assertTrue(np.allclose(
-                                (dist.cdf(ys) - lo.cdf(ys))[dist.cdf(ys) > epsilon],
+                                (dist.cdf(ys) - lo.cdf(ys))[
+                                    dist.cdf(ys) > epsilon
+                                ],
                                 epsilon,
                             ))
                             self.assertTrue(np.allclose(
-                                (hi.cdf(ys) - dist.cdf(ys))[1. - dist.cdf(ys) > epsilon],
+                                (hi.cdf(ys) - dist.cdf(ys))[
+                                    1. - dist.cdf(ys) > epsilon
+                                ],
                                 epsilon,
                             ))
 
@@ -2227,7 +2231,11 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         ]:
             for use_weights in [False, True]:
                 for minimize in [False, True]:
-                    expected = expected_minimize if minimize else expected_maximize
+                    expected = (
+                        expected_minimize
+                        if minimize else
+                        expected_maximize
+                    )
                     ws = (
                         np.ones_like(ys) / len(ys)
                         if use_weights else
@@ -2353,8 +2361,8 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                             # warning in the test though, since it is
                             # expected.
                             warnings.filterwarnings(
-                                'ignore',
-                                message=r'invalid value encountered in reduce',
+                                "ignore",
+                                message=r"invalid value encountered in reduce",
                                 category=RuntimeWarning,
                             )
 
@@ -2441,7 +2449,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     ys = dist.rvs(size=n_samples)
                     lo, _, hi =\
                         nonparametric.EmpiricalDistribution.confidence_bands(
-                            ys, confidence, method='dkw',
+                            ys, confidence, method="dkw",
                         )
                     # NOTE: Since the confidence bands are step
                     # functions and the CDF is increasing, if there's a
@@ -2450,7 +2458,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     # band and at the discontinuity for the lower band.
                     covered.append(
                         np.all(lo.cdf(ys) <= dist.cdf(ys))
-                        & np.all(dist.cdf(ys - 1e-15) <= hi.cdf(ys - 1e-15))
+                        & np.all(dist.cdf(ys - 1e-15) <= hi.cdf(ys - 1e-15)),
                     )
 
                 _, hi = utils.binomial_confidence_interval(
@@ -2471,7 +2479,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     ys = dist.rvs(size=n_samples)
                     lo, _, hi =\
                         nonparametric.EmpiricalDistribution.confidence_bands(
-                            ys, confidence, method='ks',
+                            ys, confidence, method="ks",
                         )
                     # NOTE: Since the confidence bands are step
                     # functions and the CDF is increasing, if there's a
@@ -2480,7 +2488,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     # band and at the discontinuity for the lower band.
                     covered.append(
                         np.all(lo.cdf(ys) <= dist.cdf(ys))
-                        & np.all(dist.cdf(ys - 1e-15) <= hi.cdf(ys - 1e-15))
+                        & np.all(dist.cdf(ys - 1e-15) <= hi.cdf(ys - 1e-15)),
                     )
 
                 lo, hi = utils.binomial_confidence_interval(
@@ -2502,7 +2510,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     ys = dist.rvs(size=n_samples)
                     lo, _, hi =\
                         nonparametric.EmpiricalDistribution.confidence_bands(
-                            ys, confidence, method='ld_equal_tailed',
+                            ys, confidence, method="ld_equal_tailed",
                         )
                     # NOTE: Since the confidence bands are step
                     # functions and the CDF is increasing, if there's a
@@ -2511,7 +2519,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     # band and at the discontinuity for the lower band.
                     covered.append(
                         np.all(lo.cdf(ys) <= dist.cdf(ys))
-                        & np.all(dist.cdf(ys - 1e-15) <= hi.cdf(ys - 1e-15))
+                        & np.all(dist.cdf(ys - 1e-15) <= hi.cdf(ys - 1e-15)),
                     )
 
                 lo, hi = utils.binomial_confidence_interval(
@@ -2533,7 +2541,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     ys = dist.rvs(size=n_samples)
                     lo, _, hi =\
                         nonparametric.EmpiricalDistribution.confidence_bands(
-                            ys, confidence, method='ld_highest_density',
+                            ys, confidence, method="ld_highest_density",
                         )
                     # NOTE: Since the confidence bands are step
                     # functions and the CDF is increasing, if there's a
@@ -2542,7 +2550,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     # band and at the discontinuity for the lower band.
                     covered.append(
                         np.all(lo.cdf(ys) <= dist.cdf(ys))
-                        & np.all(dist.cdf(ys - 1e-15) <= hi.cdf(ys - 1e-15))
+                        & np.all(dist.cdf(ys - 1e-15) <= hi.cdf(ys - 1e-15)),
                     )
 
                 lo, hi = utils.binomial_confidence_interval(

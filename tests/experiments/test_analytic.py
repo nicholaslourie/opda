@@ -6,8 +6,8 @@ from autograd import numpy as npx
 import numpy as np
 import pytest
 
-from opda import nonparametric, parametric, utils
 from experiments import analytic, simulation
+from opda import nonparametric, parametric, utils
 
 
 class EllipseVolumeTestCase(unittest.TestCase):
@@ -105,13 +105,13 @@ class GetApproximationParametersTestCase(unittest.TestCase):
                 *analytic.get_approximation_parameters(
                     func=s.func,
                     bounds=s.bounds,
-                )
+                ),
             )
             empirical_distribution = nonparametric.EmpiricalDistribution(
                 s.yss[:, 0],
             )
             empirical_max_distribution = nonparametric.EmpiricalDistribution(
-                s.yss_cummax[:, n_samples - 1]
+                s.yss_cummax[:, n_samples - 1],
             )
 
             ns = np.arange(n_samples // 2, n_samples + 1)
