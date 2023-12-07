@@ -1,13 +1,13 @@
 """Tests for opda.parametric"""
 
-import unittest
-
 import numpy as np
 
 from opda import parametric
 
+from tests import testcases
 
-class QuadraticDistributionTestCase(unittest.TestCase):
+
+class QuadraticDistributionTestCase(testcases.RandomTestCase):
     """Test opda.parametric.QuadraticDistribution."""
 
     def test___eq__(self):
@@ -164,17 +164,17 @@ class QuadraticDistributionTestCase(unittest.TestCase):
                 self.assertEqual(dist.pdf(a + (n / 5.) * (b - a)), np.array(1.))
             # broadcasting
             for _ in range(7):
-                us = np.random.uniform(0, 1, size=5)
+                us = self.generator.uniform(0, 1, size=5)
                 self.assertEqual(
                     dist.pdf(a + us * (b - a)).tolist(),
                     np.ones_like(us).tolist(),
                 )
-                us = np.random.uniform(0, 1, size=(5, 3))
+                us = self.generator.uniform(0, 1, size=(5, 3))
                 self.assertEqual(
                     dist.pdf(a + us * (b - a)).tolist(),
                     np.ones_like(us).tolist(),
                 )
-                us = np.random.uniform(0, 1, size=(5, 3, 2))
+                us = self.generator.uniform(0, 1, size=(5, 3, 2))
                 self.assertEqual(
                     dist.pdf(a + us * (b - a)).tolist(),
                     np.ones_like(us).tolist(),
@@ -202,17 +202,17 @@ class QuadraticDistributionTestCase(unittest.TestCase):
                 )
             # broadcasting
             for _ in range(7):
-                us = np.random.uniform(0, 1, size=5)
+                us = self.generator.uniform(0, 1, size=5)
                 self.assertEqual(
                     dist.cdf(a + us * (b - a)).tolist(),
                     us.tolist(),
                 )
-                us = np.random.uniform(0, 1, size=(5, 3))
+                us = self.generator.uniform(0, 1, size=(5, 3))
                 self.assertEqual(
                     dist.cdf(a + us * (b - a)).tolist(),
                     us.tolist(),
                 )
-                us = np.random.uniform(0, 1, size=(5, 3, 2))
+                us = self.generator.uniform(0, 1, size=(5, 3, 2))
                 self.assertEqual(
                     dist.cdf(a + us * (b - a)).tolist(),
                     us.tolist(),
@@ -237,17 +237,17 @@ class QuadraticDistributionTestCase(unittest.TestCase):
                 self.assertAlmostEqual(dist.ppf(n / 5.), a + (n / 5.) * (b - a))
             # broadcasting
             for _ in range(7):
-                us = np.random.uniform(0, 1, size=5)
+                us = self.generator.uniform(0, 1, size=5)
                 self.assertEqual(
                     dist.ppf(us).tolist(),
                     (a + us * (b - a)).tolist(),
                 )
-                us = np.random.uniform(0, 1, size=(5, 3))
+                us = self.generator.uniform(0, 1, size=(5, 3))
                 self.assertEqual(
                     dist.ppf(us).tolist(),
                     (a + us * (b - a)).tolist(),
                 )
-                us = np.random.uniform(0, 1, size=(5, 3, 2))
+                us = self.generator.uniform(0, 1, size=(5, 3, 2))
                 self.assertEqual(
                     dist.ppf(us).tolist(),
                     (a + us * (b - a)).tolist(),
@@ -686,7 +686,7 @@ class QuadraticDistributionTestCase(unittest.TestCase):
                 for _ in range(5):
                     ys = dist.sample(100)
                     self.assertTrue(np.allclose(dist.ppf(dist.cdf(ys)), ys))
-                    us = np.random.uniform(0, 1, size=100)
+                    us = self.generator.uniform(0, 1, size=100)
                     self.assertTrue(np.allclose(dist.cdf(dist.ppf(us)), us))
 
     def test_ppf_at_extremes(self):

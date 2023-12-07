@@ -1,6 +1,5 @@
 """Tests for opda.nonparametric"""
 
-import unittest
 import warnings
 
 import numpy as np
@@ -9,8 +8,10 @@ from scipy import stats
 
 from opda import nonparametric, utils
 
+from tests import testcases
 
-class EmpiricalDistributionTestCase(unittest.TestCase):
+
+class EmpiricalDistributionTestCase(testcases.RandomTestCase):
     """Test opda.nonparametric.EmpiricalDistribution."""
 
     def test___eq__(self):
@@ -18,7 +19,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         bounds = [(-np.inf, np.inf), (-5, 5), (-10., 10.)]
         for ys in yss:
             wss = (
-                [None, np.random.dirichlet(np.ones_like(ys))]
+                [None, self.generator.dirichlet(np.ones_like(ys))]
                 if len(ys) > 1 else
                 # If len(ys) == 1 then there is only one possible set of
                 # weights: ws == [1.] or, equivalently, ws == None.
@@ -676,14 +677,14 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     # Test when len(ys) > 1.
                     ys = [0., 50., 25., 100., 75.]
                     ws = (
-                        np.random.dirichlet(np.full_like(ys, 5))
+                        self.generator.dirichlet(np.full_like(ys, 5))
                         if use_weights else
                         None
                     )
                     dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
                     curve = np.quantile(
                         np.minimum.accumulate(
-                            np.random.choice(
+                            self.generator.choice(
                                 ys,
                                 p=ws,
                                 size=(1_000, 7),
@@ -693,7 +694,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                         )
                         if minimize else
                         np.maximum.accumulate(
-                            np.random.choice(
+                            self.generator.choice(
                                 ys,
                                 p=ws,
                                 size=(1_000, 7),
@@ -869,14 +870,14 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     # Test when ys has duplicates.
                     ys = [0., 0., 50., 0., 25.]
                     ws = (
-                        np.random.dirichlet(np.full_like(ys, 5))
+                        self.generator.dirichlet(np.full_like(ys, 5))
                         if use_weights else
                         None
                     )
                     dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
                     curve = np.quantile(
                         np.minimum.accumulate(
-                            np.random.choice(
+                            self.generator.choice(
                                 ys,
                                 p=ws,
                                 size=(1_000, 7),
@@ -886,7 +887,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                         )
                         if minimize else
                         np.maximum.accumulate(
-                            np.random.choice(
+                            self.generator.choice(
                                 ys,
                                 p=ws,
                                 size=(1_000, 7),
@@ -1012,7 +1013,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     # Test when n is non-integral.
                     ys = [0., 50., 25., 100., 75.]
                     ws = (
-                        np.random.dirichlet(np.full_like(ys, 5))
+                        self.generator.dirichlet(np.full_like(ys, 5))
                         if use_weights else
                         None
                     )
@@ -1133,14 +1134,14 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 # Test when len(ys) > 1.
                 ys = [0., 50., 25., 100., 75.]
                 ws = (
-                    np.random.dirichlet(np.ones_like(ys))
+                    self.generator.dirichlet(np.ones_like(ys))
                     if use_weights else
                     None
                 )
                 dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
                 curve = np.mean(
                     np.minimum.accumulate(
-                        np.random.choice(
+                        self.generator.choice(
                             ys,
                             p=ws,
                             size=(2_500, 7),
@@ -1150,7 +1151,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     )
                     if minimize else
                     np.maximum.accumulate(
-                        np.random.choice(
+                        self.generator.choice(
                             ys,
                             p=ws,
                             size=(2_500, 7),
@@ -1290,14 +1291,14 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 # Test when ys has duplicates.
                 ys = [0., 0., 50., 0., 100.]
                 ws = (
-                    np.random.dirichlet(np.ones_like(ys))
+                    self.generator.dirichlet(np.ones_like(ys))
                     if use_weights else
                     None
                 )
                 dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
                 curve = np.mean(
                     np.minimum.accumulate(
-                        np.random.choice(
+                        self.generator.choice(
                             ys,
                             p=ws,
                             size=(2_500, 7),
@@ -1307,7 +1308,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     )
                     if minimize else
                     np.maximum.accumulate(
-                        np.random.choice(
+                        self.generator.choice(
                             ys,
                             p=ws,
                             size=(2_500, 7),
@@ -1413,7 +1414,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 n_trials = 10_000
                 ys = [0., 50., 25., 100., 75.]
                 ws = (
-                    np.random.dirichlet(np.ones_like(ys))
+                    self.generator.dirichlet(np.ones_like(ys))
                     if use_weights else
                     None
                 )
@@ -1427,7 +1428,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 # NOTE: Make sure to include 0 < ns <= len(ys) and ns > len(ys).
                 ns = np.arange(10) + 0.5
                 ts = np.mean([
-                    np.random.choice(
+                    self.generator.choice(
                         ys_sorted,
                         p=(
                             (1-np.concatenate([[0], ws_sorted_cumsum[:-1]]))**n
@@ -1778,12 +1779,12 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             dist = nonparametric.EmpiricalDistribution(ys)
             curve = np.mean(
                 np.minimum.accumulate(
-                    np.random.choice(ys, size=(2_500, 7), replace=True),
+                    self.generator.choice(ys, size=(2_500, 7), replace=True),
                     axis=1,
                 )
                 if minimize else
                 np.maximum.accumulate(
-                    np.random.choice(ys, size=(2_500, 7), replace=True),
+                    self.generator.choice(ys, size=(2_500, 7), replace=True),
                     axis=1,
                 ),
                 axis=0,
@@ -1902,12 +1903,12 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             dist = nonparametric.EmpiricalDistribution(ys)
             curve = np.mean(
                 np.minimum.accumulate(
-                    np.random.choice(ys, size=(2_500, 7), replace=True),
+                    self.generator.choice(ys, size=(2_500, 7), replace=True),
                     axis=1,
                 )
                 if minimize else
                 np.maximum.accumulate(
-                    np.random.choice(ys, size=(2_500, 7), replace=True),
+                    self.generator.choice(ys, size=(2_500, 7), replace=True),
                     axis=1,
                 ),
                 axis=0,
@@ -2035,13 +2036,19 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             curve = np.mean(
                 np.minimum.accumulate(
                     # Sort random numbers to batch sampling without replacement.
-                    np.array(ys)[np.argsort(np.random.rand(2_500, 5), axis=1)],
+                    np.array(ys)[np.argsort(
+                        self.generator.random(size=(2_500, 5)),
+                        axis=1,
+                    )],
                     axis=1,
                 )
                 if minimize else
                 np.maximum.accumulate(
                     # Sort random numbers to batch sampling without replacement.
-                    np.array(ys)[np.argsort(np.random.rand(2_500, 5), axis=1)],
+                    np.array(ys)[np.argsort(
+                        self.generator.random(size=(2_500, 5)),
+                        axis=1,
+                    )],
                     axis=1,
                 ),
                 axis=0,
@@ -2161,13 +2168,19 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             curve = np.mean(
                 np.minimum.accumulate(
                     # Sort random numbers to batch sampling without replacement.
-                    np.array(ys)[np.argsort(np.random.rand(2_500, 5), axis=1)],
+                    np.array(ys)[np.argsort(
+                        self.generator.random(size=(2_500, 5)),
+                        axis=1,
+                    )],
                     axis=1,
                 )
                 if minimize else
                 np.maximum.accumulate(
                     # Sort random numbers to batch sampling without replacement.
-                    np.array(ys)[np.argsort(np.random.rand(2_500, 5), axis=1)],
+                    np.array(ys)[np.argsort(
+                        self.generator.random(size=(2_500, 5)),
+                        axis=1,
+                    )],
                     axis=1,
                 ),
                 axis=0,
@@ -2272,7 +2285,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 for a, b in [(0., 1.), (-np.inf, np.inf)]:
                     for has_duplicates in [False, True]:
                         if has_duplicates:
-                            ys = np.random.uniform(0, 1, size=n)
+                            ys = self.generator.uniform(0, 1, size=n)
                             ys = np.concatenate([ys[:n-n//3], ys[:n//3]])
                             with warnings.catch_warnings():
                                 warnings.filterwarnings(
@@ -2290,7 +2303,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                                         method=method,
                                     )
                         else:
-                            ys = np.random.uniform(0, 1, size=n)
+                            ys = self.generator.uniform(0, 1, size=n)
                             lo, dist, hi =\
                                 nonparametric.EmpiricalDistribution\
                                 .confidence_bands(
@@ -2376,8 +2389,8 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         for has_ws in [False, True]:
             for _ in range(10):
                 dist = nonparametric.EmpiricalDistribution(
-                    np.random.uniform(0, 1, size=5),
-                    ws=np.random.dirichlet(np.ones(5)) if has_ws else None,
+                    self.generator.uniform(0, 1, size=5),
+                    ws=self.generator.dirichlet(np.ones(5)) if has_ws else None,
                 )
                 ys = dist.sample(100)
                 self.assertEqual(dist.ppf(dist.cdf(ys)).tolist(), ys.tolist())
@@ -2410,14 +2423,14 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
     def test_quantile_tuning_curve_minimize_is_dual_to_maximize(self):
         for _ in range(4):
             for use_weights in [False, True]:
-                ys = np.random.normal(size=7)
+                ys = self.generator.normal(size=7)
                 # NOTE: This test must use an _odd_ number of ys. When
                 # the sample size is even, there is no exact
                 # median. Our definition takes the order statistic to
                 # the left of the middle. Thus, the median for ys and
                 # -ys differs. Avoid this issue by using an odd number.
                 ws = (
-                    np.random.dirichlet(np.ones_like(ys))
+                    self.generator.dirichlet(np.ones_like(ys))
                     if use_weights else
                     None
                 )
@@ -2543,9 +2556,9 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
     def test_average_tuning_curve_minimize_is_dual_to_maximize(self):
         for _ in range(4):
             for use_weights in [False, True]:
-                ys = np.random.normal(size=8)
+                ys = self.generator.normal(size=8)
                 ws = (
-                    np.random.dirichlet(np.ones_like(ys))
+                    self.generator.dirichlet(np.ones_like(ys))
                     if use_weights else
                     None
                 )
@@ -2576,7 +2589,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             for use_weights in [False, True]:
                 for minimize in [False, True]:
                     ws = (
-                        np.random.dirichlet(np.ones_like(ys))
+                        self.generator.dirichlet(np.ones_like(ys))
                         if use_weights else
                         None
                     )
