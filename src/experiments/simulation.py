@@ -7,7 +7,6 @@ from autograd import numpy as npx
 import numpy as np
 from scipy import optimize
 
-
 # test functions
 
 def make_damped_linear_sin(

@@ -9,7 +9,6 @@ from scipy import special, stats
 
 from opda import utils
 
-
 # backwards compatibility
 
 import sys

@@ -6,8 +6,8 @@ from autograd import numpy as npx
 import numpy as np
 import pytest
 
-from opda import nonparametric, parametric, utils
 from experiments import analytic, simulation
+from opda import nonparametric, parametric, utils
 
 
 class EllipseVolumeTestCase(unittest.TestCase):

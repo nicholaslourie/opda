@@ -2,7 +2,10 @@
 
 import colorsys
 
-from matplotlib import colors, pyplot as plt
+from matplotlib import (
+    colors,
+    pyplot as plt,
+)
 import numpy as np
 
 
