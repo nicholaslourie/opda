@@ -13,6 +13,200 @@ from opda import nonparametric, utils
 class EmpiricalDistributionTestCase(unittest.TestCase):
     """Test opda.nonparametric.EmpiricalDistribution."""
 
+    def test___eq__(self):
+        yss = [[0.], [1.], [-1., 1.], [0., 1.], [-1., 0., 1.]]
+        bounds = [(-np.inf, np.inf), (-5, 5), (-10., 10.)]
+        for ys in yss:
+            wss = (
+                [None, np.random.dirichlet(np.ones_like(ys))]
+                if len(ys) > 1 else
+                # If len(ys) == 1 then there is only one possible set of
+                # weights: ws == [1.] or, equivalently, ws == None.
+                [None]
+            )
+            for ws in wss:
+                for a, b in bounds:
+                    # Test inequality with other objects.
+                    self.assertNotEqual(
+                        nonparametric.EmpiricalDistribution(ys, ws, a, b),
+                        None,
+                    )
+                    self.assertNotEqual(
+                        nonparametric.EmpiricalDistribution(ys, ws, a, b),
+                        1.,
+                    )
+                    self.assertNotEqual(
+                        nonparametric.EmpiricalDistribution(ys, ws, a, b),
+                        set(),
+                    )
+
+                    # Test (in)equality between instances of the same class.
+                    #   equality
+                    self.assertEqual(
+                        nonparametric.EmpiricalDistribution(ys, ws, a, b),
+                        nonparametric.EmpiricalDistribution(ys, ws, a, b),
+                    )
+                    #   inequality
+                    for ys_ in yss:
+                        if np.array_equal(ys_, ys) or len(ys_) != len(ys):
+                            # NOTE: ys_ must have the same length as ws
+                            # (and thus ys) to use ys_ with ws as
+                            # arguments to EmpiricalDistribution.
+                            continue
+                        self.assertNotEqual(
+                            nonparametric.EmpiricalDistribution(ys, ws, a, b),
+                            nonparametric.EmpiricalDistribution(ys_, ws, a, b),
+                        )
+                    for ws_ in wss:
+                        if np.array_equal(ws_, ws):
+                            continue
+                        self.assertNotEqual(
+                            nonparametric.EmpiricalDistribution(ys, ws, a, b),
+                            nonparametric.EmpiricalDistribution(ys, ws_, a, b),
+                        )
+                    for a_, _ in bounds:
+                        if a_ == a:
+                            continue
+                        self.assertNotEqual(
+                            nonparametric.EmpiricalDistribution(ys, ws, a, b),
+                            nonparametric.EmpiricalDistribution(ys, ws, a_, b),
+                        )
+                    for _, b_ in bounds:
+                        if b_ == b:
+                            continue
+                        self.assertNotEqual(
+                            nonparametric.EmpiricalDistribution(ys, ws, a, b),
+                            nonparametric.EmpiricalDistribution(ys, ws, a, b_),
+                        )
+
+                    # Test (in)equality between instances of different classes.
+                    class EmpiricalDistributionSubclass(
+                            nonparametric.EmpiricalDistribution,
+                    ):
+                        pass
+                    #   equality
+                    self.assertEqual(
+                        nonparametric.EmpiricalDistribution(ys, ws, a, b),
+                        EmpiricalDistributionSubclass(ys, ws, a, b),
+                    )
+                    self.assertEqual(
+                        EmpiricalDistributionSubclass(ys, ws, a, b),
+                        nonparametric.EmpiricalDistribution(ys, ws, a, b),
+                    )
+                    #   inequality
+                    for ys_ in yss:
+                        if np.array_equal(ys_, ys) or len(ys_) != len(ys):
+                            # NOTE: ys_ must have the same length as ws
+                            # (and thus ys) to use ys_ with ws as
+                            # arguments to EmpiricalDistribution.
+                            continue
+                        self.assertNotEqual(
+                            nonparametric.EmpiricalDistribution(ys, ws, a, b),
+                            EmpiricalDistributionSubclass(ys_, ws, a, b),
+                        )
+                        self.assertNotEqual(
+                            EmpiricalDistributionSubclass(ys_, ws, a, b),
+                            nonparametric.EmpiricalDistribution(ys, ws, a, b),
+                        )
+                    for ws_ in wss:
+                        if np.array_equal(ws_, ws):
+                            continue
+                        self.assertNotEqual(
+                            nonparametric.EmpiricalDistribution(ys, ws, a, b),
+                            EmpiricalDistributionSubclass(ys, ws_, a, b),
+                        )
+                        self.assertNotEqual(
+                            EmpiricalDistributionSubclass(ys, ws_, a, b),
+                            nonparametric.EmpiricalDistribution(ys, ws, a, b),
+                        )
+                    for a_, _ in bounds:
+                        if a_ == a:
+                            continue
+                        self.assertNotEqual(
+                            nonparametric.EmpiricalDistribution(ys, ws, a, b),
+                            EmpiricalDistributionSubclass(ys, ws, a_, b),
+                        )
+                        self.assertNotEqual(
+                            EmpiricalDistributionSubclass(ys, ws, a_, b),
+                            nonparametric.EmpiricalDistribution(ys, ws, a, b),
+                        )
+                    for _, b_ in bounds:
+                        if b_ == b:
+                            continue
+                        self.assertNotEqual(
+                            nonparametric.EmpiricalDistribution(ys, ws, a, b),
+                            EmpiricalDistributionSubclass(ys, ws, a, b_),
+                        )
+                        self.assertNotEqual(
+                            EmpiricalDistributionSubclass(ys, ws, a, b_),
+                            nonparametric.EmpiricalDistribution(ys, ws, a, b),
+                        )
+
+        # Test equality when one instance has ws is None and the other
+        # has ws is an array of equal weights.
+        for ys in yss:
+            for a, b in bounds:
+                with warnings.catch_warnings():
+                    warnings.filterwarnings(
+                        "ignore",
+                        message=r"ws gives equal weight to each sample.",
+                        category=RuntimeWarning,
+                    )
+                    self.assertEqual(
+                        nonparametric.EmpiricalDistribution(ys, None, a, b),
+                        nonparametric.EmpiricalDistribution(
+                            ys,
+                            np.ones_like(ys) / len(ys),
+                            a,
+                            b,
+                        ),
+                    )
+                    self.assertEqual(
+                        nonparametric.EmpiricalDistribution(
+                            ys,
+                            np.ones_like(ys) / len(ys),
+                            a,
+                            b,
+                        ),
+                        nonparametric.EmpiricalDistribution(ys, None, a, b),
+                    )
+
+    def test___str__(self):
+        self.assertEqual(
+            str(nonparametric.EmpiricalDistribution(
+                [0., 1.], None, -1., 1.,
+            )),
+            "EmpiricalDistribution("
+                "ys=[0. 1.], ws=None, a=-1.0, b=1.0"
+            ")",
+        )
+        self.assertEqual(
+            str(nonparametric.EmpiricalDistribution(
+                [0., 1.], [0.3, 0.7], -1., 1.,
+            )),
+            "EmpiricalDistribution("
+                "ys=[0. 1.], ws=[0.3 0.7], a=-1.0, b=1.0"
+            ")",
+        )
+
+    def test___repr__(self):
+        self.assertEqual(
+            repr(nonparametric.EmpiricalDistribution(
+                [0., 1.], None, -1., 1.,
+            )),
+            "EmpiricalDistribution("
+                "ys=array([0., 1.]), ws=None, a=-1.0, b=1.0"
+            ")",
+        )
+        self.assertEqual(
+            repr(nonparametric.EmpiricalDistribution(
+                [0., 1.], [0.3, 0.7], -1., 1.,
+            )),
+            "EmpiricalDistribution("
+                "ys=array([0., 1.]), ws=array([0.3, 0.7]), a=-1.0, b=1.0"
+            ")",
+        )
+
     def test_sample(self):
         # Test without weights.
         #   when len(ys) == 1
@@ -50,7 +244,13 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         #   when len(ys) == 1
         ys = [42.]
         ws = [1.]
-        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message=r"ws gives equal weight to each sample.",
+                category=RuntimeWarning,
+            )
+            dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
         values = np.unique(dist.sample(10))
         self.assertEqual(values.tolist(), [42.])
         #   when len(ys) == 2
@@ -84,7 +284,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         self.assertTrue(np.allclose(freqs, ws, atol=0.05))
 
     def test_pmf(self):
-        for a, b in [(-1e4, 1e4), (-np.inf, np.inf), (None, None)]:
+        for a, b in [(-1e4, 1e4), (-np.inf, np.inf)]:
             # Test without weights.
             #   when len(ys) == 1
             ys = [42.]
@@ -132,7 +332,13 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             #   when len(ys) == 1
             ys = [42.]
             ws = [1.]
-            dist = nonparametric.EmpiricalDistribution(ys, ws=ws, a=a, b=b)
+            with warnings.catch_warnings():
+                warnings.filterwarnings(
+                    "ignore",
+                    message=r"ws gives equal weight to each sample.",
+                    category=RuntimeWarning,
+                )
+                dist = nonparametric.EmpiricalDistribution(ys, ws=ws, a=a, b=b)
             self.assertEqual(dist.pmf(42.), 1.)
             self.assertEqual(dist.pmf(0.), 0.)
             self.assertEqual(dist.pmf(42. - 1e-10), 0.)
@@ -180,15 +386,13 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             ys = [-42., 1., 42., 100., 1_000.]
             for ws in [None, [0.1, 0.2, 0.3, 0.15, 0.25]]:
                 dist = nonparametric.EmpiricalDistribution(ys, ws=ws, a=a, b=b)
-                if a is not None:
-                    self.assertEqual(dist.pmf(a - 1e-10), np.array(0.))
-                    self.assertEqual(dist.pmf(a - 10), np.array(0.))
-                if b is not None:
-                    self.assertEqual(dist.pmf(b + 1e-10), np.array(0.))
-                    self.assertEqual(dist.pmf(b + 10), np.array(0.))
+                self.assertEqual(dist.pmf(a - 1e-10), np.array(0.))
+                self.assertEqual(dist.pmf(a - 10), np.array(0.))
+                self.assertEqual(dist.pmf(b + 1e-10), np.array(0.))
+                self.assertEqual(dist.pmf(b + 10), np.array(0.))
 
     def test_cdf(self):
-        for a, b in [(-1e4, 1e4), (-np.inf, np.inf), (None, None)]:
+        for a, b in [(-1e4, 1e4), (-np.inf, np.inf)]:
             # Test without weights.
             #   when len(ys) == 1
             ys = [42.]
@@ -242,7 +446,13 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             #   when len(ys) == 1
             ys = [42.]
             ws = [1.]
-            dist = nonparametric.EmpiricalDistribution(ys, ws=ws, a=a, b=b)
+            with warnings.catch_warnings():
+                warnings.filterwarnings(
+                    "ignore",
+                    message=r"ws gives equal weight to each sample.",
+                    category=RuntimeWarning,
+                )
+                dist = nonparametric.EmpiricalDistribution(ys, ws=ws, a=a, b=b)
             self.assertEqual(dist.cdf(42.), 1.)
             self.assertEqual(dist.cdf(0.), 0.)
             self.assertEqual(dist.cdf(42. - 1e-10), 0.)
@@ -296,12 +506,10 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             ys = [-42., 1., 42., 100., 1_000.]
             for ws in [None, [0.1, 0.2, 0.3, 0.15, 0.25]]:
                 dist = nonparametric.EmpiricalDistribution(ys, ws=ws, a=a, b=b)
-                if a is not None:
-                    self.assertEqual(dist.cdf(a - 1e-10), 0.)
-                    self.assertEqual(dist.cdf(a - 10), 0.)
-                if b is not None:
-                    self.assertEqual(dist.cdf(b + 1e-10), 1.)
-                    self.assertEqual(dist.cdf(b + 10), 1.)
+                self.assertEqual(dist.cdf(a - 1e-10), 0.)
+                self.assertEqual(dist.cdf(a - 10), 0.)
+                self.assertEqual(dist.cdf(b + 1e-10), 1.)
+                self.assertEqual(dist.cdf(b + 10), 1.)
 
     def test_ppf(self):
         # Test without weights.
@@ -356,7 +564,13 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         #   when len(ys) == 1
         ys = [42.]
         ws = [1.]
-        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message=r"ws gives equal weight to each sample.",
+                category=RuntimeWarning,
+            )
+            dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
         self.assertEqual(dist.ppf(0.), -np.inf)
         self.assertEqual(dist.ppf(0.5), 42.)
         self.assertEqual(dist.ppf(1.), 42.)
@@ -412,7 +626,13 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                     # Test when len(ys) == 1.
                     ys = [42.]
                     ws = [1.] if use_weights else None
-                    dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+                    with warnings.catch_warnings():
+                        warnings.filterwarnings(
+                            "ignore",
+                            message=r"ws gives equal weight to each sample.",
+                            category=RuntimeWarning,
+                        )
+                        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
 
                     self.assertEqual(
                         dist.quantile_tuning_curve(
@@ -873,7 +1093,13 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                 # Test when len(ys) == 1.
                 ys = [42.]
                 ws = [1.] if use_weights else None
-                dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+                with warnings.catch_warnings():
+                    warnings.filterwarnings(
+                        "ignore",
+                        message=r"ws gives equal weight to each sample.",
+                        category=RuntimeWarning,
+                    )
+                    dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
 
                 self.assertEqual(
                     dist.average_tuning_curve(1, minimize=minimize),
@@ -2043,7 +2269,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         methods = ["dkw", "ks", "ld_equal_tailed", "ld_highest_density"]
         for method in methods:
             for confidence in [0.5, 0.9]:
-                for a, b in [(0., 1.), (-np.inf, np.inf), (None, None)]:
+                for a, b in [(0., 1.), (-np.inf, np.inf)]:
                     for has_duplicates in [False, True]:
                         if has_duplicates:
                             ys = np.random.uniform(0, 1, size=n)
@@ -2087,15 +2313,13 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                         self.assertGreaterEqual(np.min(hi.cdf(ys)), 0.)
                         #   on the support's bounds
                         #     lower bound
-                        if a is not None:
-                            self.assertGreaterEqual(lo.cdf(a), 0.)
-                            self.assertGreaterEqual(dist.cdf(a), 0.)
-                            self.assertGreaterEqual(hi.cdf(a), 0.)
+                        self.assertGreaterEqual(lo.cdf(a), 0.)
+                        self.assertGreaterEqual(dist.cdf(a), 0.)
+                        self.assertGreaterEqual(hi.cdf(a), 0.)
                         #     upper bound
-                        if b is not None:
-                            self.assertGreaterEqual(lo.cdf(b), 0.)
-                            self.assertGreaterEqual(dist.cdf(b), 0.)
-                            self.assertGreaterEqual(hi.cdf(b), 0.)
+                        self.assertGreaterEqual(lo.cdf(b), 0.)
+                        self.assertGreaterEqual(dist.cdf(b), 0.)
+                        self.assertGreaterEqual(hi.cdf(b), 0.)
                         #     -np.inf
                         self.assertGreaterEqual(lo.cdf(-np.inf), 0.)
                         self.assertGreaterEqual(dist.cdf(-np.inf), 0.)
@@ -2111,15 +2335,13 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                         self.assertLessEqual(np.max(hi.cdf(ys)), 1.)
                         #   on the support's bounds
                         #     lower bound
-                        if a is not None:
-                            self.assertLessEqual(lo.cdf(a), 1.)
-                            self.assertLessEqual(dist.cdf(a), 1.)
-                            self.assertLessEqual(hi.cdf(a), 1.)
+                        self.assertLessEqual(lo.cdf(a), 1.)
+                        self.assertLessEqual(dist.cdf(a), 1.)
+                        self.assertLessEqual(hi.cdf(a), 1.)
                         #     upper bound
-                        if b is not None:
-                            self.assertLessEqual(lo.cdf(b), 1.)
-                            self.assertLessEqual(dist.cdf(b), 1.)
-                            self.assertLessEqual(hi.cdf(b), 1.)
+                        self.assertLessEqual(lo.cdf(b), 1.)
+                        self.assertLessEqual(dist.cdf(b), 1.)
+                        self.assertLessEqual(hi.cdf(b), 1.)
                         #     -np.inf
                         self.assertLessEqual(lo.cdf(-np.inf), 1.)
                         self.assertLessEqual(dist.cdf(-np.inf), 1.)
@@ -2162,21 +2384,26 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
 
     def test_ppf_at_extreme_values(self):
         for has_ws in [False, True]:
-            for a, b in [[None, None], [None, 1.], [-1., None], [-1., 1.]]:
-                dist = nonparametric.EmpiricalDistribution(
-                    [0.],
-                    ws=[1.] if has_ws else None,
-                    a=a,
-                    b=b,
-                )
-                self.assertEqual(
-                    dist.ppf(0. - 1e-12),
-                    a if a is not None else -np.inf,
-                )
-                self.assertEqual(
-                    dist.ppf(0.),
-                    a if a is not None else -np.inf,
-                )
+            for a, b in [
+                    [-np.inf, np.inf],
+                    [-np.inf, 1.],
+                    [-1., np.inf],
+                    [-1., 1.],
+            ]:
+                with warnings.catch_warnings():
+                    warnings.filterwarnings(
+                        "ignore",
+                        message=r"ws gives equal weight to each sample.",
+                        category=RuntimeWarning,
+                    )
+                    dist = nonparametric.EmpiricalDistribution(
+                        [0.],
+                        ws=[1.] if has_ws else None,
+                        a=a,
+                        b=b,
+                    )
+                self.assertEqual(dist.ppf(0. - 1e-12), a)
+                self.assertEqual(dist.ppf(0.), a)
                 self.assertEqual(dist.ppf(1.), 0.)
                 self.assertEqual(dist.ppf(1. + 1e-12), 0.)
 
@@ -2241,7 +2468,13 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                         if use_weights else
                         None
                     )
-                    dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+                    with warnings.catch_warnings():
+                        warnings.filterwarnings(
+                            "ignore",
+                            message=r"ws gives equal weight to each sample.",
+                            category=RuntimeWarning,
+                        )
+                        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
                     # Test 0 < ns <= len(ys).
                     #   scalar
                     self.assertTrue(np.isclose(
