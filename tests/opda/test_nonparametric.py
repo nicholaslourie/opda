@@ -13,6 +13,24 @@ from opda import nonparametric, utils
 class EmpiricalDistributionTestCase(unittest.TestCase):
     """Test opda.nonparametric.EmpiricalDistribution."""
 
+    def test___str__(self):
+        self.assertEqual(
+            str(nonparametric.EmpiricalDistribution(
+                [0., 1.], None, -1., 1.,
+            )),
+            "EmpiricalDistribution("
+                "ys=[0. 1.], ws=None, a=-1.0, b=1.0"
+            ")",
+        )
+        self.assertEqual(
+            str(nonparametric.EmpiricalDistribution(
+                [0., 1.], [0.3, 0.7], -1., 1.,
+            )),
+            "EmpiricalDistribution("
+                "ys=[0. 1.], ws=[0.3 0.7], a=-1.0, b=1.0"
+            ")",
+        )
+
     def test___repr__(self):
         self.assertEqual(
             repr(nonparametric.EmpiricalDistribution(

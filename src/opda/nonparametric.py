@@ -294,6 +294,16 @@ class EmpiricalDistribution:
         self._original_ys_sorted = np.sort(self.ys)
         self._original_ys_reverse_sorted = self._original_ys_sorted[::-1]
 
+    def __str__(self):
+        return (
+            f"{self.__class__.__name__}("
+            f"ys={self.ys!s},"
+            f" ws={self.ws!s},"
+            f" a={self.a!s},"
+            f" b={self.b!s}"
+            f")"
+        )
+
     def __repr__(self):
         return (
             f"{self.__class__.__name__}("
