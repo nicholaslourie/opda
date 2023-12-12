@@ -10,12 +10,12 @@ import numpy as np
 
 
 def plot_random_search(
-    func,
-    *,
-    bounds = (-1., 1.),
-    n_samples = 10,
-    n_grid = 1_000,
-    ax = None,
+        func,
+        *,
+        bounds = (-1., 1.),
+        n_samples = 10,
+        n_grid = 1_000,
+        ax = None,
 ):
     """Return a plot visualizing the random search process.
 

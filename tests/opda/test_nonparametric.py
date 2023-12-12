@@ -2128,7 +2128,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                         self.assertLessEqual(lo.cdf(np.inf), 1.)
                         self.assertLessEqual(dist.cdf(np.inf), 1.)
                         self.assertLessEqual(hi.cdf(np.inf), 1.)
-                       # Check bands are proper distance from the empirical CDF.
+                        # Check bands are proper distance from the empirical CDF.
                         if method == "dkw" or method == "ks":
                             epsilon = (
                                 utils.dkw_epsilon(n, confidence)

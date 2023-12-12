@@ -139,12 +139,12 @@ class Simulation:
 
     @classmethod
     def run(
-        cls,
-        n_trials,
-        n_samples,
-        n_dims,
-        func,
-        bounds,
+            cls,
+            n_trials,
+            n_samples,
+            n_dims,
+            func,
+            bounds,
     ):
         """Run and return the simulation.
 
