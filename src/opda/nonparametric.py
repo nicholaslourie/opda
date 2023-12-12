@@ -48,7 +48,7 @@ def _ks_band_weights(n, confidence):
 
 
 @functools.cache
-def _ld_band_weights(n, confidence, kind, n_trials=100_000, n_jobs=None):
+def _ld_band_weights(n, confidence, kind, *, n_trials=100_000, n_jobs=None):
     # NOTE: For i.i.d. samples, the i'th order statistic's quantile is
     # beta(i, n + 1 - i) distributed. Thus, an interval covering
     # ``confidence`` probability from the beta(i, n + 1 - i)
@@ -202,7 +202,6 @@ class EmpiricalDistribution:
     def __init__(
             self,
             ys,
-            *,
             ws = None,
             a = None,
             b = None,
@@ -400,7 +399,7 @@ class EmpiricalDistribution:
             self._a,
         )
 
-    def quantile_tuning_curve(self, ns, q=0.5, *, minimize=False):
+    def quantile_tuning_curve(self, ns, q=0.5, minimize=False):
         """Return the quantile tuning curve evaluated at ``ns``.
 
         Since the empirical distribution is discrete, its exact
@@ -440,7 +439,7 @@ class EmpiricalDistribution:
             q**(1/ns),
         )
 
-    def average_tuning_curve(self, ns, *, minimize=False):
+    def average_tuning_curve(self, ns, minimize=False):
         """Return the average tuning curve evaluated at ``ns``.
 
         Parameters
@@ -481,7 +480,7 @@ class EmpiricalDistribution:
             axis=-1,
         )
 
-    def naive_tuning_curve(self, ns, *, minimize=False):
+    def naive_tuning_curve(self, ns, minimize=False):
         """Return the naive estimate for the tuning curve at ``ns``.
 
         The naive tuning curve estimate assigns to n the maximum value
@@ -528,7 +527,7 @@ class EmpiricalDistribution:
             self._original_ys_cummax
         )[ns - 1]
 
-    def v_tuning_curve(self, ns, *, minimize=False):
+    def v_tuning_curve(self, ns, minimize=False):
         """Return the v estimate for the tuning curve at ``ns``.
 
         The v statistic tuning curve estimate assigns to n the average
@@ -578,7 +577,7 @@ class EmpiricalDistribution:
             axis=-1,
         )
 
-    def u_tuning_curve(self, ns, *, minimize=False):
+    def u_tuning_curve(self, ns, minimize=False):
         """Return the u estimate for the tuning curve at ``ns``.
 
         The u statistic tuning curve estimate assigns to n the average
@@ -638,9 +637,9 @@ class EmpiricalDistribution:
             cls,
             ys,
             confidence,
-            *,
             a = None,
             b = None,
+            *,
             method = "ld_highest_density",
             n_jobs = None,
     ):

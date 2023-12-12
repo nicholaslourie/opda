@@ -124,7 +124,7 @@ def beta_equal_tailed_interval(a, b, coverage):
     return x, y
 
 
-def beta_highest_density_interval(a, b, coverage, atol=1e-10):
+def beta_highest_density_interval(a, b, coverage, *, atol=1e-10):
     """Return an interval containing ``coverage`` of the probability.
 
     For the beta distribution with parameters ``a`` and ``b``, return
@@ -140,6 +140,8 @@ def beta_highest_density_interval(a, b, coverage, atol=1e-10):
         The beta parameter for the beta distribution.
     coverage : float or array of floats between 0 and 1, required
         The desired coverage for the returned intervals.
+    atol : non-negative float, optional (default=1e-10)
+        The absolute tolerance to use for stopping the iteration.
 
     Returns
     -------
@@ -176,6 +178,9 @@ def beta_highest_density_interval(a, b, coverage, atol=1e-10):
         raise ValueError(
             "coverage must be between 0 and 1, inclusive.",
         )
+
+    if atol < 0.:
+        raise ValueError("atol must be non-negative.")
 
     if np.any((a <= 1.) & (b <= 1.)):
         raise ValueError(
@@ -277,7 +282,7 @@ def beta_equal_tailed_coverage(a, b, x):
     return 2 * np.abs(0.5 - beta.cdf(x))
 
 
-def beta_highest_density_coverage(a, b, x, atol=1e-10):
+def beta_highest_density_coverage(a, b, x, *, atol=1e-10):
     """Return the coverage of the smallest interval containing ``x``.
 
     For the beta distribution with parameters ``a`` and ``b``, return
@@ -295,6 +300,8 @@ def beta_highest_density_coverage(a, b, x, atol=1e-10):
     x : float or array of floats between 0 and 1, required
         The points defining the minimal intervals whose coverage to
         return.
+    atol : non-negative float, optional (default=1e-10)
+        The absolute tolerance to use for stopping the iteration.
 
     Returns
     -------
@@ -318,6 +325,9 @@ def beta_highest_density_coverage(a, b, x, atol=1e-10):
         raise ValueError(
             "x must be between 0 and 1, inclusive.",
         )
+
+    if atol < 0.:
+        raise ValueError("atol must be non-negative.")
 
     if np.any((a <= 1.) & (b <= 1.)):
         raise ValueError(

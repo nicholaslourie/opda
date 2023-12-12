@@ -10,12 +10,11 @@ import numpy as np
 
 
 def plot_random_search(
-    func,
-    *,
-    bounds = (-1., 1.),
-    n_samples = 10,
-    n_grid = 1_000,
-    ax = None,
+        func,
+        bounds = (-1., 1.),
+        n_samples = 10,
+        n_grid = 1_000,
+        ax = None,
 ):
     """Return a plot visualizing the random search process.
 
@@ -40,11 +39,13 @@ def plot_random_search(
         The figure and axis on which the plot was made. If ``ax`` was
         not ``None``, then the returned figure will be ``None``.
     """
+    # Validate arguments.
     if ax is None:
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(11, 5))
     else:
         fig = None
 
+    # Construct the plot.
     grid = np.linspace(*bounds, num=n_grid).reshape(n_grid, 1)
 
     y_argmax = grid[np.argmax(func(grid))]
@@ -80,7 +81,6 @@ def plot_random_search(
 def plot_cdf(
         xs,
         name,
-        *,
         ax = None,
 ):
     """Return a plot visualizing the empirical CDF of ``xs``.
@@ -121,7 +121,6 @@ def plot_cdf(
 def plot_pdf(
         xs,
         name,
-        *,
         ax = None,
 ):
     """Return a plot visualizing a histogram of ``xs``.
@@ -162,7 +161,6 @@ def plot_pdf(
 def plot_distribution(
         xs,
         name,
-        *,
         axes = None,
 ):
     """Return a plot visualizing the distribution of ``xs``.
@@ -199,7 +197,6 @@ def plot_distribution_approximation(
         simulation,
         approximating_distribution,
         n,
-        *,
         axes = None,
 ):
     """Return a plot of the approximation to the max's distribution.
@@ -262,7 +259,6 @@ def plot_distribution_approximation(
 def plot_tuning_curve_approximation(
         simulation,
         approximating_distribution,
-        *,
         axes = None,
 ):
     """Return a plot of the approximation to the tuning curve.

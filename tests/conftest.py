@@ -38,5 +38,5 @@ def pytest_runtest_setup(item):
             and item_level > level
     ):
         pytest.skip(
-            "The test\'s level is higher than the current level being run.",
+            "The test's level is higher than the level being run.",
         )
