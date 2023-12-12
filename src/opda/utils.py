@@ -140,6 +140,8 @@ def beta_highest_density_interval(a, b, coverage, atol=1e-10):
         The beta parameter for the beta distribution.
     coverage : float or array of floats between 0 and 1, required
         The desired coverage for the returned intervals.
+    atol : non-negative float, optional (default=1e-10)
+        The absolute tolerance to use for stopping the iteration.
 
     Returns
     -------
@@ -176,6 +178,9 @@ def beta_highest_density_interval(a, b, coverage, atol=1e-10):
         raise ValueError(
             "coverage must be between 0 and 1, inclusive.",
         )
+
+    if atol < 0.:
+        raise ValueError("atol must be non-negative.")
 
     if np.any((a <= 1.) & (b <= 1.)):
         raise ValueError(
