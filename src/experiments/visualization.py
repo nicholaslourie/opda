@@ -11,7 +11,6 @@ import numpy as np
 
 def plot_random_search(
         func,
-        *,
         bounds = (-1., 1.),
         n_samples = 10,
         n_grid = 1_000,
@@ -82,7 +81,6 @@ def plot_random_search(
 def plot_cdf(
         xs,
         name,
-        *,
         ax = None,
 ):
     """Return a plot visualizing the empirical CDF of ``xs``.
@@ -123,7 +121,6 @@ def plot_cdf(
 def plot_pdf(
         xs,
         name,
-        *,
         ax = None,
 ):
     """Return a plot visualizing a histogram of ``xs``.
@@ -164,7 +161,6 @@ def plot_pdf(
 def plot_distribution(
         xs,
         name,
-        *,
         axes = None,
 ):
     """Return a plot visualizing the distribution of ``xs``.
@@ -201,7 +197,6 @@ def plot_distribution_approximation(
         simulation,
         approximating_distribution,
         n,
-        *,
         axes = None,
 ):
     """Return a plot of the approximation to the max's distribution.
@@ -264,7 +259,6 @@ def plot_distribution_approximation(
 def plot_tuning_curve_approximation(
         simulation,
         approximating_distribution,
-        *,
         axes = None,
 ):
     """Return a plot of the approximation to the tuning curve.

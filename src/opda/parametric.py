@@ -36,7 +36,6 @@ class QuadraticDistribution:
             a,
             b,
             c,
-            *,
             convex = False,
     ):
         # Validate the arguments.
@@ -183,7 +182,7 @@ class QuadraticDistribution:
 
         return ys
 
-    def quantile_tuning_curve(self, ns, q=0.5, *, minimize=None):
+    def quantile_tuning_curve(self, ns, q=0.5, minimize=None):
         """Return the quantile tuning curve evaluated at ``ns``.
 
         Parameters
@@ -233,7 +232,7 @@ class QuadraticDistribution:
 
         return ys
 
-    def average_tuning_curve(self, ns, *, minimize=None):
+    def average_tuning_curve(self, ns, minimize=None):
         """Return the average tuning curve evaluated at ``ns``.
 
         Parameters
