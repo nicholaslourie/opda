@@ -8,6 +8,7 @@ import numpy as np
 from scipy import special, stats
 
 from opda import utils
+import opda.random
 
 # backwards compatibility
 
@@ -332,20 +333,32 @@ class EmpiricalDistribution:
             f")"
         )
 
-    def sample(self, size):
+    def sample(self, size, *, generator=None):
         """Return a sample from the empirical distribution.
 
         Parameters
         ----------
         size : int or tuple of ints, required
             The desired shape of the returned sample.
+        generator : None or np.random.Generator, optional (default=None)
+            The random number generator to use. If ``None``, then the
+            global default random number generator is used. See
+            :py:mod:`opda.random` for more information.
 
         Returns
         -------
         array of floats
             The sample from the distribution.
         """
-        return np.random.choice(
+        # Validate arguments.
+        generator = (
+            generator
+            if generator is not None else
+            opda.random.DEFAULT_GENERATOR
+        )
+
+        # Compute the sample.
+        return generator.choice(
             self.ys,
             p=self.ws,
             size=size,
