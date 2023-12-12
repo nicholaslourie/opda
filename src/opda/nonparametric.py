@@ -244,13 +244,29 @@ class EmpiricalDistribution:
         self.b = b
 
         # Handle duplicate values in ys and default value for ws.
+        _ys, locations, counts = np.unique(
+            self.ys,
+            return_inverse=True,
+            return_counts=True,
+        )
+        equal_weights = _normalize_pmf(counts)
         if self.ws is None:
-            _ys, _ws = np.unique(self.ys, return_counts=True)
-            _ws = _normalize_pmf(_ws)
+            _ws = equal_weights
+        elif np.array_equal(self.ws, equal_weights):
+            warnings.warn(
+                "ws gives equal weight to each sample. Setting ws"
+                " to None, which gives equivalent behavior. Consider"
+                " passing None for ws instead.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            # NOTE: It is important to normalize the representation so
+            # that equality checks work and equal instances have equal
+            # representations when printed with the __repr__ method.
+            self.ws = ws = None
+            _ws = equal_weights
         else:
-            _ys, locations = np.unique(self.ys, return_inverse=True)
-            _ws = np.bincount(locations, weights=self.ws)
-            _ws = _normalize_pmf(_ws)
+            _ws = _normalize_pmf(np.bincount(locations, weights=self.ws))
 
         # Handle bounds on the distribution's support.
         #   lower bound
@@ -285,6 +301,16 @@ class EmpiricalDistribution:
 
         self._original_ys_sorted = np.sort(self.ys)
         self._original_ys_reverse_sorted = self._original_ys_sorted[::-1]
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return (
+                np.array_equal(self.ys, other.ys)
+                and np.array_equal(self.ws, other.ws)
+                and self.a == other.a
+                and self.b == other.b
+            )
+        return NotImplemented
 
     def __str__(self):
         return (
