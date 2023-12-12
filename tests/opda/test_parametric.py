@@ -10,6 +10,122 @@ from opda import parametric
 class QuadraticDistributionTestCase(unittest.TestCase):
     """Test opda.parametric.QuadraticDistribution."""
 
+    def test___eq__(self):
+        bounds = [(-10., -1.), (-1., 0.), (-1., 1.), (0., 1.), (1., 10.)]
+        cs = [0.5, 1., 10.]
+        for a, b in bounds:
+            for c in cs:
+                for convex in [False, True]:
+                    # Test inequality with other objects.
+                    self.assertNotEqual(
+                        parametric.QuadraticDistribution(a, b, c, convex),
+                        None,
+                    )
+                    self.assertNotEqual(
+                        parametric.QuadraticDistribution(a, b, c, convex),
+                        1.,
+                    )
+                    self.assertNotEqual(
+                        parametric.QuadraticDistribution(a, b, c, convex),
+                        set(),
+                    )
+
+                    # Test (in)equality between instances of the same class.
+                    #   equality
+                    self.assertEqual(
+                        parametric.QuadraticDistribution(a, b, c, convex),
+                        parametric.QuadraticDistribution(a, b, c, convex),
+                    )
+                    #   inequality
+                    for a_, _ in bounds:
+                        if a_ == a or a_ > b:
+                            continue
+                        self.assertNotEqual(
+                            parametric.QuadraticDistribution(a, b, c, convex),
+                            parametric.QuadraticDistribution(a_, b, c, convex),
+                        )
+                    for _, b_ in bounds:
+                        if b_ == b or b_ < a:
+                            continue
+                        self.assertNotEqual(
+                            parametric.QuadraticDistribution(a, b, c, convex),
+                            parametric.QuadraticDistribution(a, b_, c, convex),
+                        )
+                    for c_ in cs:
+                        if c_ == c:
+                            continue
+                        self.assertNotEqual(
+                            parametric.QuadraticDistribution(a, b, c, convex),
+                            parametric.QuadraticDistribution(a, b, c_, convex),
+                        )
+                    for convex_ in [False, True]:
+                        if convex_ == convex:
+                            continue
+                        self.assertNotEqual(
+                            parametric.QuadraticDistribution(a, b, c, convex),
+                            parametric.QuadraticDistribution(a, b, c, convex_),
+                        )
+
+                    # Test (in)equality between instances of different classes.
+                    class QuadraticDistributionSubclass(
+                            parametric.QuadraticDistribution,
+                    ):
+                        pass
+                    #   equality
+                    self.assertEqual(
+                        parametric.QuadraticDistribution(a, b, c, convex),
+                        QuadraticDistributionSubclass(a, b, c, convex),
+                    )
+                    self.assertEqual(
+                        QuadraticDistributionSubclass(a, b, c, convex),
+                        parametric.QuadraticDistribution(a, b, c, convex),
+                    )
+                    #   inequality
+                    for a_, _ in bounds:
+                        if a_ == a or a_ > b:
+                            continue
+                        self.assertNotEqual(
+                            parametric.QuadraticDistribution(a, b, c, convex),
+                            QuadraticDistributionSubclass(a_, b, c, convex),
+                        )
+                        self.assertNotEqual(
+                            QuadraticDistributionSubclass(a_, b, c, convex),
+                            parametric.QuadraticDistribution(a, b, c, convex),
+                        )
+                    for _, b_ in bounds:
+                        if b_ == b or b_ < a:
+                            continue
+                        self.assertNotEqual(
+                            parametric.QuadraticDistribution(a, b, c, convex),
+                            QuadraticDistributionSubclass(a, b_, c, convex),
+                        )
+                        self.assertNotEqual(
+                            QuadraticDistributionSubclass(a, b_, c, convex),
+                            parametric.QuadraticDistribution(a, b, c, convex),
+                        )
+                    for c_ in cs:
+                        if c_ == c:
+                            continue
+                        self.assertNotEqual(
+                            parametric.QuadraticDistribution(a, b, c, convex),
+                            QuadraticDistributionSubclass(a, b, c_, convex),
+                        )
+                        self.assertNotEqual(
+                            QuadraticDistributionSubclass(a, b, c_, convex),
+                            parametric.QuadraticDistribution(a, b, c, convex),
+                        )
+                    for convex_ in [False, True]:
+                        if convex_ == convex:
+                            continue
+                        self.assertNotEqual(
+                            parametric.QuadraticDistribution(a, b, c, convex),
+                            QuadraticDistributionSubclass(a, b, c, convex_),
+                        )
+                        self.assertNotEqual(
+                            QuadraticDistributionSubclass(a, b, c, convex_),
+                            parametric.QuadraticDistribution(a, b, c, convex),
+                        )
+
     def test___str__(self):
         self.assertEqual(
             str(parametric.QuadraticDistribution(0., 1., 0.5, convex=False)),

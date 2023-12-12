@@ -60,6 +60,16 @@ class QuadraticDistribution:
         self.c = c
         self.convex = convex
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return (
+                self.a == other.a
+                and self.b == other.b
+                and self.c == other.c
+                and self.convex == other.convex
+            )
+        return NotImplemented
+
     def __str__(self):
         return (
             f"{self.__class__.__name__}("
