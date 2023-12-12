@@ -158,12 +158,10 @@ class EmpiricalDistribution:
         the sample, ``ys``. Weights must be non-negative and sum to 1.
         ``ws`` should have the same shape as ``ys``. If ``None``, then
         each sample will be assigned equal weight.
-    a : float or None, optional (default=None)
-        The minimum of the support of the underlying distribution. If
-        ``None``, then it will be set to ``-np.inf``.
-    b : float or None, optional (default=None)
-        The maximum of the support of the underlying distribution. If
-        ``None``, then it will be set to ``np.inf``.
+    a : float, optional (default=-np.inf)
+        The minimum of the support of the underlying distribution.
+    b : float, optional (default=np.inf)
+        The maximum of the support of the underlying distribution.
 
     Notes
     -----
@@ -203,8 +201,8 @@ class EmpiricalDistribution:
             self,
             ys,
             ws = None,
-            a = None,
-            b = None,
+            a = -np.inf,
+            b = np.inf,
     ):
         # Validate the arguments.
         ys = np.array(ys)
@@ -225,16 +223,16 @@ class EmpiricalDistribution:
             if np.abs(np.sum(ws) - 1.) > 1e-10:
                 raise ValueError("ws must sum to 1.")
 
-        if a is not None and not np.isscalar(a):
+        if not np.isscalar(a):
             raise ValueError("a must be a scalar.")
-        if a is not None and a > np.min(ys):
+        if a > np.min(ys):
             raise ValueError(
                 f"a ({a}) cannot be greater than the min of ys ({np.min(ys)}).",
             )
 
-        if b is not None and not np.isscalar(b):
+        if not np.isscalar(b):
             raise ValueError("b must be a scalar.")
-        if b is not None and b < np.max(ys):
+        if b < np.max(ys):
             raise ValueError(
                 f"b ({b}) cannot be less than the max of ys ({np.max(ys)}).",
             )
@@ -244,10 +242,6 @@ class EmpiricalDistribution:
         self.ws = ws
         self.a = a
         self.b = b
-
-        # Handle default values for bounds.
-        _a = a if a is not None else -np.inf
-        _b = b if b is not None else np.inf
 
         # Handle duplicate values in ys and default value for ws.
         if self.ws is None:
@@ -261,23 +255,21 @@ class EmpiricalDistribution:
         # Handle bounds on the distribution's support.
         #   lower bound
         prepend = []
-        if -np.inf != _a:
+        if -np.inf != self.a:
             prepend.append(-np.inf)
-        if _a not in _ys:
-            prepend.append(_a)
+        if self.a not in _ys:
+            prepend.append(self.a)
         #   upper bound
         postpend = []
-        if _b not in _ys:
-            postpend.append(_b)
-        if np.inf != _b:
+        if self.b not in _ys:
+            postpend.append(self.b)
+        if np.inf != self.b:
             postpend.append(np.inf)
 
         self._ys, self._ws = utils.sort_by_first(
             np.concatenate([prepend, _ys, postpend]),
             np.concatenate([[0.] * len(prepend), _ws, [0.] * len(postpend)]),
         )
-        self._a = _a
-        self._b = _b
 
         # Initialize useful attributes.
         self._ws_cumsum = _normalize_cdf(np.cumsum(self._ws))
@@ -416,7 +408,7 @@ class EmpiricalDistribution:
         # Compute the quantiles.
         return np.maximum(
             self._ys[np.argmax(qs[..., None] <= self._ws_cumsum, axis=-1)],
-            self._a,
+            self.a,
         )
 
     def quantile_tuning_curve(self, ns, q=0.5, minimize=False):
@@ -657,8 +649,8 @@ class EmpiricalDistribution:
             cls,
             ys,
             confidence,
-            a = None,
-            b = None,
+            a = -np.inf,
+            b = np.inf,
             *,
             method = "ld_highest_density",
             n_jobs = None,
@@ -678,12 +670,10 @@ class EmpiricalDistribution:
             The sample from the distribution.
         confidence : float between 0 and 1, required
             The coverage or confidence level for the bands.
-        a : float or None, optional (default=None)
+        a : float, optional (default=-np.inf)
             The minimum of the support of the underlying distribution.
-            If ``None``, then it will be set to ``-np.inf``.
-        b : float or None, optional (default=None)
+        b : float, optional (default=np.inf)
             The maximum of the support of the underlying distribution.
-            If ``None``, then it will be set to ``np.inf``.
         method : str, optional (default='ld_highest_density')
             One of the strings 'dkw', 'ks', 'ld_equal_tailed', or
             'ld_highest_density'. The ``method`` parameter determines
@@ -771,7 +761,6 @@ class EmpiricalDistribution:
                 "confidence must be between 0 and 1, inclusive.",
             )
 
-        a = a if a is not None else -np.inf
         if not np.isscalar(a):
             raise ValueError("a must be a scalar.")
         if a > np.min(ys):
@@ -779,7 +768,6 @@ class EmpiricalDistribution:
                 f"a ({a}) cannot be greater than the min of ys ({np.min(ys)}).",
             )
 
-        b = b if b is not None else np.inf
         if not np.isscalar(b):
             raise ValueError("b must be a scalar.")
         if b < np.max(ys):

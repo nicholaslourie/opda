@@ -120,7 +120,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         self.assertTrue(np.allclose(freqs, ws, atol=0.05))
 
     def test_pmf(self):
-        for a, b in [(-1e4, 1e4), (-np.inf, np.inf), (None, None)]:
+        for a, b in [(-1e4, 1e4), (-np.inf, np.inf)]:
             # Test without weights.
             #   when len(ys) == 1
             ys = [42.]
@@ -216,15 +216,13 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             ys = [-42., 1., 42., 100., 1_000.]
             for ws in [None, [0.1, 0.2, 0.3, 0.15, 0.25]]:
                 dist = nonparametric.EmpiricalDistribution(ys, ws=ws, a=a, b=b)
-                if a is not None:
-                    self.assertEqual(dist.pmf(a - 1e-10), np.array(0.))
-                    self.assertEqual(dist.pmf(a - 10), np.array(0.))
-                if b is not None:
-                    self.assertEqual(dist.pmf(b + 1e-10), np.array(0.))
-                    self.assertEqual(dist.pmf(b + 10), np.array(0.))
+                self.assertEqual(dist.pmf(a - 1e-10), np.array(0.))
+                self.assertEqual(dist.pmf(a - 10), np.array(0.))
+                self.assertEqual(dist.pmf(b + 1e-10), np.array(0.))
+                self.assertEqual(dist.pmf(b + 10), np.array(0.))
 
     def test_cdf(self):
-        for a, b in [(-1e4, 1e4), (-np.inf, np.inf), (None, None)]:
+        for a, b in [(-1e4, 1e4), (-np.inf, np.inf)]:
             # Test without weights.
             #   when len(ys) == 1
             ys = [42.]
@@ -332,12 +330,10 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
             ys = [-42., 1., 42., 100., 1_000.]
             for ws in [None, [0.1, 0.2, 0.3, 0.15, 0.25]]:
                 dist = nonparametric.EmpiricalDistribution(ys, ws=ws, a=a, b=b)
-                if a is not None:
-                    self.assertEqual(dist.cdf(a - 1e-10), 0.)
-                    self.assertEqual(dist.cdf(a - 10), 0.)
-                if b is not None:
-                    self.assertEqual(dist.cdf(b + 1e-10), 1.)
-                    self.assertEqual(dist.cdf(b + 10), 1.)
+                self.assertEqual(dist.cdf(a - 1e-10), 0.)
+                self.assertEqual(dist.cdf(a - 10), 0.)
+                self.assertEqual(dist.cdf(b + 1e-10), 1.)
+                self.assertEqual(dist.cdf(b + 10), 1.)
 
     def test_ppf(self):
         # Test without weights.
@@ -2079,7 +2075,7 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
         methods = ["dkw", "ks", "ld_equal_tailed", "ld_highest_density"]
         for method in methods:
             for confidence in [0.5, 0.9]:
-                for a, b in [(0., 1.), (-np.inf, np.inf), (None, None)]:
+                for a, b in [(0., 1.), (-np.inf, np.inf)]:
                     for has_duplicates in [False, True]:
                         if has_duplicates:
                             ys = np.random.uniform(0, 1, size=n)
@@ -2123,15 +2119,13 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                         self.assertGreaterEqual(np.min(hi.cdf(ys)), 0.)
                         #   on the support's bounds
                         #     lower bound
-                        if a is not None:
-                            self.assertGreaterEqual(lo.cdf(a), 0.)
-                            self.assertGreaterEqual(dist.cdf(a), 0.)
-                            self.assertGreaterEqual(hi.cdf(a), 0.)
+                        self.assertGreaterEqual(lo.cdf(a), 0.)
+                        self.assertGreaterEqual(dist.cdf(a), 0.)
+                        self.assertGreaterEqual(hi.cdf(a), 0.)
                         #     upper bound
-                        if b is not None:
-                            self.assertGreaterEqual(lo.cdf(b), 0.)
-                            self.assertGreaterEqual(dist.cdf(b), 0.)
-                            self.assertGreaterEqual(hi.cdf(b), 0.)
+                        self.assertGreaterEqual(lo.cdf(b), 0.)
+                        self.assertGreaterEqual(dist.cdf(b), 0.)
+                        self.assertGreaterEqual(hi.cdf(b), 0.)
                         #     -np.inf
                         self.assertGreaterEqual(lo.cdf(-np.inf), 0.)
                         self.assertGreaterEqual(dist.cdf(-np.inf), 0.)
@@ -2147,15 +2141,13 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
                         self.assertLessEqual(np.max(hi.cdf(ys)), 1.)
                         #   on the support's bounds
                         #     lower bound
-                        if a is not None:
-                            self.assertLessEqual(lo.cdf(a), 1.)
-                            self.assertLessEqual(dist.cdf(a), 1.)
-                            self.assertLessEqual(hi.cdf(a), 1.)
+                        self.assertLessEqual(lo.cdf(a), 1.)
+                        self.assertLessEqual(dist.cdf(a), 1.)
+                        self.assertLessEqual(hi.cdf(a), 1.)
                         #     upper bound
-                        if b is not None:
-                            self.assertLessEqual(lo.cdf(b), 1.)
-                            self.assertLessEqual(dist.cdf(b), 1.)
-                            self.assertLessEqual(hi.cdf(b), 1.)
+                        self.assertLessEqual(lo.cdf(b), 1.)
+                        self.assertLessEqual(dist.cdf(b), 1.)
+                        self.assertLessEqual(hi.cdf(b), 1.)
                         #     -np.inf
                         self.assertLessEqual(lo.cdf(-np.inf), 1.)
                         self.assertLessEqual(dist.cdf(-np.inf), 1.)
@@ -2198,21 +2190,20 @@ class EmpiricalDistributionTestCase(unittest.TestCase):
 
     def test_ppf_at_extreme_values(self):
         for has_ws in [False, True]:
-            for a, b in [[None, None], [None, 1.], [-1., None], [-1., 1.]]:
+            for a, b in [
+                    [-np.inf, np.inf],
+                    [-np.inf, 1.],
+                    [-1., np.inf],
+                    [-1., 1.],
+            ]:
                 dist = nonparametric.EmpiricalDistribution(
                     [0.],
                     ws=[1.] if has_ws else None,
                     a=a,
                     b=b,
                 )
-                self.assertEqual(
-                    dist.ppf(0. - 1e-12),
-                    a if a is not None else -np.inf,
-                )
-                self.assertEqual(
-                    dist.ppf(0.),
-                    a if a is not None else -np.inf,
-                )
+                self.assertEqual(dist.ppf(0. - 1e-12), a)
+                self.assertEqual(dist.ppf(0.), a)
                 self.assertEqual(dist.ppf(1.), 0.)
                 self.assertEqual(dist.ppf(1. + 1e-12), 0.)
 
