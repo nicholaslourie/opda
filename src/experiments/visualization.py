@@ -40,11 +40,13 @@ def plot_random_search(
         The figure and axis on which the plot was made. If ``ax`` was
         not ``None``, then the returned figure will be ``None``.
     """
+    # Validate arguments.
     if ax is None:
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(11, 5))
     else:
         fig = None
 
+    # Construct the plot.
     grid = np.linspace(*bounds, num=n_grid).reshape(n_grid, 1)
 
     y_argmax = grid[np.argmax(func(grid))]

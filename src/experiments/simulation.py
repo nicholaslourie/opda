@@ -170,6 +170,7 @@ class Simulation:
         Simulation
             An object representing the simulation's results.
         """
+        # Validate the arguments.
         bounds = np.array(bounds)
         if bounds.shape != (n_dims, 2):
             raise ValueError(
@@ -177,6 +178,7 @@ class Simulation:
                 f" Each dimension must have a lower and upper bound.",
             )
 
+        # Run the simulation.
         y_argmin = optimize.differential_evolution(
             func=func, bounds=bounds,
         ).x
