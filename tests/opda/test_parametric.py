@@ -10,6 +10,12 @@ from opda import parametric
 class QuadraticDistributionTestCase(unittest.TestCase):
     """Test opda.parametric.QuadraticDistribution."""
 
+    def test___str__(self):
+        self.assertEqual(
+            str(parametric.QuadraticDistribution(0., 1., 0.5, convex=False)),
+            "QuadraticDistribution(a=0.0, b=1.0, c=0.5, convex=False)",
+        )
+
     def test___repr__(self):
         self.assertEqual(
             repr(parametric.QuadraticDistribution(0., 1., 0.5, convex=False)),

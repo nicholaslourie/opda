@@ -60,6 +60,16 @@ class QuadraticDistribution:
         self.c = c
         self.convex = convex
 
+    def __str__(self):
+        return (
+            f"{self.__class__.__name__}("
+            f"a={self.a!s},"
+            f" b={self.b!s},"
+            f" c={self.c!s},"
+            f" convex={self.convex!s}"
+            f")"
+        )
+
     def __repr__(self):
         return (
             f"{self.__class__.__name__}("
