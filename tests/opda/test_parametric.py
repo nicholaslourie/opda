@@ -3,6 +3,7 @@
 import numpy as np
 
 from opda import parametric
+import opda.random
 
 from tests import testcases
 
@@ -650,6 +651,35 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                     self.assertLessEqual(b, bounds[1, 1])
                     self.assertGreaterEqual(c, bounds[2, 0])
                     self.assertLessEqual(c, bounds[2, 1])
+
+    def test_sample_defaults_to_global_random_number_generator(self):
+        # sample should be deterministic if global seed is set.
+        dist = parametric.QuadraticDistribution(0., 1., 1.)
+        #   Before setting the seed, two samples should be unequal.
+        self.assertNotEqual(dist.sample(16).tolist(), dist.sample(16).tolist())
+        #   After setting the seed, two samples should be unequal.
+        opda.random.set_seed(0)
+        self.assertNotEqual(dist.sample(16).tolist(), dist.sample(16).tolist())
+        #   Resetting the seed should produce the same sample.
+        opda.random.set_seed(0)
+        first_sample = dist.sample(16)
+        opda.random.set_seed(0)
+        second_sample = dist.sample(16)
+        self.assertEqual(first_sample.tolist(), second_sample.tolist())
+
+    def test_sample_is_deterministic_given_generator_argument(self):
+        dist = parametric.QuadraticDistribution(0., 1., 1.)
+        # Reusing the same generator, two samples should be unequal.
+        generator = np.random.default_rng(0)
+        self.assertNotEqual(
+            dist.sample(16, generator=generator).tolist(),
+            dist.sample(16, generator=generator).tolist(),
+        )
+        # Using generators in the same state should produce the same sample.
+        self.assertEqual(
+            dist.sample(16, generator=np.random.default_rng(0)).tolist(),
+            dist.sample(16, generator=np.random.default_rng(0)).tolist(),
+        )
 
     def test_pdf_on_boundary_of_support(self):
         for convex in [False, True]:
