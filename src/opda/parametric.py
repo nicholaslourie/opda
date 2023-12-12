@@ -60,6 +60,16 @@ class QuadraticDistribution:
         self.c = c
         self.convex = convex
 
+    def __repr__(self):
+        return (
+            f"{self.__class__.__name__}("
+            f"a={self.a!r},"
+            f" b={self.b!r},"
+            f" c={self.c!r},"
+            f" convex={self.convex!r}"
+            f")"
+        )
+
     def sample(self, size):
         """Return a sample from the quadratic distribution.
 
