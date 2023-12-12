@@ -49,7 +49,15 @@ def _ks_band_weights(n, confidence):
 
 
 @functools.cache
-def _ld_band_weights(n, confidence, kind, *, n_trials=100_000, n_jobs=None):
+def _ld_band_weights(
+        n,
+        confidence,
+        kind,
+        generator,
+        *,
+        n_trials = 100_000,
+        n_jobs = None,
+):
     # NOTE: For i.i.d. samples, the i'th order statistic's quantile is
     # beta(i, n + 1 - i) distributed. Thus, an interval covering
     # ``confidence`` probability from the beta(i, n + 1 - i)
@@ -117,7 +125,7 @@ def _ld_band_weights(n, confidence, kind, *, n_trials=100_000, n_jobs=None):
     ns = np.arange(1, n + 1)
 
     # Compute the critical value of the test statistic.
-    us = np.random.rand(n_trials, n)
+    us = generator.random((n_trials, n))
     us.sort(kind="quicksort", axis=-1)
     if n_jobs == 1:
         ts = 0.
@@ -691,6 +699,7 @@ class EmpiricalDistribution:
             a = -np.inf,
             b = np.inf,
             *,
+            generator = None,
             method = "ld_highest_density",
             n_jobs = None,
     ):
@@ -713,6 +722,10 @@ class EmpiricalDistribution:
             The minimum of the support of the underlying distribution.
         b : float, optional (default=np.inf)
             The maximum of the support of the underlying distribution.
+        generator : None or np.random.Generator, optional (default=None)
+            The random number generator to use. If ``None``, then the
+            global default random number generator is used. See
+            :py:mod:`opda.random` for more information.
         method : str, optional (default='ld_highest_density')
             One of the strings 'dkw', 'ks', 'ld_equal_tailed', or
             'ld_highest_density'. The ``method`` parameter determines
@@ -814,6 +827,12 @@ class EmpiricalDistribution:
                 f"b ({b}) cannot be less than the max of ys ({np.max(ys)}).",
             )
 
+        generator = (
+            generator
+            if generator is not None else
+            opda.random.DEFAULT_GENERATOR
+        )
+
         if n_jobs is not None and n_jobs < 1:
             raise ValueError("n_jobs must be a positive integer.")
 
@@ -832,11 +851,19 @@ class EmpiricalDistribution:
             )
         elif method == "ld_equal_tailed":
             ws_lo_cumsum, ws_hi_cumsum = _ld_band_weights(
-                n, confidence, kind="equal_tailed", n_jobs=n_jobs,
+                n,
+                confidence,
+                kind="equal_tailed",
+                generator=generator,
+                n_jobs=n_jobs,
             )
         elif method == "ld_highest_density":
             ws_lo_cumsum, ws_hi_cumsum = _ld_band_weights(
-                n, confidence, kind="highest_density", n_jobs=n_jobs,
+                n,
+                confidence,
+                kind="highest_density",
+                generator=generator,
+                n_jobs=n_jobs,
             )
         else:
             raise ValueError(

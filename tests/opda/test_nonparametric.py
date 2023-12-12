@@ -2836,3 +2836,122 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                 )
                 self.assertLess(lo, confidence)
                 self.assertGreater(hi, confidence)
+
+    @pytest.mark.level(3)
+    def test_confidence_bands_defaults_to_global_random_number_generator(self):
+        # confidence_bands should be deterministic if global seed is set.
+        ys = np.arange(2)
+        confidence = 0.50
+        for method in ["ld_equal_tailed", "ld_highest_density"]:
+            #   Before setting the seed, confidence_bands should be
+            #   non-deterministic.
+            first_lo, _, first_hi =\
+                nonparametric.EmpiricalDistribution.confidence_bands(
+                    ys,
+                    confidence,
+                    method=method,
+                )
+
+            nonparametric._ld_band_weights.cache_clear()
+            second_lo, _, second_hi =\
+                nonparametric.EmpiricalDistribution.confidence_bands(
+                    ys,
+                    confidence,
+                    method=method,
+                )
+
+            self.assertNotEqual(first_lo, second_lo)
+            self.assertNotEqual(first_hi, second_hi)
+
+            #   After setting the seed, confidence_bands should be
+            #   non-deterministic.
+            opda.random.set_seed(0)
+            first_lo, _, first_hi =\
+                nonparametric.EmpiricalDistribution.confidence_bands(
+                    ys,
+                    confidence,
+                    method=method,
+                )
+
+            nonparametric._ld_band_weights.cache_clear()
+            second_lo, _, second_hi =\
+                nonparametric.EmpiricalDistribution.confidence_bands(
+                    ys,
+                    confidence,
+                    method=method,
+                )
+
+            self.assertNotEqual(first_lo, second_lo)
+            self.assertNotEqual(first_hi, second_hi)
+
+            #   Resetting the seed should make confidence_bands deterministic.
+            opda.random.set_seed(0)
+            first_lo, _, first_hi =\
+                nonparametric.EmpiricalDistribution.confidence_bands(
+                    ys,
+                    confidence,
+                    method=method,
+                )
+
+            opda.random.set_seed(0)
+            nonparametric._ld_band_weights.cache_clear()
+            second_lo, _, second_hi =\
+                nonparametric.EmpiricalDistribution.confidence_bands(
+                    ys,
+                    confidence,
+                    method=method,
+                )
+
+            self.assertEqual(first_lo, second_lo)
+            self.assertEqual(first_hi, second_hi)
+
+    @pytest.mark.level(3)
+    def test_confidence_bands_is_deterministic_given_generator_argument(self):
+        ys = np.arange(2)
+        confidence = 0.50
+        for method in ["ld_equal_tailed", "ld_highest_density"]:
+            # Reusing the same generator, confidence_bands should be
+            # non-deterministic.
+            generator = np.random.default_rng(0)
+
+            first_lo, _, first_hi =\
+                nonparametric.EmpiricalDistribution.confidence_bands(
+                    ys,
+                    confidence,
+                    method=method,
+                    generator=generator,
+                )
+
+            nonparametric._ld_band_weights.cache_clear()
+            second_lo, _, second_hi =\
+                nonparametric.EmpiricalDistribution.confidence_bands(
+                    ys,
+                    confidence,
+                    method=method,
+                    generator=generator,
+                )
+
+            self.assertNotEqual(first_lo, second_lo)
+            self.assertNotEqual(first_hi, second_hi)
+
+            # Using generators in the same state, confidence_bands should be
+            # deterministic.
+            first_lo, _, first_hi =\
+                nonparametric.EmpiricalDistribution.confidence_bands(
+                    ys,
+                    confidence,
+                    method=method,
+                    generator=np.random.default_rng(0),
+                )
+
+            nonparametric._ld_band_weights.cache_clear()
+            second_lo, _, second_hi =\
+                nonparametric.EmpiricalDistribution.confidence_bands(
+                    ys,
+                    confidence,
+                    method=method,
+                    generator=np.random.default_rng(0),
+                )
+
+            self.assertEqual(first_lo, second_lo)
+            self.assertEqual(first_hi, second_hi)
