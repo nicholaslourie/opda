@@ -15,6 +15,8 @@ def plot_random_search(
         n_samples = 10,
         n_grid = 1_000,
         ax = None,
+        *,
+        generator = None,
 ):
     """Return a plot visualizing the random search process.
 
@@ -32,6 +34,10 @@ def plot_random_search(
         An axes on which to make the plot, or ``None``. If ``None``,
         then a figure and axes for the plot will be automatically
         generated.
+    generator : None or np.random.Generator, optional (default=None)
+        The random number generator to use. If ``None``, then a new
+        random number generator is created, seeded with entropy from
+        the operating system.
 
     Returns
     -------
@@ -45,12 +51,18 @@ def plot_random_search(
     else:
         fig = None
 
+    generator = (
+        generator
+        if generator is not None else
+        np.random.default_rng()
+    )
+
     # Construct the plot.
     grid = np.linspace(*bounds, num=n_grid).reshape(n_grid, 1)
 
     y_argmax = grid[np.argmax(func(grid))]
 
-    xs = np.random.uniform(*bounds, size=(n_samples, 1))
+    xs = generator.uniform(*bounds, size=(n_samples, 1))
     ys = func(xs)
 
     ax.plot(
