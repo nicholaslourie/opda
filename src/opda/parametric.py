@@ -37,7 +37,7 @@ class QuadraticDistribution:
             b,
             c,
             *,
-            convex=False,
+            convex = False,
     ):
         # Validate the arguments.
         if not np.isscalar(a):
@@ -288,8 +288,8 @@ class QuadraticDistribution:
     def estimate_initial_parameters_and_bounds(
             cls,
             ys,
-            fraction=1.,
-            convex=False,
+            fraction = 1.,
+            convex = False,
     ):
         """Return initial parameter estimates and bounds.
 
