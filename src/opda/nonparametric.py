@@ -294,6 +294,16 @@ class EmpiricalDistribution:
         self._original_ys_sorted = np.sort(self.ys)
         self._original_ys_reverse_sorted = self._original_ys_sorted[::-1]
 
+    def __repr__(self):
+        return (
+            f"{self.__class__.__name__}("
+            f"ys={self.ys!r},"
+            f" ws={self.ws!r},"
+            f" a={self.a!r},"
+            f" b={self.b!r}"
+            f")"
+        )
+
     def sample(self, size):
         """Return a sample from the empirical distribution.
 
