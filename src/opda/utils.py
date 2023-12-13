@@ -35,16 +35,16 @@ def sort_by_first(*args):
 
 
 def dkw_epsilon(n, confidence):
-    """Return epsilon from the Dvoretzky-Kiefer-Wolfowitz inequaltiy.
+    r"""Return epsilon from the Dvoretzky-Kiefer-Wolfowitz inequaltiy.
 
     The Dvoretzky-Kiefer-Wolfowitz inequality states that a confidence
     interval for the CDF is given by the empirical CDF plus or minus:
 
     .. math::
 
-       \\epsilon = \\sqrt{\\frac{\\log \\frac{2}{\\alpha}}{2n}}
+       \epsilon = \sqrt{\frac{\log \frac{2}{\alpha}}{2n}}
 
-    Where :math:`1 - \\alpha` is the coverage.
+    Where :math:`1 - \alpha` is the coverage.
 
     Parameters
     ----------

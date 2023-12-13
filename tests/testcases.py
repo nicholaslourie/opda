@@ -14,6 +14,7 @@ class RandomTestCase(unittest.TestCase):
     """A base class for tests involving randomness."""
 
     def setUp(self):
+        """Configure a random seed and generator for random numbers."""
         # Create the random seed and generator.
         self.seed = np.random.SeedSequence().entropy
         self.generator = np.random.default_rng(self.seed)
