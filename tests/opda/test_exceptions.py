@@ -2,7 +2,7 @@
 
 import unittest
 
-from opda import exceptions
+from opda import exceptions  # noqa: F401
 
 
 class OptimizationErrorTestCase(unittest.TestCase):

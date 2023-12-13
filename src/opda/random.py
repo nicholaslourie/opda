@@ -101,7 +101,7 @@ def set_seed(seed):
     -------
     None
     """
-    global DEFAULT_GENERATOR
+    global DEFAULT_GENERATOR  # noqa: PLW0603
 
     DEFAULT_GENERATOR = (
         seed
