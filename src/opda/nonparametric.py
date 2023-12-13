@@ -12,7 +12,7 @@ import opda.random
 
 # backwards compatibility
 
-import sys
+import sys  # ruff: isort: skip
 
 if sys.version_info < (3, 9, 0):
     functools.cache = functools.lru_cache(maxsize=None)

@@ -2852,7 +2852,7 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                     method=method,
                 )
 
-            nonparametric._ld_band_weights.cache_clear()
+            nonparametric._ld_band_weights.cache_clear()  # noqa: SLF001
             second_lo, _, second_hi =\
                 nonparametric.EmpiricalDistribution.confidence_bands(
                     ys,
@@ -2873,7 +2873,7 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                     method=method,
                 )
 
-            nonparametric._ld_band_weights.cache_clear()
+            nonparametric._ld_band_weights.cache_clear()  # noqa: SLF001
             second_lo, _, second_hi =\
                 nonparametric.EmpiricalDistribution.confidence_bands(
                     ys,
@@ -2894,7 +2894,7 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                 )
 
             opda.random.set_seed(0)
-            nonparametric._ld_band_weights.cache_clear()
+            nonparametric._ld_band_weights.cache_clear()  # noqa: SLF001
             second_lo, _, second_hi =\
                 nonparametric.EmpiricalDistribution.confidence_bands(
                     ys,
@@ -2922,7 +2922,7 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                     generator=generator,
                 )
 
-            nonparametric._ld_band_weights.cache_clear()
+            nonparametric._ld_band_weights.cache_clear()  # noqa: SLF001
             second_lo, _, second_hi =\
                 nonparametric.EmpiricalDistribution.confidence_bands(
                     ys,
@@ -2944,7 +2944,7 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                     generator=np.random.default_rng(0),
                 )
 
-            nonparametric._ld_band_weights.cache_clear()
+            nonparametric._ld_band_weights.cache_clear()  # noqa: SLF001
             second_lo, _, second_hi =\
                 nonparametric.EmpiricalDistribution.confidence_bands(
                     ys,
