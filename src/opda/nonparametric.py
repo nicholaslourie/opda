@@ -156,7 +156,7 @@ def _ld_band_weights(
 # main functions and classes
 
 class EmpiricalDistribution:
-    """The empirical distribution.
+    r"""The empirical distribution.
 
     Parameters
     ----------
@@ -193,7 +193,7 @@ class EmpiricalDistribution:
     .. code:: python
 
         >>> ns = [1, 2, 3, 4, 5]
-        >>> lower_cdf, point_cdf, upper_cdf =\\
+        >>> lower_cdf, point_cdf, upper_cdf =\
         ...   EmpiricalDistribution.confidence_bands(
         ...     ys=[0.1, 0.8, 0.5, 0.4, 0.6],
         ...     confidence=0.80,
@@ -393,14 +393,14 @@ class EmpiricalDistribution:
         )
 
     def cdf(self, ys):
-        """Return the cumulative probability at ``ys``.
+        r"""Return the cumulative probability at ``ys``.
 
         We define the cumulative distribution function, F, using less
         than or equal to:
 
         .. math::
 
-           F(y) = \\mathbb{P}(Y \\leq y)
+           F(y) = \mathbb{P}(Y \leq y)
 
 
         Parameters
@@ -417,7 +417,7 @@ class EmpiricalDistribution:
         return self._ws_cumsum[indices]
 
     def ppf(self, qs):
-        """Return the quantile at ``qs``.
+        r"""Return the quantile at ``qs``.
 
         Since the empirical distribution is discrete, its exact
         quantiles are ambiguous. We use the following definition of
@@ -425,7 +425,7 @@ class EmpiricalDistribution:
 
         .. math::
 
-           Q(p) = \\inf \\{y\\in[a, b]\\mid p\\leq F(y)\\}
+           Q(p) = \inf \{y\in[a, b]\mid p\leq F(y)\}
 
         where F is the cumulative distribution function and ``a`` and
         ``b`` are the optional bounds provided for the distribution's
