@@ -2,6 +2,7 @@
 requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
 
+
 [project]
 name = "opda"
 version = "0.1.0"
@@ -45,6 +46,7 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
+lint = ["ruff == 0.1.6"]
 tests = ["pytest == 7.4.3"]
 nbs = ["notebook == 7.0.6"]
 
@@ -52,9 +54,11 @@ nbs = ["notebook == 7.0.6"]
 Homepage = "https://github.com/nalourie/opda"
 Issues = "https://github.com/nalourie/opda/issues"
 
+
 [tool.setuptools]
 package-dir = {"" = "src"}
 packages = ["experiments", "opda"]
+
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -62,3 +66,102 @@ log_level = "INFO"
 addopts = "--strict-markers"
 markers = ["level"]
 testpaths = ["tests"]
+
+
+[tool.ruff]
+extend-include = ["*.ipynb"]
+line-length = 80
+ignore-init-module-imports = true
+src = ["src", "tests"]
+
+[tool.ruff.format]
+exclude = ["*.ipynb"]
+
+[tool.ruff.lint]
+select = [
+  "A",        # flake8-builtins
+  "ARG",      # flake8-unused-arguments
+  "ASYNC",    # flake8-async
+  "B",        # flake8-bugbear
+  "BLE",      # flake8-blind-except
+  "C4",       # flake8-comprehensions
+  "COM",      # flake8-commas
+  "D",        # pydocstyle
+  "DTZ",      # flake8-datetimez
+  "E", "W",   # pycodestyle (errors, warnings)
+  "ERA",      # eradicate
+  "EXE",      # flake8-executable
+  "F",        # Pyflakes
+  "FIX",      # flake8-fixme
+  "FLY",      # flynt
+  "G",        # flake8-logging-format
+  "I",        # isort
+  "ICN",      # flake8-import-conventions
+  "INP",      # flake8-no-pep420
+  "ISC",      # flake8-implicit-str-concat
+  "N",        # pep8-naming
+  "NPY",      # NumPy-specific rules
+  "PERF",     # Perflint
+  "PGH",      # pygrep-hooks
+  "PIE",      # flake8-pie
+  "PL",       # pylint
+  "PYI",      # flake8-pyi
+  "Q",        # flake8-quotes
+  "RET",      # flake8-return
+  "RSE",      # flake8-raise
+  "RUF",      # Ruff-specific rules
+  "S",        # flake8-bandit
+  "SIM",      # flake8-simplify
+  "SLF",      # flake8-self
+  "SLOT",     # flake8-slots
+  "T10",      # flake8-debugger
+  "T20",      # flake8-print
+  "TID",      # flake8-tidy-imports
+  "TRY",      # tryceratops
+  "UP",       # pyupgrade
+  "YTT",      # flake8-2020
+]
+ignore = [
+  "G004",     # Logging statement uses f-string
+  "SIM300",   # Yoda conditions are discouraged
+  "RET504",   # Unnecessary assignment to {name} before `return` statement
+  "TRY003",   # Avoid specifying long messages outside the exception class
+  "PLR09",    # (rule range) too many statements, branches, etc.
+  "PLR2004",  # Magic value used in comparison
+  "PLR5501",  # Use `elif` instead of `else` then `if`, to reduce indentation
+  "D105",     # Missing docstring in magic method
+  "D400",     # First line should end with a period
+]
+extend-select = [
+  "D402",     # First line should not be the function's signature
+  "D417",     # Missing argument description in the docstring ...
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/*.ipynb" = [
+  "E501",     # Line too long
+  "T201",     # `print` found
+  "T203",     # `pprint` found
+  "ERA001",   # Found commented-out code
+  "D10",      # (rule range) require doc strings
+]
+"**/conftest.py" = [
+  "D10",      # (rule range) require doc strings
+]
+"**/test_*.py" = [
+  "D102",     # Missing docstring in public method
+  "ERA001",   # Found commented-out code
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+force-sort-within-sections = true
+force-wrap-aliases = true
+known-first-party = ["experiments", "opda"]
+forced-separate = ["tests"]
