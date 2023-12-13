@@ -145,6 +145,8 @@ class Simulation:
             n_dims,
             func,
             bounds,
+            *,
+            generator = None,
     ):
         """Run and return the simulation.
 
@@ -164,6 +166,10 @@ class Simulation:
         bounds : n_dims x 2 array of floats, required
             Bounds on each dimension for the random search's uniform
             sampling.
+        generator : None or np.random.Generator, optional (default=None)
+            The random number generator to use. If ``None``, then a new
+            random number generator is created, seeded with entropy from
+            the operating system.
 
         Returns
         -------
@@ -178,18 +184,28 @@ class Simulation:
                 f" Each dimension must have a lower and upper bound.",
             )
 
+        generator = (
+            generator
+            if generator is not None else
+            np.random.default_rng()
+        )
+
         # Run the simulation.
         y_argmin = optimize.differential_evolution(
-            func=func, bounds=bounds,
+            func=func,
+            bounds=bounds,
+            seed=generator,
         ).x
         y_argmax = optimize.differential_evolution(
-            func=lambda x: -func(x), bounds=bounds,
+            func=lambda x: -func(x),
+            bounds=bounds,
+            seed=generator,
         ).x
         y_min = func(y_argmin)
         y_max = func(y_argmax)
 
         ns = np.arange(1, n_samples + 1)
-        xss = bounds[:, 0] + (bounds[:, 1] - bounds[:, 0]) * np.random.uniform(
+        xss = bounds[:, 0] + (bounds[:, 1] - bounds[:, 0]) * generator.uniform(
             0, 1, size=(n_trials, n_samples, n_dims),
         )
         yss = func(xss)

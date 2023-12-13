@@ -5,6 +5,8 @@ import warnings
 import numpy as np
 from scipy import special
 
+import opda.random
+
 
 class QuadraticDistribution:
     """The Quadratic distribution.
@@ -90,20 +92,32 @@ class QuadraticDistribution:
             f")"
         )
 
-    def sample(self, size):
+    def sample(self, size, *, generator=None):
         """Return a sample from the quadratic distribution.
 
         Parameters
         ----------
         size : int or tuple of ints, required
             The desired shape of the returned sample.
+        generator : None or np.random.Generator, optional (default=None)
+            The random number generator to use. If ``None``, then the
+            global default random number generator is used. See
+            :py:mod:`opda.random` for more information.
 
         Returns
         -------
         array of floats
             The sample from the distribution.
         """
-        return self.ppf(np.random.uniform(0, 1, size=size))
+        # Validate arguments.
+        generator = (
+            generator
+            if generator is not None else
+            opda.random.DEFAULT_GENERATOR
+        )
+
+        # Compute the sample.
+        return self.ppf(generator.uniform(0., 1., size=size))
 
     def pdf(self, ys):
         """Return the probability density at ``ys``.

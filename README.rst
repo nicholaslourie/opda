@@ -106,6 +106,9 @@ Run tests with `pytest <https://docs.pytest.org/>`_:
 
    $ pytest
 
+Some tests use randomness. For reproducibility, the random seed prints
+when a test fails if the log level is at least INFO (the default).
+
 Tests are organized into levels. Lower levels run faster and are
 suitable for quick feedback during development. To run the tests at and
 below a specific level, use the ``--level`` option:

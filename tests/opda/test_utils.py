@@ -8,6 +8,8 @@ from scipy import stats
 
 from opda import utils
 
+from tests import testcases
+
 
 class SortByFirstTestCase(unittest.TestCase):
     """Test opda.utils.sort_by_first."""
@@ -111,7 +113,7 @@ class DkwEpsilonTestCase(unittest.TestCase):
         self.assertEqual(utils.dkw_epsilon(4, 1. - 2./np.e**2), 0.5)
 
 
-class BetaEqualTailedIntervalTestCase(unittest.TestCase):
+class BetaEqualTailedIntervalTestCase(testcases.RandomTestCase):
     """Test opda.utils.beta_equal_tailed_interval."""
 
     def test_beta_equal_tailed_interval(self):
@@ -134,7 +136,7 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
                     self.assertAlmostEqual(beta.cdf(hi), (1. + coverage) / 2.)
                 # when coverage is an array.
                 k = 5
-                coverage = np.random.rand(k)
+                coverage = self.generator.random(size=k)
                 lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
                 self.assertEqual(lo.shape, (k,))
                 self.assertEqual(hi.shape, (k,))
@@ -179,7 +181,7 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
                 < 1e-10,
             ))
         #   when coverage is an array.
-        coverage = np.random.rand(n)
+        coverage = self.generator.random(size=n)
         lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(lo.shape, (n,))
         self.assertEqual(hi.shape, (n,))
@@ -224,7 +226,7 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
                 < 1e-10,
             ))
         #   when coverage is an array.
-        coverage = np.random.rand(n, m)
+        coverage = self.generator.random(size=(n, m))
         lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(lo.shape, (n, m))
         self.assertEqual(hi.shape, (n, m))
@@ -269,7 +271,7 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
                 < 1e-10,
             ))
         #   when coverage is an array.
-        coverage = np.random.rand(n, m)
+        coverage = self.generator.random(size=(n, m))
         lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(lo.shape, (n, m))
         self.assertEqual(hi.shape, (n, m))
@@ -295,7 +297,7 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
         b = np.arange(n + 1, 1, -1)[:, None]
         beta = stats.beta(a, b)
         k = 5
-        coverage = np.random.rand(k)[None, :]
+        coverage = self.generator.random(size=k)[None, :]
         lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(lo.shape, (n, k))
         self.assertEqual(hi.shape, (n, k))
@@ -320,7 +322,7 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
         b = np.arange(m + 1, 1, -1).reshape(1, m)[..., None]
         beta = stats.beta(a, b)
         k = 5
-        coverage = np.random.rand(k)[None, None, :]
+        coverage = self.generator.random(size=k)[None, None, :]
         lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(lo.shape, (n, m, k))
         self.assertEqual(hi.shape, (n, m, k))
@@ -371,7 +373,7 @@ class BetaEqualTailedIntervalTestCase(unittest.TestCase):
                 self.assertAlmostEqual(beta.cdf(hi) - beta.cdf(lo), 0.)
 
 
-class BetaHighestDensityIntervalTestCase(unittest.TestCase):
+class BetaHighestDensityIntervalTestCase(testcases.RandomTestCase):
     """Test opda.utils.beta_highest_density_interval."""
 
     def test_beta_highest_density_interval(self):
@@ -402,7 +404,7 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
                     )
                 # when coverage is an array.
                 k = 5
-                coverage = np.random.rand(k)
+                coverage = self.generator.random(size=k)
                 lo, hi = utils.beta_highest_density_interval(a, b, coverage)
                 self.assertEqual(lo.shape, (k,))
                 self.assertEqual(hi.shape, (k,))
@@ -445,7 +447,7 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
                 (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5,
             ))
         #   when coverage is an array.
-        coverage = np.random.rand(n)
+        coverage = self.generator.random(size=n)
         lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(lo.shape, (n,))
         self.assertEqual(hi.shape, (n,))
@@ -491,7 +493,7 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
                 (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5,
             ))
         #   when coverage is an array.
-        coverage = np.random.rand(n, m)
+        coverage = self.generator.random(size=(n, m))
         lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(lo.shape, (n, m))
         self.assertEqual(hi.shape, (n, m))
@@ -537,7 +539,7 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
                 (equal_tailed_hi - equal_tailed_lo) - (hi - lo) > 1e-5,
             ))
         #   when coverage is an array.
-        coverage = np.random.rand(n, m)
+        coverage = self.generator.random(size=(n, m))
         lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(lo.shape, (n, m))
         self.assertEqual(hi.shape, (n, m))
@@ -564,7 +566,7 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
         mode = (a - 1) / (a + b - 2)
         beta = stats.beta(a, b)
         k = 5
-        coverage = np.random.rand(k)[None, :]
+        coverage = self.generator.random(size=k)[None, :]
         lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(lo.shape, (n, k))
         self.assertEqual(hi.shape, (n, k))
@@ -590,7 +592,7 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
         mode = (a - 1) / (a + b - 2)
         beta = stats.beta(a, b)
         k = 5
-        coverage = np.random.rand(k)[None, None, :]
+        coverage = self.generator.random(size=k)[None, None, :]
         lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(lo.shape, (n, m, k))
         self.assertEqual(hi.shape, (n, m, k))
@@ -650,7 +652,7 @@ class BetaHighestDensityIntervalTestCase(unittest.TestCase):
                 self.assertAlmostEqual(beta.cdf(hi) - beta.cdf(lo), 0.)
 
 
-class BetaEqualTailedCoverageTestCase(unittest.TestCase):
+class BetaEqualTailedCoverageTestCase(testcases.RandomTestCase):
     """Test opda.utils.beta_equal_tailed_coverage."""
 
     def test_beta_equal_tailed_coverage(self):
@@ -667,7 +669,7 @@ class BetaEqualTailedCoverageTestCase(unittest.TestCase):
                     ))
                 # when x is an array.
                 k = 5
-                x = np.random.rand(k)
+                x = self.generator.random(size=k)
                 coverage = utils.beta_equal_tailed_coverage(a, b, x)
                 lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
                 self.assertEqual(coverage.shape, (k,))
@@ -687,7 +689,7 @@ class BetaEqualTailedCoverageTestCase(unittest.TestCase):
                 np.isclose(lo, x) | np.isclose(hi, x),
             ))
         #   when x is an array.
-        x = np.random.rand(n)
+        x = self.generator.random(size=n)
         coverage = utils.beta_equal_tailed_coverage(a, b, x)
         lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n,))
@@ -707,7 +709,7 @@ class BetaEqualTailedCoverageTestCase(unittest.TestCase):
                 np.isclose(lo, x) | np.isclose(hi, x),
             ))
         #   when x is an array.
-        x = np.random.rand(n, m)
+        x = self.generator.random(size=(n, m))
         coverage = utils.beta_equal_tailed_coverage(a, b, x)
         lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, m))
@@ -727,7 +729,7 @@ class BetaEqualTailedCoverageTestCase(unittest.TestCase):
                 np.isclose(lo, x) | np.isclose(hi, x),
             ))
         #   when x is an array.
-        x = np.random.rand(n, m)
+        x = self.generator.random(size=(n, m))
         coverage = utils.beta_equal_tailed_coverage(a, b, x)
         lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, m))
@@ -740,7 +742,7 @@ class BetaEqualTailedCoverageTestCase(unittest.TestCase):
         a = np.arange(1, n + 1)[:, None]
         b = np.arange(n + 1, 1, -1)[:, None]
         k = 5
-        x = np.random.rand(k)[None, :]
+        x = self.generator.random(size=k)[None, :]
         coverage = utils.beta_equal_tailed_coverage(a, b, x)
         lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, k))
@@ -752,7 +754,7 @@ class BetaEqualTailedCoverageTestCase(unittest.TestCase):
         a = np.arange(1, n + 1).reshape(n, 1)[..., None]
         b = np.arange(m + 1, 1, -1).reshape(1, m)[..., None]
         k = 5
-        x = np.random.rand(k)[None, None, :]
+        x = self.generator.random(size=k)[None, None, :]
         coverage = utils.beta_equal_tailed_coverage(a, b, x)
         lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, m, k))
@@ -822,7 +824,7 @@ class BetaEqualTailedCoverageTestCase(unittest.TestCase):
                 self.assertAlmostEqual(coverage, 0.)
 
 
-class BetaHighestDensityCoverageTestCase(unittest.TestCase):
+class BetaHighestDensityCoverageTestCase(testcases.RandomTestCase):
     """Test opda.utils.beta_highest_density_coverage."""
 
     def test_beta_highest_density_coverage(self):
@@ -857,7 +859,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
                     ))
                 # when x is an array.
                 k = 5
-                x = np.random.uniform(x_lo, x_hi, size=k)
+                x = self.generator.uniform(x_lo, x_hi, size=k)
                 coverage = utils.beta_highest_density_coverage(a, b, x)
                 lo, hi = utils.beta_highest_density_interval(a, b, coverage)
                 self.assertEqual(coverage.shape, (k,))
@@ -877,7 +879,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
                 np.isclose(lo, x) | np.isclose(hi, x),
             ))
         #   when x is an array.
-        x = np.random.uniform(x_lo, x_hi, size=n)
+        x = self.generator.uniform(x_lo, x_hi, size=n)
         coverage = utils.beta_highest_density_coverage(a, b, x)
         lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n,))
@@ -897,7 +899,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
                 np.isclose(lo, x) | np.isclose(hi, x),
             ))
         #   when x is an array.
-        x = np.random.uniform(x_lo, x_hi, size=(n, m))
+        x = self.generator.uniform(x_lo, x_hi, size=(n, m))
         coverage = utils.beta_highest_density_coverage(a, b, x)
         lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, m))
@@ -917,7 +919,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
                 np.isclose(lo, x) | np.isclose(hi, x),
             ))
         #   when x is an array.
-        x = np.random.uniform(x_lo, x_hi, size=(n, m))
+        x = self.generator.uniform(x_lo, x_hi, size=(n, m))
         coverage = utils.beta_highest_density_coverage(a, b, x)
         lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, m))
@@ -930,7 +932,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
         a = np.arange(1, n + 1)[:, None]
         b = np.arange(n + 1, 1, -1)[:, None]
         k = 5
-        x = np.random.uniform(x_lo, x_hi, size=(1, k))
+        x = self.generator.uniform(x_lo, x_hi, size=(1, k))
         coverage = utils.beta_highest_density_coverage(a, b, x)
         lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, k))
@@ -942,7 +944,7 @@ class BetaHighestDensityCoverageTestCase(unittest.TestCase):
         a = np.arange(1, n + 1).reshape(n, 1)[..., None]
         b = np.arange(m + 1, 1, -1).reshape(1, m)[..., None]
         k = 5
-        x = np.random.uniform(x_lo, x_hi, size=(1, 1, k))
+        x = self.generator.uniform(x_lo, x_hi, size=(1, 1, k))
         coverage = utils.beta_highest_density_coverage(a, b, x)
         lo, hi = utils.beta_highest_density_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, m, k))
