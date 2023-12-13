@@ -656,6 +656,22 @@ class BetaEqualTailedCoverageTestCase(testcases.RandomTestCase):
     """Test opda.utils.beta_equal_tailed_coverage."""
 
     def test_beta_equal_tailed_coverage(self):
+        x_lo, x_hi = 0.01, 0.99
+        # NOTE: These checks must use values of x between 0.01 and 0.99,
+        # otherwise they will spuriously fail. The reason is that these
+        # tests work by taking the coverage returned by
+        # beta_equal_tailed_coverage, constructing the equal-tailed
+        # interval with that coverage, and verifying that x is one of
+        # the endpoints. If x is too close to 0 or 1 and the beta
+        # distribution is highly concentrated, then x can change by a
+        # large amount *without* changing the coverage much. This
+        # happens because the distribution will have almost no
+        # probability density near the endpoints. This invalidates our
+        # testing strategy. Instead, we test when x is near the
+        # endpoints in a separate test (See
+        # test_when_interval_has_large_coverage on
+        # BetaEqualTailedCoverageTestCase).
+
         # Test when a and b are scalars.
         for a in [1., 2., 3.]:
             for b in [1., 2., 3.]:
@@ -669,7 +685,7 @@ class BetaEqualTailedCoverageTestCase(testcases.RandomTestCase):
                     ))
                 # when x is an array.
                 k = 5
-                x = self.generator.random(size=k)
+                x = self.generator.uniform(x_lo, x_hi, size=k)
                 coverage = utils.beta_equal_tailed_coverage(a, b, x)
                 lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
                 self.assertEqual(coverage.shape, (k,))
@@ -689,7 +705,7 @@ class BetaEqualTailedCoverageTestCase(testcases.RandomTestCase):
                 np.isclose(lo, x) | np.isclose(hi, x),
             ))
         #   when x is an array.
-        x = self.generator.random(size=n)
+        x = self.generator.uniform(x_lo, x_hi, size=n)
         coverage = utils.beta_equal_tailed_coverage(a, b, x)
         lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n,))
@@ -709,7 +725,7 @@ class BetaEqualTailedCoverageTestCase(testcases.RandomTestCase):
                 np.isclose(lo, x) | np.isclose(hi, x),
             ))
         #   when x is an array.
-        x = self.generator.random(size=(n, m))
+        x = self.generator.uniform(x_lo, x_hi, size=(n, m))
         coverage = utils.beta_equal_tailed_coverage(a, b, x)
         lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, m))
@@ -729,7 +745,7 @@ class BetaEqualTailedCoverageTestCase(testcases.RandomTestCase):
                 np.isclose(lo, x) | np.isclose(hi, x),
             ))
         #   when x is an array.
-        x = self.generator.random(size=(n, m))
+        x = self.generator.uniform(x_lo, x_hi, size=(n, m))
         coverage = utils.beta_equal_tailed_coverage(a, b, x)
         lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, m))
@@ -742,7 +758,7 @@ class BetaEqualTailedCoverageTestCase(testcases.RandomTestCase):
         a = np.arange(1, n + 1)[:, None]
         b = np.arange(n + 1, 1, -1)[:, None]
         k = 5
-        x = self.generator.random(size=k)[None, :]
+        x = self.generator.uniform(x_lo, x_hi, size=(1, k))
         coverage = utils.beta_equal_tailed_coverage(a, b, x)
         lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, k))
@@ -754,7 +770,7 @@ class BetaEqualTailedCoverageTestCase(testcases.RandomTestCase):
         a = np.arange(1, n + 1).reshape(n, 1)[..., None]
         b = np.arange(m + 1, 1, -1).reshape(1, m)[..., None]
         k = 5
-        x = self.generator.random(size=k)[None, None, :]
+        x = self.generator.uniform(x_lo, x_hi, size=(1, 1, k))
         coverage = utils.beta_equal_tailed_coverage(a, b, x)
         lo, hi = utils.beta_equal_tailed_interval(a, b, coverage)
         self.assertEqual(coverage.shape, (n, m, k))
