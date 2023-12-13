@@ -47,9 +47,9 @@ installed.
    require `pip v21.3 or higher
    <https://pip.pypa.io/en/stable/news/#v21-3>`_.
 
-If you also wish to develop or test the package, then:
+If you also wish to test the package, then:
 
-1. Install the extra development dependencies:
+1. Install the extra test dependencies:
 
    .. code-block:: bash
 
@@ -74,6 +74,21 @@ If you want to run the notebooks in this repository:
    .. code-block:: bash
 
       $ cd nbs/ && jupyter notebook
+
+Finally, if you plan on developing this repository:
+
+1. Install the extra development dependencies:
+
+   .. code-block:: bash
+
+      $ pip install .[lint]
+
+2. Run the linter:
+
+      $ ruff check .
+
+   Use ``ruff check --watch .`` to continually lint the repository
+   with updates on file changes.
 
 
 Usage
@@ -136,6 +151,24 @@ these doctests with pytest:
 python modules, while ``--doctest-globs *.rst`` searches
 reStructuredText files for doctests. The arguments (``README.rst src``)
 ensure pytest looks at the right paths for these tests.
+
+Finally, lint the repository using
+`ruff <https://docs.astral.sh/ruff/>`_:
+
+.. code-block:: bash
+
+   $ ruff check .
+
+This project does *not* use a formatter. Basic stylistic conventions
+are enforced by the linter; otherwise, style should be used to
+maximize the readability and communicate the intent of the code.
+
+The linter can automatically fix many errors it identifies, which can
+be helpful for formatting the more rote stylistic issues:
+
+.. code-block:: bash
+
+   $ ruff check --fix .
 
 
 Examples
