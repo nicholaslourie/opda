@@ -59,6 +59,10 @@ Issues = "https://github.com/nalourie/opda/issues"
 package-dir = {"" = "src"}
 packages = ["experiments", "opda"]
 
+[tool.setuptools.package-data]
+experiments = ["default.mplstyle"]
+opda = []
+
 
 [tool.pytest.ini_options]
 minversion = "6.0"
