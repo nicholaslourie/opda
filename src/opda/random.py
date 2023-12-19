@@ -14,9 +14,10 @@ To set the global random state, use the :py:func:`set_seed` function:
 
 Functions and methods using randomness also provide a ``generator``
 keyword argument. If ``generator`` is ``None`` then the global random
-state, ``DEFAULT_GENERATOR``, is used. Otherwise, the ``generator``
-argument should be an instance of :py:class:`numpy.random.Generator`
-and the function or method will use that for generating random values.
+state, :py:const:`DEFAULT_GENERATOR`, is used. Otherwise, the
+``generator`` argument should be an instance of
+:py:class:`numpy.random.Generator` and the function or method will use
+that for generating random values.
 
 If you require *local* control of random behavior (e.g., making a
 single function deterministic), pass the generator explicitly to the

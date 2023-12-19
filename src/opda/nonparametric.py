@@ -174,10 +174,10 @@ class EmpiricalDistribution:
 
     Notes
     -----
-    ``EmpiricalDistribution`` provides confidence bands for the CDF
-    which can then be translated into confidence bands for the tuning
-    curve. See the examples section for how to accomplish this task or
-    [1]_ for more background.
+    :py:class:`EmpiricalDistribution` provides confidence bands for the
+    CDF which can then be translated into confidence bands for the
+    tuning curve. See the examples section for how to accomplish this
+    task or [1]_ for more background.
 
     References
     ----------
@@ -705,9 +705,10 @@ class EmpiricalDistribution:
     ):
         """Return confidence bands for the CDF.
 
-        Return three instances of ``EmpiricalDistribution``, offering
-        a lower confidence band, point estimate, and upper confidence
-        band for the CDF of the distribution that generated ``ys``.
+        Return three instances of :py:class:`EmpiricalDistribution`,
+        offering a lower confidence band, point estimate, and upper
+        confidence band for the CDF of the distribution that generated
+        ``ys``.
 
         The properties of the CDF bands depend on the method used to
         construct them, as set by the ``method`` parameter.
@@ -735,7 +736,7 @@ class EmpiricalDistribution:
             Set the maximum number of parallel processes to use when
             constructing the confidence bands. If ``None`` then
             ``n_jobs`` will be set to the number of CPUs returned by
-            ``os.cpu_count``. Only some methods (e.g.
+            :py:func:`os.cpu_count`. Only some methods (e.g.
             ``'ld_highest_density'``) can leverage parallel
             computation. If the method can't use parallelism, it'll
             just use the current process instead.

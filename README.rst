@@ -103,7 +103,7 @@ documentation for a function or class:
    Help on class EmpiricalDistribution in module opda.nonparametric:
    ...
 
-See ``opda.nonparametric`` for the primary functionality.
+See :py:mod:`opda.nonparametric` for the primary functionality.
 
 
 Development
@@ -174,11 +174,12 @@ be helpful for formatting the more rote stylistic issues:
 Examples
 ========
 Let's evaluate a model while accounting for hyperparameter tuning
-effort. The ``opda.nonparametric.EmpiricalDistribution`` class allows
-us to generate tuning curves that capture the cost-benefit
+effort. The :py:class:`opda.nonparametric.EmpiricalDistribution` class
+allows us to generate tuning curves that capture the cost-benefit
 trade-off. First, make an array of floats, ``ys``, representing the
 scores obtained from random hyperparameter search. Then, use it to
-instantiate ``EmpiricalDistribution`` with confidence bands:
+instantiate :py:class:`~opda.nonparametric.EmpiricalDistribution` with
+confidence bands:
 
 .. code-block:: python
 
@@ -196,7 +197,9 @@ instantiate ``EmpiricalDistribution`` with confidence bands:
 
 This code yields lower and upper 80% confidence bands for the CDF, as
 well as a point estimate. You can compute tuning curves from these
-distributions via the ``.quantile_tuning_curve`` method:
+distributions via the
+:py:meth:`~opda.nonparametric.EmpiricalDistribution.quantile_tuning_curve`
+method:
 
 .. code-block:: python
 
