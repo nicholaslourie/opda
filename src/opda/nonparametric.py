@@ -779,14 +779,14 @@ class EmpiricalDistribution:
         violated equally often across the whole range. The
         Learned-Miller-DeStefano bands require that the underlying
         distribution is continuous to achieve exact coverage. See "A
-        Probabilistic Upper Bound on Differential Entropy"
-        (Learned-Miller and DeStefano, 2008) for details.
+        Probabilistic Upper Bound on Differential Entropy" [1]_ for
+        details.
 
         References
         ----------
-        Learned-Miller, E and DeStefano, J, "A Probabilistic Upper
-        Bound on Differential Entropy" (2008). IEEE TRANSACTIONS ON
-        INFORMATION THEORY. 732.
+        .. [1] Learned-Miller, E and DeStefano, J, "A Probabilistic
+           Upper Bound on Differential Entropy" (2008). IEEE
+           TRANSACTIONS ON INFORMATION THEORY. 732.
         """
         # Validate arguments and handle defaults.
         ys = np.array(ys)
