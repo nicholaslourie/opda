@@ -168,7 +168,6 @@ class QuadraticDistribution:
 
            F(y) = \mathbb{P}(Y \leq y)
 
-
         Parameters
         ----------
         ys : array of float, required
