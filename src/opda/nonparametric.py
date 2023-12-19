@@ -176,8 +176,8 @@ class EmpiricalDistribution:
     -----
     ``EmpiricalDistribution`` provides confidence bands for the CDF
     which can then be translated into confidence bands for the tuning
-    curve. See `Examples`_ for how to accomplish this task or [1]_ for
-    more background.
+    curve. See the examples section for how to accomplish this task or
+    [1]_ for more background.
 
     References
     ----------
@@ -731,7 +731,7 @@ class EmpiricalDistribution:
             One of the strings 'dkw', 'ks', 'ld_equal_tailed', or
             'ld_highest_density'. The ``method`` parameter determines
             the kind of confidence band and thus its properties. See
-            `Notes`_ for details on the different methods.
+            the notes section for details on the different methods.
         n_jobs : positive int or None, optional (default=None)
             Set the maximum number of parallel processes to use when
             constructing the confidence bands. If ``None`` then
