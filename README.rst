@@ -33,13 +33,13 @@ installed.
 
 1. Clone the repo:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       $ git clone git@github.com:nalourie/opda.git
 
 2. Install the package with ``pip``:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       $ pip install .
 
@@ -51,13 +51,13 @@ If you also wish to test the package, then:
 
 1. Install the extra test dependencies:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       $ pip install .[tests]
 
 2. Run the tests:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       $ pytest
 
@@ -65,13 +65,13 @@ If you want to run the notebooks in this repository:
 
 1. Install the extra notebook dependencies:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       $ pip install .[nbs]
 
 2. Run the notebook server:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       $ cd nbs/ && jupyter notebook
 
@@ -79,7 +79,7 @@ Finally, if you plan on developing this repository:
 
 1. Install the extra development dependencies:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       $ pip install .[lint]
 
@@ -117,7 +117,7 @@ file for managing the virtual environment.
 
 Run tests with `pytest <https://docs.pytest.org/>`_:
 
-.. code-block:: bash
+.. code-block:: console
 
    $ pytest
 
@@ -128,14 +128,14 @@ Tests are organized into levels. Lower levels run faster and are
 suitable for quick feedback during development. To run the tests at and
 below a specific level, use the ``--level`` option:
 
-.. code-block:: bash
+.. code-block:: console
 
    $ pytest --level 2
 
 Tests up to level 0 are run by default. Tests without a specified level
 are always run. To run all levels, use the ``--all-levels`` option:
 
-.. code-block:: bash
+.. code-block:: console
 
    $ pytest --all-levels
 
@@ -143,7 +143,7 @@ Check the documentation's correctness by executing code examples as
 `doctests <https://docs.python.org/3/library/doctest.html>`_. Run
 these doctests with pytest:
 
-.. code-block:: bash
+.. code-block:: console
 
    $ pytest --doctest-modules --doctest-glob *.rst -- README.rst src
 
@@ -155,7 +155,7 @@ ensure pytest looks at the right paths for these tests.
 Finally, lint the repository using
 `ruff <https://docs.astral.sh/ruff/>`_:
 
-.. code-block:: bash
+.. code-block:: console
 
    $ ruff check .
 
@@ -166,7 +166,7 @@ maximize the readability and communicate the intent of the code.
 The linter can automatically fix many errors it identifies, which can
 be helpful for formatting the more rote stylistic issues:
 
-.. code-block:: bash
+.. code-block:: console
 
    $ ruff check --fix .
 
