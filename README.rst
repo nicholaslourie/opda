@@ -1,5 +1,5 @@
 =============================
-opda: Optimal Design Analysis
+opda: optimal design analysis
 =============================
 A framework for the design and analysis of deep learning experiments.
 
