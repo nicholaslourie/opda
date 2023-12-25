@@ -92,13 +92,14 @@ class QuadraticDistribution:
             f")"
         )
 
-    def sample(self, size, *, generator=None):
+    def sample(self, size=None, *, generator=None):
         """Return a sample from the quadratic distribution.
 
         Parameters
         ----------
-        size : int or tuple of ints, required
-            The desired shape of the returned sample.
+        size : None, int, or tuple of ints, optional (default=None)
+            The desired shape of the returned sample. If ``None``,
+            then the sample is a scalar.
         generator : None or np.random.Generator, optional (default=None)
             The random number generator to use. If ``None``, then the
             global default random number generator is used. See

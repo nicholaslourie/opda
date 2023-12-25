@@ -141,11 +141,24 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
 
     def test_sample(self):
         a, b = 0., 1.
+        # Test sample for various values of a, b, and c.
         for c in [0.5, 10.]:
             for convex in [False, True]:
-                ys = parametric.QuadraticDistribution(
-                    a, b, c, convex=convex,
-                ).sample(2_500)
+                dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
+                # without explicit value for size
+                y = dist.sample()
+                self.assertLess(a, y)
+                self.assertGreater(b, y)
+                # scalar
+                y = dist.sample(None)
+                self.assertLess(a, y)
+                self.assertGreater(b, y)
+                # 1D array
+                ys = dist.sample(100)
+                self.assertLess(a, np.min(ys))
+                self.assertGreater(b, np.max(ys))
+                # 2D array
+                ys = dist.sample((10, 10))
                 self.assertLess(a, np.min(ys))
                 self.assertGreater(b, np.max(ys))
         # Test when c = 1. and the samples should be uniformly distributed.
