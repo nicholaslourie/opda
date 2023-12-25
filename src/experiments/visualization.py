@@ -1,4 +1,4 @@
-"""Visualizations"""
+"""Visualizations."""
 
 import colorsys
 

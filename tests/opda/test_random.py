@@ -1,4 +1,4 @@
-"""Tests for opda.random"""
+"""Tests for opda.random."""
 
 import unittest
 

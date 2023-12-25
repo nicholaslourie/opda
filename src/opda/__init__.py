@@ -1,1 +1,1 @@
-"""Optimal Design Analysis (OPDA)"""
+"""Optimal Design Analysis (OPDA)."""

@@ -1,4 +1,4 @@
-"""Nonparametric distributions and tools for optimal design analysis"""
+"""Nonparametric distributions and tools for optimal design analysis."""
 
 import functools
 import multiprocessing

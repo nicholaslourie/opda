@@ -1,4 +1,4 @@
-"""Tests for experiments.simulation"""
+"""Tests for experiments.simulation."""
 
 import dataclasses
 import unittest

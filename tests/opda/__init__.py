@@ -1,1 +1,1 @@
-"""Tests for the opda package"""
+"""Tests for the opda package."""

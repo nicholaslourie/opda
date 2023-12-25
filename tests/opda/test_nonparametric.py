@@ -1,4 +1,4 @@
-"""Tests for opda.nonparametric"""
+"""Tests for opda.nonparametric."""
 
 import warnings
 
