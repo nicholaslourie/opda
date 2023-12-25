@@ -241,6 +241,15 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
         _, freqs = np.unique(dist.sample((500, 5)), return_counts=True)
         freqs = freqs / 2_500.
         self.assertTrue(np.allclose(freqs, [0.2] * 5, atol=0.05))
+        #   when output is scalar
+        #     size is left at its default value
+        ys = [-42., 1., 42., 100., 1_000.]
+        dist = nonparametric.EmpiricalDistribution(ys)
+        self.assertIn(dist.sample(), ys)
+        #     size=None
+        ys = [-42., 1., 42., 100., 1_000.]
+        dist = nonparametric.EmpiricalDistribution(ys)
+        self.assertIn(dist.sample(size=None), ys)
 
         # Test with weights.
         #   when len(ys) == 1
@@ -284,6 +293,17 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
         _, freqs = np.unique(dist.sample((500, 5)), return_counts=True)
         freqs = freqs / 2_500.
         self.assertTrue(np.allclose(freqs, ws, atol=0.05))
+        #   when output is scalar
+        #     size is left at its default value
+        ys = [-42., 1., 42., 100., 1_000.]
+        ws = [0.1, 0.2, 0.3, 0.15, 0.25]
+        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+        self.assertIn(dist.sample(), ys)
+        #     size=None
+        ys = [-42., 1., 42., 100., 1_000.]
+        ws = [0.1, 0.2, 0.3, 0.15, 0.25]
+        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+        self.assertIn(dist.sample(size=None), ys)
 
     def test_pmf(self):
         for a, b in [(-1e4, 1e4), (-np.inf, np.inf)]:
