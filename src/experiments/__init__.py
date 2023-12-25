@@ -1,1 +1,1 @@
-"""Code supporting experiments for OPDA"""
+"""Support for experiments and visualizations"""

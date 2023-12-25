@@ -1,4 +1,4 @@
-"""Parametric OPDA."""
+"""Parametric distributions and tools for optimal design analysis"""
 
 import warnings
 

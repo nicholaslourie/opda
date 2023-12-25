@@ -1,4 +1,4 @@
-"""Nonparametric OPDA."""
+"""Nonparametric distributions and tools for optimal design analysis"""
 
 import functools
 import multiprocessing
