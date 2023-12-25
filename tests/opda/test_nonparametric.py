@@ -408,10 +408,10 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
             ys = [-42., 1., 42., 100., 1_000.]
             for ws in [None, [0.1, 0.2, 0.3, 0.15, 0.25]]:
                 dist = nonparametric.EmpiricalDistribution(ys, ws=ws, a=a, b=b)
-                self.assertEqual(dist.pmf(a - 1e-10), np.array(0.))
-                self.assertEqual(dist.pmf(a - 10), np.array(0.))
-                self.assertEqual(dist.pmf(b + 1e-10), np.array(0.))
-                self.assertEqual(dist.pmf(b + 10), np.array(0.))
+                self.assertEqual(dist.pmf(a - 1e-10), 0.)
+                self.assertEqual(dist.pmf(a - 10), 0.)
+                self.assertEqual(dist.pmf(b + 1e-10), 0.)
+                self.assertEqual(dist.pmf(b + 10), 0.)
 
     def test_cdf(self):
         for a, b in [(-1e4, 1e4), (-np.inf, np.inf)]:

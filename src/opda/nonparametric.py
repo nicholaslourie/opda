@@ -391,7 +391,7 @@ class EmpiricalDistribution:
             self._ys[indices] == ys,
             self._ws[indices],
             0,
-        )
+        )[()]  # If the result is a 0d array, convert to scalar.
 
     def cdf(self, ys):
         r"""Return the cumulative probability at ``ys``.
