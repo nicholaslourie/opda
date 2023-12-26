@@ -147,10 +147,12 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                 dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
                 # without explicit value for size
                 y = dist.sample()
+                self.assertTrue(np.isscalar(y))
                 self.assertLess(a, y)
                 self.assertGreater(b, y)
                 # scalar
                 y = dist.sample(None)
+                self.assertTrue(np.isscalar(y))
                 self.assertLess(a, y)
                 self.assertGreater(b, y)
                 # 1D array
@@ -174,6 +176,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
             dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
             # scalar
             for n in range(6):
+                self.assertTrue(np.isscalar(dist.pdf(a + (n / 5.) * (b - a))))
                 # When c = 1., the distribution is uniform.
                 self.assertEqual(dist.pdf(a + (n / 5.) * (b - a)), 1.)
             # broadcasting
@@ -212,6 +215,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
             dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
             # scalar
             for n in range(6):
+                self.assertTrue(np.isscalar(dist.cdf(a + (n / 5.) * (b - a))))
                 # When c = 1., the distribution is uniform.
                 self.assertAlmostEqual(
                     dist.cdf(a + (n / 5.) * (b - a)),
@@ -252,6 +256,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
             dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
             # scalar
             for n in range(6):
+                self.assertTrue(np.isscalar(dist.ppf(n / 5.)))
                 # When c = 1., the distribution is uniform.
                 self.assertAlmostEqual(dist.ppf(n / 5.), a + (n / 5.) * (b - a))
             for _ in range(7):
@@ -303,6 +308,13 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                     # Test when n is integral.
                     #   scalar
                     for n in range(1, 6):
+                        self.assertTrue(np.isscalar(
+                            dist.quantile_tuning_curve(
+                                n,
+                                q=0.5,
+                                minimize=minimize,
+                            ),
+                        ))
                         self.assertAlmostEqual(
                             dist.quantile_tuning_curve(
                                 n,
@@ -365,6 +377,13 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                     # Test when n is non-integral.
                     #   scalar
                     for n in range(1, 6):
+                        self.assertTrue(np.isscalar(
+                            dist.quantile_tuning_curve(
+                                n/10.,
+                                q=0.5**(1/10),
+                                minimize=minimize,
+                            ),
+                        ))
                         self.assertAlmostEqual(
                             dist.quantile_tuning_curve(
                                 n/10.,
@@ -503,6 +522,12 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                     # Test when n is integral.
                     #   scalar
                     for n in range(1, 6):
+                        self.assertTrue(np.isscalar(
+                            dist.average_tuning_curve(
+                                n,
+                                minimize=minimize,
+                            ),
+                        ))
                         self.assertAlmostEqual(
                             dist.average_tuning_curve(
                                 n,
@@ -558,6 +583,12 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                     # Test when n is non-integral.
                     #   scalar
                     for n in range(1, 6):
+                        self.assertTrue(np.isscalar(
+                            dist.average_tuning_curve(
+                                n + (0.5 if expect_minimize else -0.5),
+                                minimize=minimize,
+                            ),
+                        ))
                         self.assertLess(
                             dist.average_tuning_curve(
                                 n + (0.5 if expect_minimize else -0.5),
