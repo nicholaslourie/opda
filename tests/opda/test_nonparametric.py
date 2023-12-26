@@ -1371,18 +1371,12 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                 #   Test ns > len(ys).
                 #     scalar
                 self.assertAlmostEqual(
-                    dist.average_tuning_curve(
-                        6,
-                        minimize=minimize,
-                    ),
+                    dist.average_tuning_curve(6, minimize=minimize),
                     curve[5],
                     delta=5.,
                 )
                 self.assertAlmostEqual(
-                    dist.average_tuning_curve(
-                        7,
-                        minimize=minimize,
-                    ),
+                    dist.average_tuning_curve(7, minimize=minimize),
                     curve[6],
                     delta=5.,
                 )
