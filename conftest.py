@@ -1,5 +1,6 @@
 """Test configuration."""
 
+import matplotlib as mpl
 import pytest
 
 
@@ -15,9 +16,12 @@ def pytest_addoption(parser):
 
 
 def pytest_configure(config):
+    # Document the level marker.
     config.addinivalue_line(
         "markers", "level(level): Mark the test to only be run at this level.",
     )
+    # Use a non-interactive backend for matplotlib in doctests.
+    mpl.use("Agg")
 
 
 def pytest_runtest_setup(item):

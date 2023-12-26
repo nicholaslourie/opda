@@ -229,7 +229,6 @@ confidence bands:
 
 .. code-block:: python
 
-   >>> import matplotlib as mpl; mpl.use('AGG');
    >>> from matplotlib import pyplot as plt
    >>>
    >>> ns = np.linspace(1, 12, num=1_000)
