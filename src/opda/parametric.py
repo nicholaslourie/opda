@@ -150,7 +150,11 @@ class QuadraticDistribution:
             else:  # concave
                 ps = (c / (b - a)) * ((b - ys) / (b - a))**(c - 1)
 
-        ps = np.where((ys < a) | (ys > b), 0., ps)
+        ps = np.where(
+            (ys < a) | (ys > b),
+            0.,
+            ps,
+        )[()]  # If the result is a 0d array, convert to scalar.
 
         return ps
 

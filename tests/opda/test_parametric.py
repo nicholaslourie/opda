@@ -175,7 +175,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
             # scalar
             for n in range(6):
                 # When c = 1., the distribution is uniform.
-                self.assertEqual(dist.pdf(a + (n / 5.) * (b - a)), np.array(1.))
+                self.assertEqual(dist.pdf(a + (n / 5.) * (b - a)), 1.)
             # broadcasting
             for _ in range(7):
                 # 1D array
@@ -201,10 +201,10 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
         for a, b, c in [(0., 1., 0.5), (0., 1., 1.)]:
             for convex in [False, True]:
                 dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
-                self.assertEqual(dist.pdf(a - 1e-10), np.array(0.))
-                self.assertEqual(dist.pdf(a - 10), np.array(0.))
-                self.assertEqual(dist.pdf(b + 1e-10), np.array(0.))
-                self.assertEqual(dist.pdf(b + 10), np.array(0.))
+                self.assertEqual(dist.pdf(a - 1e-10), 0.)
+                self.assertEqual(dist.pdf(a - 10), 0.)
+                self.assertEqual(dist.pdf(b + 1e-10), 0.)
+                self.assertEqual(dist.pdf(b + 10), 0.)
 
     def test_cdf(self):
         a, b, c = 0., 1., 1.
