@@ -51,8 +51,9 @@ tests = ["pytest == 7.4.3"]
 nbs = ["notebook == 7.0.6"]
 
 [project.urls]
-Homepage = "https://github.com/nalourie/opda"
+Documentation = "https://nalourie.github.io/opda"
 Issues = "https://github.com/nalourie/opda/issues"
+Source = "https://github.com/nalourie/opda"
 
 
 [tool.setuptools]
