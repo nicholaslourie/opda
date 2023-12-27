@@ -46,6 +46,12 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
+docs = [
+  "furo == 2023.9.10",
+  "numpydoc == 1.6.0",
+  "sphinx == 7.1.2",
+  "tomli; python_version<'3.11'",  # backwards compatibility
+]
 lint = ["ruff == 0.1.6"]
 tests = ["pytest == 7.4.3"]
 nbs = ["notebook == 7.0.6"]
@@ -142,6 +148,9 @@ extend-select = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+"docs/*" = [
+  "INP001",   # File {filename} is part of an implicit namespace package.
+]
 "**/*.ipynb" = [
   "E501",     # Line too long
   "T201",     # `print` found
