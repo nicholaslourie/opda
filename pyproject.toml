@@ -7,9 +7,7 @@ build-backend = "setuptools.build_meta"
 name = "opda"
 version = "0.2.0"
 authors = [{ name = "Nicholas Lourie", email = "dev@nicholaslourie.com" }]
-description = """\
-  A framework for the design and analysis of deep learning experiments.\
-  """
+description = "Design and analyze optimal deep learning models."
 readme = "README.rst"
 license = {text = "Apache-2.0"}
 requires-python = ">= 3.8"
