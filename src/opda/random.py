@@ -70,7 +70,7 @@ so the script's run can be reproduced in the event of a failure:
 
    seed = np.random.SeedSequence().entropy
    opda.random.set_seed(seed)
-   logger.info(f'Random seed for opda set to {seed}.')
+   logger.info(f"Random seed for opda set to {seed}.")
 
    # ... script logic ...
 
