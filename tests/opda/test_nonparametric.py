@@ -241,6 +241,19 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
         _, freqs = np.unique(dist.sample((500, 5)), return_counts=True)
         freqs = freqs / 2_500.
         self.assertTrue(np.allclose(freqs, [0.2] * 5, atol=0.05))
+        #   when output is scalar
+        #     size is left at its default value
+        ys = [-42., 1., 42., 100., 1_000.]
+        dist = nonparametric.EmpiricalDistribution(ys)
+        y = dist.sample()
+        self.assertTrue(np.isscalar(y))
+        self.assertIn(y, ys)
+        #     size=None
+        ys = [-42., 1., 42., 100., 1_000.]
+        dist = nonparametric.EmpiricalDistribution(ys)
+        y = dist.sample(size=None)
+        self.assertTrue(np.isscalar(y))
+        self.assertIn(y, ys)
 
         # Test with weights.
         #   when len(ys) == 1
@@ -284,6 +297,21 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
         _, freqs = np.unique(dist.sample((500, 5)), return_counts=True)
         freqs = freqs / 2_500.
         self.assertTrue(np.allclose(freqs, ws, atol=0.05))
+        #   when output is scalar
+        #     size is left at its default value
+        ys = [-42., 1., 42., 100., 1_000.]
+        ws = [0.1, 0.2, 0.3, 0.15, 0.25]
+        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+        y = dist.sample()
+        self.assertTrue(np.isscalar(y))
+        self.assertIn(y, ys)
+        #     size=None
+        ys = [-42., 1., 42., 100., 1_000.]
+        ws = [0.1, 0.2, 0.3, 0.15, 0.25]
+        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+        y = dist.sample(size=None)
+        self.assertTrue(np.isscalar(y))
+        self.assertIn(y, ys)
 
     def test_pmf(self):
         for a, b in [(-1e4, 1e4), (-np.inf, np.inf)]:
@@ -329,6 +357,11 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                 dist.pmf([[0., 1.], [42., -1.]]).tolist(),
                 [[0., 0.2], [0.2, 0.]],
             )
+            #   when output is scalar
+            ys = [-42., 1., 42., 100., 1_000.]
+            dist = nonparametric.EmpiricalDistribution(ys, a=a, b=b)
+            self.assertTrue(np.isscalar(dist.pmf(1.)))
+            self.assertEqual(dist.pmf(1.), 0.2)
 
             # Test with weights.
             #   when len(ys) == 1
@@ -383,15 +416,21 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                 dist.pmf([[0., 1.], [42., -1.]]).tolist(),
                 [[0., 0.2], [0.3, 0.]],
             )
+            #   when output is scalar
+            ys = [-42., 1., 42., 100., 1_000.]
+            ws = [0.1, 0.2, 0.3, 0.15, 0.25]
+            dist = nonparametric.EmpiricalDistribution(ys, ws=ws, a=a, b=b)
+            self.assertTrue(np.isscalar(dist.pmf(1.)))
+            self.assertEqual(dist.pmf(1.), 0.2)
 
             # Test outside of the distribution's support.
             ys = [-42., 1., 42., 100., 1_000.]
             for ws in [None, [0.1, 0.2, 0.3, 0.15, 0.25]]:
                 dist = nonparametric.EmpiricalDistribution(ys, ws=ws, a=a, b=b)
-                self.assertEqual(dist.pmf(a - 1e-10), np.array(0.))
-                self.assertEqual(dist.pmf(a - 10), np.array(0.))
-                self.assertEqual(dist.pmf(b + 1e-10), np.array(0.))
-                self.assertEqual(dist.pmf(b + 10), np.array(0.))
+                self.assertEqual(dist.pmf(a - 1e-10), 0.)
+                self.assertEqual(dist.pmf(a - 10), 0.)
+                self.assertEqual(dist.pmf(b + 1e-10), 0.)
+                self.assertEqual(dist.pmf(b + 10), 0.)
 
     def test_cdf(self):
         for a, b in [(-1e4, 1e4), (-np.inf, np.inf)]:
@@ -443,6 +482,11 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                 dist.cdf([[0., 1.], [42., -1.]]),
                 [[0.2, 0.4], [0.6, 0.2]],
             ))
+            #   when output is scalar
+            ys = [-42., 1., 42., 100., 1_000.]
+            dist = nonparametric.EmpiricalDistribution(ys, a=a, b=b)
+            self.assertTrue(np.isscalar(dist.cdf(1.)))
+            self.assertAlmostEqual(dist.cdf(1.), 0.4)
 
             # Test without weights.
             #   when len(ys) == 1
@@ -503,6 +547,12 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                 dist.cdf([[0., 1.], [42., -1.]]),
                 [[0.1, 0.3], [0.6, 0.1]],
             ))
+            #   when output is scalar
+            ys = [-42., 1., 42., 100., 1_000.]
+            ws = [0.1, 0.2, 0.3, 0.15, 0.25]
+            dist = nonparametric.EmpiricalDistribution(ys, ws=ws, a=a, b=b)
+            self.assertTrue(np.isscalar(dist.cdf(1.)))
+            self.assertAlmostEqual(dist.cdf(1.), 0.3)
 
             # Test outside of the distribution's support.
             ys = [-42., 1., 42., 100., 1_000.]
@@ -561,6 +611,11 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
             dist.ppf([[0.2, 0.4], [0.6, 0.2]]).tolist(),
             [[-42, 1.], [42., -42.]],
         )
+        #   when output is scalar
+        ys = [-42., 1., 42., 100., 1_000.]
+        dist = nonparametric.EmpiricalDistribution(ys)
+        self.assertTrue(np.isscalar(dist.ppf(0.4)))
+        self.assertEqual(dist.ppf(0.4), 1.)
 
         # Test with weights.
         #   when len(ys) == 1
@@ -620,6 +675,12 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
             dist.ppf([[0.2, 0.4], [0.6, 0.1]]).tolist(),
             [[1., 42.], [42., -42.]],
         )
+        #   when output is scalar
+        ys = [-42., 1., 42., 100., 1_000.]
+        ws = [0.1, 0.2, 0.3, 0.15, 0.25]
+        dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
+        self.assertTrue(np.isscalar(dist.ppf(0.4)))
+        self.assertEqual(dist.ppf(0.4), 42.)
 
     def test_quantile_tuning_curve(self):
         for use_weights in [False, True]:
@@ -709,6 +770,13 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                     )
                     #   Test 0 < ns <= len(ys).
                     #     scalar
+                    self.assertTrue(np.isscalar(
+                        dist.quantile_tuning_curve(
+                            1,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                    ))
                     self.assertAlmostEqual(
                         dist.quantile_tuning_curve(
                             1,
@@ -718,6 +786,13 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                         curve[0],
                         delta=25.,
                     )
+                    self.assertTrue(np.isscalar(
+                        dist.quantile_tuning_curve(
+                            3,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                    ))
                     self.assertAlmostEqual(
                         dist.quantile_tuning_curve(
                             3,
@@ -727,6 +802,13 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                         curve[2],
                         delta=25.,
                     )
+                    self.assertTrue(np.isscalar(
+                        dist.quantile_tuning_curve(
+                            5,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                    ))
                     self.assertAlmostEqual(
                         dist.quantile_tuning_curve(
                             5,
@@ -773,6 +855,13 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                     ))
                     #   Test ns > len(ys).
                     #     scalar
+                    self.assertTrue(np.isscalar(
+                        dist.quantile_tuning_curve(
+                            6,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                    ))
                     self.assertAlmostEqual(
                         dist.quantile_tuning_curve(
                             6,
@@ -783,6 +872,13 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                         [5],
                         delta=25.,
                     )
+                    self.assertTrue(np.isscalar(
+                        dist.quantile_tuning_curve(
+                            7,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                    ))
                     self.assertAlmostEqual(
                         dist.quantile_tuning_curve(
                             7,
@@ -902,6 +998,13 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                     )
                     #   Test 0 < ns <= len(ys).
                     #     scalar
+                    self.assertTrue(np.isscalar(
+                        dist.quantile_tuning_curve(
+                            1,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                    ))
                     self.assertAlmostEqual(
                         dist.quantile_tuning_curve(
                             1,
@@ -911,6 +1014,13 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                         curve[0],
                         delta=25.,
                     )
+                    self.assertTrue(np.isscalar(
+                        dist.quantile_tuning_curve(
+                            3,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                    ))
                     self.assertAlmostEqual(
                         dist.quantile_tuning_curve(
                             3,
@@ -920,6 +1030,13 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                         curve[2],
                         delta=25.,
                     )
+                    self.assertTrue(np.isscalar(
+                        dist.quantile_tuning_curve(
+                            5,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                    ))
                     self.assertAlmostEqual(
                         dist.quantile_tuning_curve(
                             5,
@@ -966,6 +1083,13 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                     ))
                     #   Test ns > len(ys).
                     #     scalar
+                    self.assertTrue(np.isscalar(
+                        dist.quantile_tuning_curve(
+                            6,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                    ))
                     self.assertAlmostEqual(
                         dist.quantile_tuning_curve(
                             6,
@@ -975,6 +1099,13 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                         curve[5],
                         delta=25.,
                     )
+                    self.assertTrue(np.isscalar(
+                        dist.quantile_tuning_curve(
+                            7,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                    ))
                     self.assertAlmostEqual(
                         dist.quantile_tuning_curve(
                             7,
@@ -1021,6 +1152,13 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                     dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
                     #   scalar
                     #     0 < ns <= len(ys)
+                    self.assertTrue(np.isscalar(
+                        dist.quantile_tuning_curve(
+                            0.5,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                    ))
                     self.assertAlmostEqual(
                         dist.quantile_tuning_curve(
                             0.5,
@@ -1036,6 +1174,13 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                         ),
                     )
                     #     ns > len(ys)
+                    self.assertTrue(np.isscalar(
+                        dist.quantile_tuning_curve(
+                            10.5,
+                            q=quantile,
+                            minimize=minimize,
+                        ),
+                    ))
                     self.assertAlmostEqual(
                         dist.quantile_tuning_curve(
                             10.5,
@@ -1164,16 +1309,25 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                 )
                 #   Test 0 < ns <= len(ys).
                 #     scalar
+                self.assertTrue(np.isscalar(
+                    dist.average_tuning_curve(1, minimize=minimize),
+                ))
                 self.assertAlmostEqual(
                     dist.average_tuning_curve(1, minimize=minimize),
                     curve[0],
                     delta=5.,
                 )
+                self.assertTrue(np.isscalar(
+                    dist.average_tuning_curve(3, minimize=minimize),
+                ))
                 self.assertAlmostEqual(
                     dist.average_tuning_curve(3, minimize=minimize),
                     curve[2],
                     delta=5.,
                 )
+                self.assertTrue(np.isscalar(
+                    dist.average_tuning_curve(5, minimize=minimize),
+                ))
                 self.assertAlmostEqual(
                     dist.average_tuning_curve(5, minimize=minimize),
                     curve[4],
@@ -1213,11 +1367,17 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                 ))
                 #   Test ns > len(ys).
                 #     scalar
+                self.assertTrue(np.isscalar(
+                    dist.average_tuning_curve(6, minimize=minimize),
+                ))
                 self.assertAlmostEqual(
                     dist.average_tuning_curve(6, minimize=minimize),
                     curve[5],
                     delta=5.,
                 )
+                self.assertTrue(np.isscalar(
+                    dist.average_tuning_curve(7, minimize=minimize),
+                ))
                 self.assertAlmostEqual(
                     dist.average_tuning_curve(7, minimize=minimize),
                     curve[6],
@@ -1321,16 +1481,25 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                 )
                 #   Test 0 < ns <= len(ys).
                 #     scalar
+                self.assertTrue(np.isscalar(
+                    dist.average_tuning_curve(1, minimize=minimize),
+                ))
                 self.assertAlmostEqual(
                     dist.average_tuning_curve(1, minimize=minimize),
                     curve[0],
                     delta=5.,
                 )
+                self.assertTrue(np.isscalar(
+                    dist.average_tuning_curve(3, minimize=minimize),
+                ))
                 self.assertAlmostEqual(
                     dist.average_tuning_curve(3, minimize=minimize),
                     curve[2],
                     delta=5.,
                 )
+                self.assertTrue(np.isscalar(
+                    dist.average_tuning_curve(5, minimize=minimize),
+                ))
                 self.assertAlmostEqual(
                     dist.average_tuning_curve(5, minimize=minimize),
                     curve[4],
@@ -1370,19 +1539,19 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                 ))
                 #   Test ns > len(ys).
                 #     scalar
+                self.assertTrue(np.isscalar(
+                    dist.average_tuning_curve(6, minimize=minimize),
+                ))
                 self.assertAlmostEqual(
-                    dist.average_tuning_curve(
-                        6,
-                        minimize=minimize,
-                    ),
+                    dist.average_tuning_curve(6, minimize=minimize),
                     curve[5],
                     delta=5.,
                 )
+                self.assertTrue(np.isscalar(
+                    dist.average_tuning_curve(7, minimize=minimize),
+                ))
                 self.assertAlmostEqual(
-                    dist.average_tuning_curve(
-                        7,
-                        minimize=minimize,
-                    ),
+                    dist.average_tuning_curve(7, minimize=minimize),
                     curve[6],
                     delta=5.,
                 )
@@ -1452,6 +1621,9 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                 )
                 #   scalar
                 for n, t in zip(ns, ts):
+                    self.assertTrue(np.isscalar(
+                        dist.average_tuning_curve(n, minimize=minimize),
+                    ))
                     self.assertAlmostEqual(
                         dist.average_tuning_curve(n, minimize=minimize),
                         t,
@@ -1519,11 +1691,20 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
             dist = nonparametric.EmpiricalDistribution(ys)
             #   Test 0 < ns <= len(ys).
             #     scalar
+            self.assertTrue(np.isscalar(
+                dist.naive_tuning_curve(1, minimize=minimize),
+            ))
             self.assertEqual(dist.naive_tuning_curve(1, minimize=minimize), 0.)
+            self.assertTrue(np.isscalar(
+                dist.naive_tuning_curve(3, minimize=minimize),
+            ))
             self.assertEqual(
                 dist.naive_tuning_curve(3, minimize=minimize),
                 -25. if minimize else 50.,
             )
+            self.assertTrue(np.isscalar(
+                dist.naive_tuning_curve(5, minimize=minimize),
+            ))
             self.assertEqual(
                 dist.naive_tuning_curve(5, minimize=minimize),
                 -25. if minimize else 100.,
@@ -1568,10 +1749,16 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
             )
             #   Test ns > len(ys).
             #     scalar
+            self.assertTrue(np.isscalar(
+                dist.naive_tuning_curve(6, minimize=minimize),
+            ))
             self.assertEqual(
                 dist.naive_tuning_curve(6, minimize=minimize),
                 -25. if minimize else 100.,
             )
+            self.assertTrue(np.isscalar(
+                dist.naive_tuning_curve(10, minimize=minimize),
+            ))
             self.assertEqual(
                 dist.naive_tuning_curve(10, minimize=minimize),
                 -25. if minimize else 100.,
@@ -1643,16 +1830,31 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
             dist = nonparametric.EmpiricalDistribution(ys)
             #   Test 0 < ns <= len(ys).
             #     scalar
+            self.assertTrue(np.isscalar(
+                dist.naive_tuning_curve(1, minimize=minimize),
+            ))
             self.assertEqual(dist.naive_tuning_curve(1, minimize=minimize), 0.)
+            self.assertTrue(np.isscalar(
+                dist.naive_tuning_curve(2, minimize=minimize),
+            ))
             self.assertEqual(dist.naive_tuning_curve(2, minimize=minimize), 0.)
+            self.assertTrue(np.isscalar(
+                dist.naive_tuning_curve(3, minimize=minimize),
+            ))
             self.assertEqual(
                 dist.naive_tuning_curve(3, minimize=minimize),
                 0. if minimize else 50.,
             )
+            self.assertTrue(np.isscalar(
+                dist.naive_tuning_curve(4, minimize=minimize),
+            ))
             self.assertEqual(
                 dist.naive_tuning_curve(4, minimize=minimize),
                 -25. if minimize else 50.,
             )
+            self.assertTrue(np.isscalar(
+                dist.naive_tuning_curve(5, minimize=minimize),
+            ))
             self.assertEqual(
                 dist.naive_tuning_curve(5, minimize=minimize),
                 -25. if minimize else 100.,
@@ -1697,10 +1899,16 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
             )
             #   Test ns > len(ys).
             #     scalar
+            self.assertTrue(np.isscalar(
+                dist.naive_tuning_curve(6, minimize=minimize),
+            ))
             self.assertEqual(
                 dist.naive_tuning_curve(6, minimize=minimize),
                 -25. if minimize else 100.,
             )
+            self.assertTrue(np.isscalar(
+                dist.naive_tuning_curve(10, minimize=minimize),
+            ))
             self.assertEqual(
                 dist.naive_tuning_curve(10, minimize=minimize),
                 -25. if minimize else 100.,
@@ -1792,16 +2000,25 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
             )
             #   Test 0 < ns <= len(ys).
             #     scalar
+            self.assertTrue(np.isscalar(
+                dist.v_tuning_curve(1, minimize=minimize),
+            ))
             self.assertAlmostEqual(
                 dist.v_tuning_curve(1, minimize=minimize),
                 curve[0],
                 delta=5.,
             )
+            self.assertTrue(np.isscalar(
+                dist.v_tuning_curve(3, minimize=minimize),
+            ))
             self.assertAlmostEqual(
                 dist.v_tuning_curve(3, minimize=minimize),
                 curve[2],
                 delta=5.,
             )
+            self.assertTrue(np.isscalar(
+                dist.v_tuning_curve(5, minimize=minimize),
+            ))
             self.assertAlmostEqual(
                 dist.v_tuning_curve(5, minimize=minimize),
                 curve[4],
@@ -1835,11 +2052,17 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
             ))
             #   Test ns > len(ys).
             #     scalar
+            self.assertTrue(np.isscalar(
+                dist.v_tuning_curve(6, minimize=minimize),
+            ))
             self.assertAlmostEqual(
                 dist.v_tuning_curve(6, minimize=minimize),
                 curve[5],
                 delta=5.,
             )
+            self.assertTrue(np.isscalar(
+                dist.v_tuning_curve(7, minimize=minimize),
+            ))
             self.assertAlmostEqual(
                 dist.v_tuning_curve(7, minimize=minimize),
                 curve[6],
@@ -1916,16 +2139,25 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
             )
             #   Test 0 < ns <= len(ys).
             #     scalar
+            self.assertTrue(np.isscalar(
+                dist.v_tuning_curve(1, minimize=minimize),
+            ))
             self.assertAlmostEqual(
                 dist.v_tuning_curve(1, minimize=minimize),
                 curve[0],
                 delta=5.,
             )
+            self.assertTrue(np.isscalar(
+                dist.v_tuning_curve(3, minimize=minimize),
+            ))
             self.assertAlmostEqual(
                 dist.v_tuning_curve(3, minimize=minimize),
                 curve[2],
                 delta=5.,
             )
+            self.assertTrue(np.isscalar(
+                dist.v_tuning_curve(5, minimize=minimize),
+            ))
             self.assertAlmostEqual(
                 dist.v_tuning_curve(5, minimize=minimize),
                 curve[4],
@@ -1959,11 +2191,17 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
             ))
             #   Test ns > len(ys).
             #     scalar
+            self.assertTrue(np.isscalar(
+                dist.v_tuning_curve(6, minimize=minimize),
+            ))
             self.assertAlmostEqual(
                 dist.v_tuning_curve(6, minimize=minimize),
                 curve[5],
                 delta=5.,
             )
+            self.assertTrue(np.isscalar(
+                dist.v_tuning_curve(7, minimize=minimize),
+            ))
             self.assertAlmostEqual(
                 dist.v_tuning_curve(7, minimize=minimize),
                 curve[6],
@@ -2056,16 +2294,25 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
             )
             #   Test 0 < ns <= len(ys).
             #     scalar
+            self.assertTrue(np.isscalar(
+                dist.u_tuning_curve(1, minimize=minimize),
+            ))
             self.assertAlmostEqual(
                 dist.u_tuning_curve(1, minimize=minimize),
                 curve[0],
                 delta=5.,
             )
+            self.assertTrue(np.isscalar(
+                dist.u_tuning_curve(3, minimize=minimize),
+            ))
             self.assertAlmostEqual(
                 dist.u_tuning_curve(3, minimize=minimize),
                 curve[2],
                 delta=5.,
             )
+            self.assertTrue(np.isscalar(
+                dist.u_tuning_curve(5, minimize=minimize),
+            ))
             self.assertAlmostEqual(
                 dist.u_tuning_curve(5, minimize=minimize),
                 curve[4],
@@ -2099,11 +2346,17 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
             ))
             #   Test ns > len(ys).
             #     scalar
+            self.assertTrue(np.isscalar(
+                dist.u_tuning_curve(6, minimize=minimize),
+            ))
             self.assertAlmostEqual(
                 dist.u_tuning_curve(6, minimize=minimize),
                 curve[4],
                 delta=5.,
             )
+            self.assertTrue(np.isscalar(
+                dist.u_tuning_curve(7, minimize=minimize),
+            ))
             self.assertAlmostEqual(
                 dist.u_tuning_curve(7, minimize=minimize),
                 curve[4],
@@ -2188,16 +2441,25 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
             )
             #   Test 0 < ns <= len(ys).
             #     scalar
+            self.assertTrue(np.isscalar(
+                dist.u_tuning_curve(1, minimize=minimize),
+            ))
             self.assertAlmostEqual(
                 dist.u_tuning_curve(1, minimize=minimize),
                 curve[0],
                 delta=5.,
             )
+            self.assertTrue(np.isscalar(
+                dist.u_tuning_curve(3, minimize=minimize),
+            ))
             self.assertAlmostEqual(
                 dist.u_tuning_curve(3, minimize=minimize),
                 curve[2],
                 delta=5.,
             )
+            self.assertTrue(np.isscalar(
+                dist.u_tuning_curve(5, minimize=minimize),
+            ))
             self.assertAlmostEqual(
                 dist.u_tuning_curve(5, minimize=minimize),
                 curve[4],
@@ -2231,11 +2493,17 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
             ))
             #   Test ns > len(ys).
             #     scalar
+            self.assertTrue(np.isscalar(
+                dist.u_tuning_curve(6, minimize=minimize),
+            ))
             self.assertAlmostEqual(
                 dist.u_tuning_curve(6, minimize=minimize),
                 curve[4],
                 delta=5.,
             )
+            self.assertTrue(np.isscalar(
+                dist.u_tuning_curve(7, minimize=minimize),
+            ))
             self.assertAlmostEqual(
                 dist.u_tuning_curve(7, minimize=minimize),
                 curve[4],

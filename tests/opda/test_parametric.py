@@ -141,11 +141,26 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
 
     def test_sample(self):
         a, b = 0., 1.
+        # Test sample for various values of a, b, and c.
         for c in [0.5, 10.]:
             for convex in [False, True]:
-                ys = parametric.QuadraticDistribution(
-                    a, b, c, convex=convex,
-                ).sample(2_500)
+                dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
+                # without explicit value for size
+                y = dist.sample()
+                self.assertTrue(np.isscalar(y))
+                self.assertLess(a, y)
+                self.assertGreater(b, y)
+                # scalar
+                y = dist.sample(None)
+                self.assertTrue(np.isscalar(y))
+                self.assertLess(a, y)
+                self.assertGreater(b, y)
+                # 1D array
+                ys = dist.sample(100)
+                self.assertLess(a, np.min(ys))
+                self.assertGreater(b, np.max(ys))
+                # 2D array
+                ys = dist.sample((10, 10))
                 self.assertLess(a, np.min(ys))
                 self.assertGreater(b, np.max(ys))
         # Test when c = 1. and the samples should be uniformly distributed.
@@ -159,22 +174,26 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
         a, b, c = 0., 1., 1.
         for convex in [False, True]:
             dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
-            # not broadcasting
+            # scalar
             for n in range(6):
+                self.assertTrue(np.isscalar(dist.pdf(a + (n / 5.) * (b - a))))
                 # When c = 1., the distribution is uniform.
-                self.assertEqual(dist.pdf(a + (n / 5.) * (b - a)), np.array(1.))
+                self.assertEqual(dist.pdf(a + (n / 5.) * (b - a)), 1.)
             # broadcasting
             for _ in range(7):
+                # 1D array
                 us = self.generator.uniform(0, 1, size=5)
                 self.assertEqual(
                     dist.pdf(a + us * (b - a)).tolist(),
                     np.ones_like(us).tolist(),
                 )
+                # 2D array
                 us = self.generator.uniform(0, 1, size=(5, 3))
                 self.assertEqual(
                     dist.pdf(a + us * (b - a)).tolist(),
                     np.ones_like(us).tolist(),
                 )
+                # 3D array
                 us = self.generator.uniform(0, 1, size=(5, 3, 2))
                 self.assertEqual(
                     dist.pdf(a + us * (b - a)).tolist(),
@@ -185,34 +204,37 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
         for a, b, c in [(0., 1., 0.5), (0., 1., 1.)]:
             for convex in [False, True]:
                 dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
-                self.assertEqual(dist.pdf(a - 1e-10), np.array(0.))
-                self.assertEqual(dist.pdf(a - 10), np.array(0.))
-                self.assertEqual(dist.pdf(b + 1e-10), np.array(0.))
-                self.assertEqual(dist.pdf(b + 10), np.array(0.))
+                self.assertEqual(dist.pdf(a - 1e-10), 0.)
+                self.assertEqual(dist.pdf(a - 10), 0.)
+                self.assertEqual(dist.pdf(b + 1e-10), 0.)
+                self.assertEqual(dist.pdf(b + 10), 0.)
 
     def test_cdf(self):
         a, b, c = 0., 1., 1.
         for convex in [False, True]:
             dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
-            # not broadcasting
+            # scalar
             for n in range(6):
+                self.assertTrue(np.isscalar(dist.cdf(a + (n / 5.) * (b - a))))
                 # When c = 1., the distribution is uniform.
                 self.assertAlmostEqual(
                     dist.cdf(a + (n / 5.) * (b - a)),
-                    np.array(n / 5.),
+                    n / 5.,
                 )
-            # broadcasting
             for _ in range(7):
+                # 1D array
                 us = self.generator.uniform(0, 1, size=5)
                 self.assertEqual(
                     dist.cdf(a + us * (b - a)).tolist(),
                     us.tolist(),
                 )
+                # 2D array
                 us = self.generator.uniform(0, 1, size=(5, 3))
                 self.assertEqual(
                     dist.cdf(a + us * (b - a)).tolist(),
                     us.tolist(),
                 )
+                # 3D array
                 us = self.generator.uniform(0, 1, size=(5, 3, 2))
                 self.assertEqual(
                     dist.cdf(a + us * (b - a)).tolist(),
@@ -232,22 +254,25 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
         a, b, c = 0., 1., 1.
         for convex in [False, True]:
             dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
-            # not broadcasting
+            # scalar
             for n in range(6):
+                self.assertTrue(np.isscalar(dist.ppf(n / 5.)))
                 # When c = 1., the distribution is uniform.
                 self.assertAlmostEqual(dist.ppf(n / 5.), a + (n / 5.) * (b - a))
-            # broadcasting
             for _ in range(7):
+                # 1D array
                 us = self.generator.uniform(0, 1, size=5)
                 self.assertEqual(
                     dist.ppf(us).tolist(),
                     (a + us * (b - a)).tolist(),
                 )
+                # 2D array
                 us = self.generator.uniform(0, 1, size=(5, 3))
                 self.assertEqual(
                     dist.ppf(us).tolist(),
                     (a + us * (b - a)).tolist(),
                 )
+                # 3D array
                 us = self.generator.uniform(0, 1, size=(5, 3, 2))
                 self.assertEqual(
                     dist.ppf(us).tolist(),
@@ -283,6 +308,13 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                     # Test when n is integral.
                     #   scalar
                     for n in range(1, 6):
+                        self.assertTrue(np.isscalar(
+                            dist.quantile_tuning_curve(
+                                n,
+                                q=0.5,
+                                minimize=minimize,
+                            ),
+                        ))
                         self.assertAlmostEqual(
                             dist.quantile_tuning_curve(
                                 n,
@@ -345,6 +377,13 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                     # Test when n is non-integral.
                     #   scalar
                     for n in range(1, 6):
+                        self.assertTrue(np.isscalar(
+                            dist.quantile_tuning_curve(
+                                n/10.,
+                                q=0.5**(1/10),
+                                minimize=minimize,
+                            ),
+                        ))
                         self.assertAlmostEqual(
                             dist.quantile_tuning_curve(
                                 n/10.,
@@ -483,6 +522,12 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                     # Test when n is integral.
                     #   scalar
                     for n in range(1, 6):
+                        self.assertTrue(np.isscalar(
+                            dist.average_tuning_curve(
+                                n,
+                                minimize=minimize,
+                            ),
+                        ))
                         self.assertAlmostEqual(
                             dist.average_tuning_curve(
                                 n,
@@ -538,6 +583,12 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                     # Test when n is non-integral.
                     #   scalar
                     for n in range(1, 6):
+                        self.assertTrue(np.isscalar(
+                            dist.average_tuning_curve(
+                                n + (0.5 if expect_minimize else -0.5),
+                                minimize=minimize,
+                            ),
+                        ))
                         self.assertLess(
                             dist.average_tuning_curve(
                                 n + (0.5 if expect_minimize else -0.5),
