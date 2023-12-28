@@ -750,7 +750,7 @@ class EmpiricalDistribution:
         Notes
         -----
         There are four built-in methods for generating confidence bands:
-        dkw, ks, ld_equal_tailed, and ld_highest_density. All three
+        dkw, ks, ld_equal_tailed, and ld_highest_density. All four
         methods provide simultaneous confidence bands.
 
         The dkw method uses the Dvoretzky-Kiefer-Wolfowitz inequality
