@@ -215,7 +215,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                 # When c = 1., the distribution is uniform.
                 self.assertAlmostEqual(
                     dist.cdf(a + (n / 5.) * (b - a)),
-                    np.array(n / 5.),
+                    n / 5.,
                 )
             for _ in range(7):
                 # 1D array
