@@ -55,10 +55,9 @@ search. Thus, tuning curves capture the cost-benefit trade-off offered
 by tuning the model's hyperparameters.
 
 We can compute tuning curves using the
-:py:class:`~opda.nonparametric.EmpiricalDistribution`
-class. Beforehand, run several rounds of random search, then
-instantiate :py:class:`~opda.nonparametric.EmpiricalDistribution` with
-the results:
+``opda.nonparametric.EmpiricalDistribution``  class. Beforehand, run
+several rounds of random search, then instantiate
+``EmpiricalDistribution`` with the results:
 
 .. code-block:: python
 
