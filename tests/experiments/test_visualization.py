@@ -1,4 +1,4 @@
-"""Tests for experiments.visualization"""
+"""Tests for experiments.visualization."""
 
 import unittest
 

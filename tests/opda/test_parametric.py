@@ -1,4 +1,4 @@
-"""Tests for opda.parametric"""
+"""Tests for opda.parametric."""
 
 import numpy as np
 

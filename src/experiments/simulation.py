@@ -1,4 +1,4 @@
-"""Simulations of random search"""
+"""Simulations of random search."""
 
 import dataclasses
 import typing

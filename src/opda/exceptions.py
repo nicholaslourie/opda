@@ -1,4 +1,4 @@
-"""Exceptions"""
+"""Exceptions."""
 
 
 class OptimizationError(Exception):

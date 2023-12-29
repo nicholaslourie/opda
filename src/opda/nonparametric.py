@@ -1,4 +1,4 @@
-"""Nonparametric OPDA."""
+"""Nonparametric distributions and tools for optimal design analysis."""
 
 import functools
 import multiprocessing
@@ -174,10 +174,10 @@ class EmpiricalDistribution:
 
     Notes
     -----
-    ``EmpiricalDistribution`` provides confidence bands for the CDF
-    which can then be translated into confidence bands for the tuning
-    curve. See `Examples`_ for how to accomplish this task or [1]_ for
-    more background.
+    :py:class:`EmpiricalDistribution` provides confidence bands for the
+    CDF which can then be translated into confidence bands for the
+    tuning curve. See the examples section for how to accomplish this
+    task or [1]_ for more background.
 
     References
     ----------
@@ -402,7 +402,6 @@ class EmpiricalDistribution:
         .. math::
 
            F(y) = \mathbb{P}(Y \leq y)
-
 
         Parameters
         ----------
@@ -706,9 +705,10 @@ class EmpiricalDistribution:
     ):
         """Return confidence bands for the CDF.
 
-        Return three instances of ``EmpiricalDistribution``, offering
-        a lower confidence band, point estimate, and upper confidence
-        band for the CDF of the distribution that generated ``ys``.
+        Return three instances of :py:class:`EmpiricalDistribution`,
+        offering a lower confidence band, point estimate, and upper
+        confidence band for the CDF of the distribution that generated
+        ``ys``.
 
         The properties of the CDF bands depend on the method used to
         construct them, as set by the ``method`` parameter.
@@ -731,12 +731,12 @@ class EmpiricalDistribution:
             One of the strings 'dkw', 'ks', 'ld_equal_tailed', or
             'ld_highest_density'. The ``method`` parameter determines
             the kind of confidence band and thus its properties. See
-            `Notes`_ for details on the different methods.
+            the notes section for details on the different methods.
         n_jobs : positive int or None, optional (default=None)
             Set the maximum number of parallel processes to use when
             constructing the confidence bands. If ``None`` then
             ``n_jobs`` will be set to the number of CPUs returned by
-            ``os.cpu_count``. Only some methods (e.g.
+            :py:func:`os.cpu_count`. Only some methods (e.g.
             ``'ld_highest_density'``) can leverage parallel
             computation. If the method can't use parallelism, it'll
             just use the current process instead.
@@ -750,7 +750,7 @@ class EmpiricalDistribution:
         Notes
         -----
         There are four built-in methods for generating confidence bands:
-        dkw, ks, ld_equal_tailed, and ld_highest_density. All three
+        dkw, ks, ld_equal_tailed, and ld_highest_density. All four
         methods provide simultaneous confidence bands.
 
         The dkw method uses the Dvoretzky-Kiefer-Wolfowitz inequality
@@ -779,14 +779,14 @@ class EmpiricalDistribution:
         violated equally often across the whole range. The
         Learned-Miller-DeStefano bands require that the underlying
         distribution is continuous to achieve exact coverage. See "A
-        Probabilistic Upper Bound on Differential Entropy"
-        (Learned-Miller and DeStefano, 2008) for details.
+        Probabilistic Upper Bound on Differential Entropy" [1]_ for
+        details.
 
         References
         ----------
-        Learned-Miller, E and DeStefano, J, "A Probabilistic Upper
-        Bound on Differential Entropy" (2008). IEEE TRANSACTIONS ON
-        INFORMATION THEORY. 732.
+        .. [1] Learned-Miller, E and DeStefano, J, "A Probabilistic
+           Upper Bound on Differential Entropy" (2008). IEEE
+           TRANSACTIONS ON INFORMATION THEORY. 732.
         """
         # Validate arguments and handle defaults.
         ys = np.array(ys)

@@ -14,9 +14,10 @@ To set the global random state, use the :py:func:`set_seed` function:
 
 Functions and methods using randomness also provide a ``generator``
 keyword argument. If ``generator`` is ``None`` then the global random
-state, ``DEFAULT_GENERATOR``, is used. Otherwise, the ``generator``
-argument should be an instance of :py:class:`np.random.Generator` and
-the function or method will use that for generating random values.
+state, :py:const:`DEFAULT_GENERATOR`, is used. Otherwise, the
+``generator`` argument should be an instance of
+:py:class:`numpy.random.Generator` and the function or method will use
+that for generating random values.
 
 If you require *local* control of random behavior (e.g., making a
 single function deterministic), pass the generator explicitly to the
@@ -69,7 +70,7 @@ so the script's run can be reproduced in the event of a failure:
 
    seed = np.random.SeedSequence().entropy
    opda.random.set_seed(seed)
-   logger.info(f'Random seed for opda set to {seed}.')
+   logger.info(f"Random seed for opda set to {seed}.")
 
    # ... script logic ...
 
@@ -93,9 +94,9 @@ def set_seed(seed):
         state. If ``None``, then the random seed is set using entropy
         from the operating system. If an integer, then that integer is
         used as a random seed. If an instance of
-        :py:func:`np.random.Generator`, then that generator is used as
-        the global default random number generator. See the ``seed``
-        parameter of :py:func:`np.random.default_rng` for details.
+        :py:class:`numpy.random.Generator`, then that generator is used
+        as the global default random number generator. See the ``seed``
+        parameter of :py:func:`numpy.random.default_rng` for details.
 
     Returns
     -------

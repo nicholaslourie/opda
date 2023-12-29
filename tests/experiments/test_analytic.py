@@ -1,4 +1,4 @@
-"""Tests for experiments.analytic"""
+"""Tests for experiments.analytic."""
 
 import unittest
 

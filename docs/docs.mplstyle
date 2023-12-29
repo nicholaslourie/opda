@@ -1,0 +1,55 @@
+###################
+# OPDA Docs Style #
+###################
+
+### colors ###
+
+lines.color         : "#989898"
+
+patch.edgecolor     : "#989898"
+
+boxplot.boxprops.color             : "#989898"
+boxplot.capprops.color             : "#989898"
+boxplot.flierprops.color           : "#989898"
+boxplot.flierprops.markeredgecolor : "#989898"
+boxplot.whiskerprops.color         : "#989898"
+
+text.color          : "#989898"
+
+axes.facecolor      : (0., 0., 0., 0.)
+axes.edgecolor      : "#989898"
+axes.labelcolor     : "#989898"
+
+xtick.color         : "#989898"
+ytick.color         : "#989898"
+
+grid.color          : "#989898"
+grid.alpha          : 0.5
+
+legend.facecolor    : "None"
+legend.edgecolor    : "#989898"
+
+figure.facecolor    : (0., 0., 0., 0.)
+figure.edgecolor    : (0., 0., 0., 0.)
+
+savefig.facecolor   : (0., 0., 0., 0.)
+savefig.edgecolor   : (0., 0., 0., 0.)
+
+### font size ###
+
+font.size           : 12
+xtick.labelsize     : 11
+ytick.labelsize     : 11
+axes.labelsize      : 14
+axes.titlesize      : 14
+legend.fontsize     : 11
+figure.titlesize    : 14
+
+### grid style ###
+
+axes.grid           : True
+grid.linestyle      : ":"
+
+### figure style ###
+
+savefig.transparent : True

@@ -1,4 +1,4 @@
-"""Tests for opda.utils"""
+"""Tests for opda.utils."""
 
 import unittest
 

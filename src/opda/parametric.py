@@ -1,4 +1,4 @@
-"""Parametric OPDA."""
+"""Parametric distributions and tools for optimal design analysis."""
 
 import warnings
 
@@ -168,7 +168,6 @@ class QuadraticDistribution:
 
            F(y) = \mathbb{P}(Y \leq y)
 
-
         Parameters
         ----------
         ys : array of float, required
@@ -243,8 +242,8 @@ class QuadraticDistribution:
         minimize : bool or None, optional (default=None)
             Whether or not to compute the tuning curve for minimizing a
             metric as opposed to maximizing it. Defaults to
-           ``None``, in which case it is taken to be the same as
-           ``self.convex``, so convex quadratic distributions will
+            ``None``, in which case it is taken to be the same as
+            ``self.convex``, so convex quadratic distributions will
             minimize and concave ones will maximize.
 
         Returns
@@ -291,8 +290,8 @@ class QuadraticDistribution:
         minimize : bool or None, optional (default=None)
             Whether or not to compute the tuning curve for minimizing a
             metric as opposed to maximizing it. Defaults to
-           ``None``, in which case it is taken to be the same as
-           ``self.convex``, so convex quadratic distributions will
+            ``None``, in which case it is taken to be the same as
+            ``self.convex``, so convex quadratic distributions will
             minimize and concave ones will maximize.
 
         Returns
