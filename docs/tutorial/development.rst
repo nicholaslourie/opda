@@ -78,25 +78,31 @@ First, generate the API reference documentation:
    $ rm -rf docs/reference/  # delete existing files if necessary
    $ SPHINX_APIDOC_OPTIONS='members' \
      sphinx-apidoc \
+       --separate \
+       --no-toc \
        --maxdepth 1 \
        --module-first \
-       --no-toc \
-       --separate \
-       --output docs/reference/ \
+       --output-dir docs/reference/ \
        src/opda/
 
 Then, build the documentation:
 
 .. code-block:: console
 
-    $ sphinx-build -M html docs/ docs/_build/ --jobs auto -W --keep-going
+    $ sphinx-build \
+        --jobs auto \
+        -W \
+        --keep-going \
+        -d "docs/_build/doctrees/" \
+        -b html \
+        docs/ docs/_build/html/
 
 Finally, serve the documentation locally using Python's
 :py:mod:`http.server`:
 
 .. code-block:: console
 
-   $ python -m http.server --directory docs/_build/html
+   $ python -m http.server --directory docs/_build/html/
 
 Now, you can navigate in your browser to the printed URL in order to
 view the docs.
@@ -106,14 +112,23 @@ To validate the documentation, check for broken links using
 
 .. code-block:: console
 
-    $ sphinx-build -M linkcheck docs/ docs/_build/ --jobs auto -W --keep-going
+    $ sphinx-build \
+        --jobs auto \
+        -W \
+        --keep-going \
+        -d "docs/_build/doctrees/" \
+        -b linkcheck \
+        docs/ docs/_build/linkcheck/
 
 And test the documentation's correctness by executing examples as
 :py:mod:`doctests <doctest>`:
 
 .. code-block:: console
 
-   $ pytest --doctest-modules --doctest-glob "**/*.rst" -- README.rst docs/ src/
+   $ pytest \
+       --doctest-modules \
+       --doctest-glob "**/*.rst" \
+       -- README.rst docs/ src/
 
 ``--doctest-modules`` runs doctests from the docstrings in any python
 modules, while ``--doctest-globs "**/*.rst"`` searches reStructuredText

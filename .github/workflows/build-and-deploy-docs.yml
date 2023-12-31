@@ -1,0 +1,60 @@
+# Build and deploy the documentation.
+#
+# This workflow assumes the repo is configured to serve Pages from a
+# custom Action, and that it has a protected github-pages environment.
+on: workflow_dispatch
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  build:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone the repo.
+        uses: actions/checkout@v4
+      - name: Install Python.
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .default-python-version
+      - name: Build the documentation.
+        run: |
+          python -Im pip install .[docs]
+          rm -rf docs/_build/
+          rm -rf docs/reference/
+          SPHINX_APIDOC_OPTIONS='members' \
+            python -Im sphinx.ext.apidoc \
+              --force \
+              --separate \
+              --no-toc \
+              --maxdepth 1 \
+              --module-first \
+              --output-dir docs/reference/ \
+              src/opda/
+          python -Im sphinx \
+            --jobs auto \
+            -T \
+            -W \
+            --keep-going \
+            -a \
+            -E \
+            -d "docs/_build/doctrees/" \
+            -b html \
+            docs/ docs/_build/html/
+      - name: Upload the site artifact.
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/_build/html/
+          retention-days: 60
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+    permissions:
+      pages: write
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy the GitHub Pages site.
+        uses: actions/deploy-pages@v4
