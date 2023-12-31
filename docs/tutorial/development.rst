@@ -89,7 +89,13 @@ Then, build the documentation:
 
 .. code-block:: console
 
-    $ sphinx-build -M html docs/ docs/_build/ --jobs auto -W --keep-going
+    $ sphinx-build \
+        --jobs auto \
+        -W \
+        --keep-going \
+        -d "docs/_build/doctrees/" \
+        -b html \
+        docs/ docs/_build/html/
 
 Finally, serve the documentation locally using Python's
 :py:mod:`http.server`:
@@ -106,7 +112,13 @@ To validate the documentation, check for broken links using
 
 .. code-block:: console
 
-    $ sphinx-build -M linkcheck docs/ docs/_build/ --jobs auto -W --keep-going
+    $ sphinx-build \
+        --jobs auto \
+        -W \
+        --keep-going \
+        -d "docs/_build/doctrees/" \
+        -b linkcheck \
+        docs/ docs/_build/linkcheck/
 
 And test the documentation's correctness by executing examples as
 :py:mod:`doctests <doctest>`:
