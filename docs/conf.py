@@ -101,6 +101,8 @@ default_role = None
 
 nitpicky = True
 
+language = "en"
+
 # NOTE: Treat all warnings as errors in documentation examples.
 warnings.resetwarnings()
 warnings.filterwarnings("error")
