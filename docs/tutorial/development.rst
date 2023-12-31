@@ -78,11 +78,11 @@ First, generate the API reference documentation:
    $ rm -rf docs/reference/  # delete existing files if necessary
    $ SPHINX_APIDOC_OPTIONS='members' \
      sphinx-apidoc \
+       --separate \
+       --no-toc \
        --maxdepth 1 \
        --module-first \
-       --no-toc \
-       --separate \
-       --output docs/reference/ \
+       --output-dir docs/reference/ \
        src/opda/
 
 Then, build the documentation:
@@ -96,7 +96,7 @@ Finally, serve the documentation locally using Python's
 
 .. code-block:: console
 
-   $ python -m http.server --directory docs/_build/html
+   $ python -m http.server --directory docs/_build/html/
 
 Now, you can navigate in your browser to the printed URL in order to
 view the docs.
@@ -113,7 +113,10 @@ And test the documentation's correctness by executing examples as
 
 .. code-block:: console
 
-   $ pytest --doctest-modules --doctest-glob "**/*.rst" -- README.rst docs/ src/
+   $ pytest \
+       --doctest-modules \
+       --doctest-glob "**/*.rst" \
+       -- README.rst docs/ src/
 
 ``--doctest-modules`` runs doctests from the docstrings in any python
 modules, while ``--doctest-globs "**/*.rst"`` searches reStructuredText
