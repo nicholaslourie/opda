@@ -41,15 +41,16 @@ higher <https://pip.pypa.io/en/stable/news/#v21-3>`_.
 
 Optional Dependencies
 =====================
-opda has several optional dependencies. Install any of the following if
+Opda has several optional dependencies. Install any of the following if
 you want to:
 
-``opda[tests]``
-  Run the tests.
+``opda[experiments]``
+  Use the ``experiments`` package (available only in checkouts of the
+  repo):
 
   .. code-block:: console
 
-     $ pip install .[tests]
+     $ pip install .[experiments]
 
 ``opda[nbs]``
   Run notebooks available in the :source-dir:`nbs/` directory:
@@ -57,6 +58,13 @@ you want to:
   .. code-block:: console
 
      $ pip install .[nbs]
+
+``opda[tests]``
+  Run the tests.
+
+  .. code-block:: console
+
+     $ pip install .[tests]
 
 ``opda[lint]``
   Run the linter (when developing or extending opda):
@@ -76,7 +84,7 @@ You can also install any combination or all of the above:
 
 .. code-block:: console
 
-   $ pip install .[docs,lint,nbs,tests]
+   $ pip install .[docs,experiments,lint,nbs,tests]
 
 See :doc:`Usage </tutorial/usage>` and :doc:`Development
 </tutorial/development>` for more information on how to use these
