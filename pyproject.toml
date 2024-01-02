@@ -67,6 +67,12 @@ tests = [
   "opda[experiments]",
   "pytest == 7.4.3",
 ]
+ci = [
+  "opda[experiments]",
+  "nox == 2023.4.22",
+  "lxml == 4.9.3",
+  "tomli; python_version<'3.11'",  # backwards compatibility
+]
 
 [project.urls]
 Documentation = "https://nalourie.github.io/opda"
