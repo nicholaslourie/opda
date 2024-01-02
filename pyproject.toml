@@ -159,6 +159,10 @@ ignore = [
   "PLR2004",  # Magic value used in comparison
   "PLR5501",  # Use `elif` instead of `else` then `if`, to reduce indentation
   "D105",     # Missing docstring in magic method
+  "SIM118",   # Use key {operator} dict instead of key {operator} dict.keys()
+  "S320",     # Using lxml to parse untrusted data is known to be vulnerable...
+              # (S320 is wrong, see https://github.com/PyCQA/bandit/issues/767).
+  "PERF401",  # Use a list comprehension to create a transformed list
 ]
 extend-select = [
   "D402",     # First line should not be the function's signature
