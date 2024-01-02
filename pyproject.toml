@@ -12,8 +12,6 @@ readme = "README.rst"
 license = {text = "Apache-2.0"}
 requires-python = ">= 3.8"
 dependencies = [
-  "autograd >= 1.6.0",
-  "matplotlib >= 3.7.0",
   "numpy >= 1.24.0",
   "scipy >= 1.10.0",
 ]
@@ -44,15 +42,31 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
+# experiments
+experiments = [
+  "autograd >= 1.6.0",
+  "matplotlib >= 3.7.0",
+]
+nbs = [
+  "opda[experiments]",
+  "notebook == 7.0.6",
+]
+# development
 docs = [
+  "opda[experiments]",
   "furo == 2023.9.10",
   "numpydoc == 1.6.0",
   "sphinx == 7.1.2",
   "tomli; python_version<'3.11'",  # backwards compatibility
 ]
-lint = ["ruff == 0.1.6"]
-tests = ["pytest == 7.4.3"]
-nbs = ["notebook == 7.0.6"]
+lint = [
+  "opda[experiments]",
+  "ruff == 0.1.6",
+]
+tests = [
+  "opda[experiments]",
+  "pytest == 7.4.3",
+]
 
 [project.urls]
 Documentation = "https://nalourie.github.io/opda"
