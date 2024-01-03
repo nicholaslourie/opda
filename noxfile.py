@@ -55,6 +55,11 @@ dependency_regex = re.compile(r"([A-Za-z][A-Za-z0-9_]*) >= (\d+.\d+)")
 
 # helper functions
 
+def sorted_versions(vs):
+    """Return a sorted list of the version strings from ``vs``."""
+    return sorted(vs, key=lambda v: tuple(map(int, v.split("."))))
+
+
 def fetch_supported_python_versions():
     """Fetch from python.org all python versions opda should support.
 
@@ -362,10 +367,12 @@ def lint(session):
     session.run("ruff", "check", ".")
 
 
-@nox.session(python=SUPPORTED_PYTHON_VERSIONS)
+@nox.session(python=sorted_versions(SUPPORTED_PYTHON_VERSIONS))
 @nox.parametrize(
     list(SUPPORTED_PACKAGE_VERSIONS.keys()),
-    list(itertools.product(*SUPPORTED_PACKAGE_VERSIONS.values())),
+    list(itertools.product(
+        *map(sorted_versions, SUPPORTED_PACKAGE_VERSIONS.values()),
+    )),
 )
 def test(session, **kwargs):
     """Run tests."""
