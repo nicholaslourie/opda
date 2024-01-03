@@ -14,6 +14,18 @@ We use the following tools and guidelines when developing opda.
 Make sure you've installed all :ref:`optional dependencies
 <tutorial/setup:Optional Dependencies>` necessary for development.
 
+Run the full validation suite via `nox
+<https://nox.thea.codes/en/stable/>`_:
+
+.. code-block:: console
+
+   $ pip install --editable .[ci]
+   $ nox
+
+Run the full suite on every commit.
+
+You can find more on specific topics below.
+
 
 Tests
 =====

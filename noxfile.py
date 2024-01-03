@@ -399,3 +399,11 @@ def test(session, **kwargs):
         *(f"{package}=={version}" for package, version in kwargs.items()),
     )
     session.run("pytest", "--all-levels")
+
+
+# Define which sessions to run by default.
+nox.options.sessions = [
+    "lint",
+    "docs",
+    f"test-{DEFAULT_PYTHON_VERSION}({test.parametrize[0]})",
+]
