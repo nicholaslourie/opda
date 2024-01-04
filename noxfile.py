@@ -127,6 +127,9 @@ def fetch_supported_package_versions(package):
 # Use Python's built-in virtual environment backend.
 nox.options.default_venv_backend = "venv"
 
+# Reuse existing virtual environments to speed up local runs.
+nox.options.reuse_existing_virtualenvs = True
+
 # Throw an error rather than skip the session if the interpreter for the
 # Python version is missing.
 nox.options.error_on_missing_interpreters = True
