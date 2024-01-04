@@ -41,8 +41,11 @@ higher <https://pip.pypa.io/en/stable/news/#v21-3>`_.
 
 Optional Dependencies
 =====================
-Opda has several optional dependencies. Install any of the following if
-you want to:
+Opda has several optional dependencies. Most optional dependencies
+need to be installed with `pip v21.2 or higher
+<https://pip.pypa.io/en/stable/news/#v21-2>`_.
+
+Install any of the following if you want to:
 
 ``opda[experiments]``
   Use the ``experiments`` package (available only in checkouts of the
