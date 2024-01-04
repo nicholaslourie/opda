@@ -11,6 +11,12 @@ import opda.random
 
 from tests import testcases
 
+# backwards compatibility
+
+import importlib.metadata  # ruff: isort: skip
+
+numpy_version = tuple(map(int, importlib.metadata.version("numpy").split(".")))
+
 
 class EmpiricalDistributionTestCase(testcases.RandomTestCase):
     """Test opda.nonparametric.EmpiricalDistribution."""
@@ -744,30 +750,54 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                         None
                     )
                     dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-                    curve = np.quantile(
-                        np.minimum.accumulate(
-                            self.generator.choice(
-                                ys,
-                                p=ws,
-                                size=(1_000, 7),
-                                replace=True,
+                    if numpy_version < (1, 22):  # backwards compatibility
+                        curve = np.sort(
+                            np.minimum.accumulate(
+                                self.generator.choice(
+                                    ys,
+                                    p=ws,
+                                    size=(1_000, 7),
+                                    replace=True,
+                                ),
+                                axis=1,
+                            )
+                            if minimize else
+                            np.maximum.accumulate(
+                                self.generator.choice(
+                                    ys,
+                                    p=ws,
+                                    size=(1_000, 7),
+                                    replace=True,
+                                ),
+                                axis=1,
                             ),
-                            axis=1,
+                            axis=0,
+                        )[int(quantile * 1_000), :]
+                    else:
+                        curve = np.quantile(
+                            np.minimum.accumulate(
+                                self.generator.choice(
+                                    ys,
+                                    p=ws,
+                                    size=(1_000, 7),
+                                    replace=True,
+                                ),
+                                axis=1,
+                            )
+                            if minimize else
+                            np.maximum.accumulate(
+                                self.generator.choice(
+                                    ys,
+                                    p=ws,
+                                    size=(1_000, 7),
+                                    replace=True,
+                                ),
+                                axis=1,
+                            ),
+                            quantile,
+                            method="inverted_cdf",
+                            axis=0,
                         )
-                        if minimize else
-                        np.maximum.accumulate(
-                            self.generator.choice(
-                                ys,
-                                p=ws,
-                                size=(1_000, 7),
-                                replace=True,
-                            ),
-                            axis=1,
-                        ),
-                        quantile,
-                        method="inverted_cdf",
-                        axis=0,
-                    )
                     #   Test 0 < ns <= len(ys).
                     #     scalar
                     self.assertTrue(np.isscalar(
@@ -972,30 +1002,54 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                         None
                     )
                     dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-                    curve = np.quantile(
-                        np.minimum.accumulate(
-                            self.generator.choice(
-                                ys,
-                                p=ws,
-                                size=(1_000, 7),
-                                replace=True,
+                    if numpy_version < (1, 22):  # backwards compatibility
+                        curve = np.sort(
+                            np.minimum.accumulate(
+                                self.generator.choice(
+                                    ys,
+                                    p=ws,
+                                    size=(1_000, 7),
+                                    replace=True,
+                                ),
+                                axis=1,
+                            )
+                            if minimize else
+                            np.maximum.accumulate(
+                                self.generator.choice(
+                                    ys,
+                                    p=ws,
+                                    size=(1_000, 7),
+                                    replace=True,
+                                ),
+                                axis=1,
                             ),
-                            axis=1,
+                            axis=0,
+                        )[int(quantile * 1_000), :]
+                    else:
+                        curve = np.quantile(
+                            np.minimum.accumulate(
+                                self.generator.choice(
+                                    ys,
+                                    p=ws,
+                                    size=(1_000, 7),
+                                    replace=True,
+                                ),
+                                axis=1,
+                            )
+                            if minimize else
+                            np.maximum.accumulate(
+                                self.generator.choice(
+                                    ys,
+                                    p=ws,
+                                    size=(1_000, 7),
+                                    replace=True,
+                                ),
+                                axis=1,
+                            ),
+                            quantile,
+                            method="inverted_cdf",
+                            axis=0,
                         )
-                        if minimize else
-                        np.maximum.accumulate(
-                            self.generator.choice(
-                                ys,
-                                p=ws,
-                                size=(1_000, 7),
-                                replace=True,
-                            ),
-                            axis=1,
-                        ),
-                        quantile,
-                        method="inverted_cdf",
-                        axis=0,
-                    )
                     #   Test 0 < ns <= len(ys).
                     #     scalar
                     self.assertTrue(np.isscalar(
