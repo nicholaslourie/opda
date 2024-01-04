@@ -383,7 +383,7 @@ def lint(session):
 )
 def test(session, **kwargs):
     """Run tests."""
-    session.install("pip >= 21.2")  # backwards compatibility
+    session.install("pip >= 22.2")  # backwards compatibility
 
     # Check that dependencies are compatible.
     output = session.run(
