@@ -393,8 +393,9 @@ def test(session, **kwargs):
             "No matching distribution found" in output
             or "package versions have conflicting dependencies" in output
     ):
-        # Skip sessions with incompatible dependency combinations.
-        session.skip()
+        session.skip(
+            "Skip this session because the dependencies are incompatible.",
+        )
 
     # Run the tests.
     session.install(
