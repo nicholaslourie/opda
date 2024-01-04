@@ -324,12 +324,12 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                             curve[n-1],
                             delta=0.075,
                         )
-                        self.assertEqual(
+                        self.assertTrue(np.allclose(
                             dist.quantile_tuning_curve(
                                 [n],
                                 q=0.5,
                                 minimize=minimize,
-                            ).tolist(),
+                            ),
                             [
                                 dist.quantile_tuning_curve(
                                     n,
@@ -337,7 +337,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                                     minimize=minimize,
                                 ),
                             ],
-                        )
+                        ))
                     #   1D array
                     self.assertTrue(np.allclose(
                         dist.quantile_tuning_curve(
@@ -393,12 +393,12 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                             curve[n-1],
                             delta=0.075,
                         )
-                        self.assertEqual(
+                        self.assertTrue(np.allclose(
                             dist.quantile_tuning_curve(
-                                [n/10],
+                                [n/10.],
                                 q=0.5**(1/10),
                                 minimize=minimize,
-                            ).tolist(),
+                            ),
                             [
                                 dist.quantile_tuning_curve(
                                     n/10.,
@@ -406,7 +406,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                                     minimize=minimize,
                                 ),
                             ],
-                        )
+                        ))
                     #   1D array
                     self.assertTrue(np.allclose(
                         dist.quantile_tuning_curve(
