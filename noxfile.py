@@ -304,7 +304,8 @@ def docs(session):
         shutil.rmtree(reference_dpath)
     # Generate the API reference documentation source.
     session.run(
-        "python", "-Im", "sphinx.ext.apidoc",
+        "python", "-Im",
+        "sphinx.ext.apidoc",
         "--force",
         "--separate",
         "--no-toc",
@@ -317,7 +318,8 @@ def docs(session):
     )
     # Build the documentation.
     session.run(
-        "python", "-Im", "sphinx",
+        "python", "-Im",
+        "sphinx",
         "--jobs", "auto",
         "-T",  # print full tracebacks on errors
         "-W",  # turn warnings into errors
@@ -336,7 +338,8 @@ def docs(session):
     session.install(".[tests]")
     # Check for broken links.
     session.run(
-        "python", "-Im", "sphinx",
+        "python", "-Im",
+        "sphinx",
         "--jobs", "auto",
         "-T",  # print full tracebacks on errors
         "-W",  # turn warnings into errors
@@ -355,6 +358,7 @@ def docs(session):
     # works if it passes the regular tests. Thus, we only need to run
     # doctests with one version of python and the dependencies.
     session.run(
+        "python", "-Im",
         "pytest",
         "--doctest-modules",
         "--doctest-glob", '"**/*.rst"',
@@ -371,7 +375,10 @@ def lint(session):
     session.install("pip >= 21.2")  # backwards compatibility
 
     session.install(".[lint]")
-    session.run("ruff", "check", ".")
+    session.run(
+        "python", "-Im",
+        "ruff", "check", ".",
+    )
 
 
 @nox.session(python=sorted_versions(SUPPORTED_PYTHON_VERSIONS))
@@ -387,6 +394,7 @@ def test(session, **kwargs):
 
     # Check that dependencies are compatible.
     output = session.run(
+        "python", "-Im",
         "pip",
         "install",
         "--ignore-install",
@@ -408,7 +416,10 @@ def test(session, **kwargs):
         ".[tests]",
         *(f"{package}=={version}" for package, version in kwargs.items()),
     )
-    session.run("pytest", "--all-levels")
+    session.run(
+        "python", "-Im",
+        "pytest", "--all-levels",
+    )
 
 
 # Define which sessions to run by default.
