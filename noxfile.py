@@ -306,6 +306,7 @@ def docs(session):
     session.run(
         "python", "-Im",
         "sphinx.ext.apidoc",
+        "-q",  # only output errors and warnings
         "--force",
         "--separate",
         "--no-toc",
@@ -320,6 +321,7 @@ def docs(session):
     session.run(
         "python", "-Im",
         "sphinx",
+        "-q",  # only output errors and warnings
         "--jobs", "auto",
         "-T",  # print full tracebacks on errors
         "-W",  # turn warnings into errors
@@ -340,6 +342,7 @@ def docs(session):
     session.run(
         "python", "-Im",
         "sphinx",
+        "-q",  # only output errors and warnings
         "--jobs", "auto",
         "-T",  # print full tracebacks on errors
         "-W",  # turn warnings into errors
@@ -360,6 +363,7 @@ def docs(session):
     session.run(
         "python", "-Im",
         "pytest",
+        "--quiet",
         "--doctest-modules",
         "--doctest-glob", "**/*.rst",
         "--",
@@ -377,7 +381,11 @@ def lint(session):
     session.install(".[lint]")
     session.run(
         "python", "-Im",
-        "ruff", "check", ".",
+        "ruff",
+        "check",
+        "--show-source",
+        "--",
+        ".",
     )
 
 
@@ -419,7 +427,9 @@ def test(session, **kwargs):
     )
     session.run(
         "python", "-Im",
-        "pytest", "--all-levels",
+        "pytest",
+        "--quiet",
+        "--all-levels",
     )
 
 
