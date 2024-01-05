@@ -392,12 +392,13 @@ def test(session, **kwargs):
     """Run tests."""
     session.install("pip >= 22.2")  # backwards compatibility
 
-    # Check that dependencies are compatible.
+    # Check the dependencies are compatible and have wheels available.
     output = session.run(
         "python", "-Im",
         "pip",
         "install",
         "--ignore-install",
+        "--only-binary=:all:",
         "--dry-run",
         *(f"{package}=={version}" for package, version in kwargs.items()),
         success_codes=[0, 1],
