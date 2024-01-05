@@ -361,7 +361,7 @@ def docs(session):
         "python", "-Im",
         "pytest",
         "--doctest-modules",
-        "--doctest-glob", '"**/*.rst"',
+        "--doctest-glob", "**/*.rst",
         "--",
         "README.rst",
         "docs/",
