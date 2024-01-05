@@ -41,15 +41,19 @@ higher <https://pip.pypa.io/en/stable/news/#v21-3>`_.
 
 Optional Dependencies
 =====================
-opda has several optional dependencies. Install any of the following if
-you want to:
+Opda has several optional dependencies. Most optional dependencies
+need to be installed with `pip v21.2 or higher
+<https://pip.pypa.io/en/stable/news/#v21-2>`_.
 
-``opda[tests]``
-  Run the tests.
+Install any of the following if you want to:
+
+``opda[experiments]``
+  Use the ``experiments`` package (available only in checkouts of the
+  repo):
 
   .. code-block:: console
 
-     $ pip install .[tests]
+     $ pip install .[experiments]
 
 ``opda[nbs]``
   Run notebooks available in the :source-dir:`nbs/` directory:
@@ -57,6 +61,13 @@ you want to:
   .. code-block:: console
 
      $ pip install .[nbs]
+
+``opda[tests]``
+  Run the tests.
+
+  .. code-block:: console
+
+     $ pip install .[tests]
 
 ``opda[lint]``
   Run the linter (when developing or extending opda):
@@ -72,12 +83,70 @@ you want to:
 
      $ pip install .[docs]
 
+``opda[ci]``
+  Run continuous integration commands using `nox
+  <https://nox.thea.codes/en/stable/>`_:
+
+  .. code-block:: console
+
+     $ pip install .[ci]
+
 You can also install any combination or all of the above:
 
 .. code-block:: console
 
-   $ pip install .[docs,lint,nbs,tests]
+   $ pip install .[ci,docs,experiments,lint,nbs,tests]
 
 See :doc:`Usage </tutorial/usage>` and :doc:`Development
 </tutorial/development>` for more information on how to use these
 dependencies.
+
+
+Python Versions
+===============
+Opda uses tools like `nox <https://nox.thea.codes/en/stable/>`_ to test
+itself against the Python versions it supports. To :doc:`develop
+</tutorial/development>` opda, you must install these Python versions.
+They can be found in the package's metadata:
+
+.. code-block:: python
+
+   >>> from importlib.metadata import metadata
+   >>> for classifier in metadata("opda").get_all("Classifier"):
+   ...   *prefix, version = classifier.split(" :: ")
+   ...   if prefix != ["Programming Language", "Python"] or "." not in version:
+   ...     continue
+   ...   print(version)
+   3.8
+   3.9
+   3.10
+   3.11
+   3.12
+
+To install them, we recommend `pyenv <https://github.com/pyenv/pyenv>`_:
+
+.. code-block:: console
+
+   $ pyenv install 3.8 3.9 3.10 3.11 3.12
+
+After the required versions are installed, make sure they're available
+on your PATH. You can do this either `globally
+<https://github.com/pyenv/pyenv/blob/master/COMMANDS.md#pyenv-global>`_:
+
+.. code-block:: console
+
+   $ pyenv global system 3.8 3.9 3.10 3.11 3.12
+
+Or `locally
+<https://github.com/pyenv/pyenv/blob/master/COMMANDS.md#pyenv-local>`_
+(just within the opda repository):
+
+.. code-block:: console
+
+   $ pyenv local opda 3.8 3.9 3.10 3.11 3.12
+
+The above example assumes you have a virtual environment named ``opda``
+that you wish to `activate using pyenv-virtualenv
+<https://github.com/pyenv/pyenv-virtualenv#activate-virtualenv>`_
+whenever inside the repository. If you have no such virtual environment,
+then omit ``opda`` from the command.

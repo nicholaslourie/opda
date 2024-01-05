@@ -12,10 +12,8 @@ readme = "README.rst"
 license = {text = "Apache-2.0"}
 requires-python = ">= 3.8"
 dependencies = [
-  "autograd >= 1.6.0",
-  "matplotlib >= 3.7.0",
-  "numpy >= 1.24.0",
-  "scipy >= 1.10.0",
+  "numpy >= 1.21",
+  "scipy >= 1.8",
 ]
 keywords = [
   "opda",
@@ -44,15 +42,37 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
+# experiments
+experiments = [
+  "autograd >= 1.6.0",
+  "matplotlib >= 3.7.0",
+]
+nbs = [
+  "opda[experiments]",
+  "notebook == 7.0.6",
+]
+# development
 docs = [
+  "opda[experiments]",
   "furo == 2023.9.10",
   "numpydoc == 1.6.0",
   "sphinx == 7.1.2",
   "tomli; python_version<'3.11'",  # backwards compatibility
 ]
-lint = ["ruff == 0.1.6"]
-tests = ["pytest == 7.4.3"]
-nbs = ["notebook == 7.0.6"]
+lint = [
+  "opda[experiments]",
+  "ruff == 0.1.6",
+]
+tests = [
+  "opda[experiments]",
+  "pytest == 7.4.3",
+]
+ci = [
+  "opda[experiments]",
+  "nox == 2023.4.22",
+  "lxml == 4.9.3",
+  "tomli; python_version<'3.11'",  # backwards compatibility
+]
 
 [project.urls]
 Documentation = "https://nalourie.github.io/opda"
@@ -139,6 +159,10 @@ ignore = [
   "PLR2004",  # Magic value used in comparison
   "PLR5501",  # Use `elif` instead of `else` then `if`, to reduce indentation
   "D105",     # Missing docstring in magic method
+  "SIM118",   # Use key {operator} dict instead of key {operator} dict.keys()
+  "S320",     # Using lxml to parse untrusted data is known to be vulnerable...
+              # (S320 is wrong, see https://github.com/PyCQA/bandit/issues/767).
+  "PERF401",  # Use a list comprehension to create a transformed list
 ]
 extend-select = [
   "D402",     # First line should not be the function's signature

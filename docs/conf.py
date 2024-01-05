@@ -132,6 +132,16 @@ html_show_sourcelink = False
 htmlhelp_basename = "opdadoc"
 
 
+# -- Options for the linkcheck builder ---------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-the-linkcheck-builder
+
+linkcheck_anchors_ignore_for_url = [
+    # linkcheck fails to validate anchor tags in GitHub READMEs, see
+    # https://github.com/sphinx-doc/sphinx/issues/9016.
+    r"https://github.com/.*",
+]
+
+
 # -- Extension configuration -------------------------------------------------
 
 # sphinx.ext.autodoc

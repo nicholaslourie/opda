@@ -12,7 +12,20 @@ We use the following tools and guidelines when developing opda.
    of this outcome.
 
 Make sure you've installed all :ref:`optional dependencies
-<tutorial/setup:Optional Dependencies>` necessary for development.
+<tutorial/setup:Optional Dependencies>` and :ref:`python versions
+<tutorial/setup:Python Versions>` necessary for development.
+
+Run the full validation suite via `nox
+<https://nox.thea.codes/en/stable/>`_:
+
+.. code-block:: console
+
+   $ pip install --editable .[ci]
+   $ nox
+
+Run the full suite on every commit.
+
+You can find more on specific topics below.
 
 
 Tests
@@ -42,6 +55,24 @@ are always run. To run all levels, use the ``--all-levels`` option:
 
    $ pytest --all-levels
 
+You can also use `nox <https://nox.thea.codes/en/stable/>`_ to run
+tests against all supported versions of Python and the core
+dependencies:
+
+.. code-block:: console
+
+   $ nox --session test
+
+There are many possible combinations of supported versions, so running
+these tests will take a long time. You might prefer to run a
+particular combination instead:
+
+.. code-block:: console
+
+   $ nox --session "test-3.11(numpy='1.26', scipy='1.12')"
+
+Use ``nox --list`` to see all supported combinations.
+
 
 Lint
 ====
@@ -64,6 +95,20 @@ helpful for formatting the more rote stylistic issues:
 .. code-block:: console
 
    $ ruff check --fix .
+
+For continuous integration, run the linter via `nox
+<https://nox.thea.codes/en/stable/>`_:
+
+.. code-block:: console
+
+   $ nox --session lint
+
+You can also use nox to verify that the repository conforms
+to its target support policy for Python and core dependency versions:
+
+.. code-block:: console
+
+   $ nox --session support
 
 
 Docs
@@ -134,3 +179,10 @@ And test the documentation's correctness by executing examples as
 modules, while ``--doctest-globs "**/*.rst"`` searches reStructuredText
 files for doctests. The arguments (``README.rst docs/ src/``) ensure
 pytest looks at the right paths for these tests.
+
+In continuous integration, we build and test the documentation via
+`nox <https://nox.thea.codes/en/stable/>`_:
+
+.. code-block:: console
+
+   $ nox --session docs

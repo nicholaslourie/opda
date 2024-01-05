@@ -1,7 +1,5 @@
 """Parametric distributions and tools for optimal design analysis."""
 
-import warnings
-
 import numpy as np
 from scipy import special
 
@@ -137,14 +135,7 @@ class QuadraticDistribution:
 
         a, b, c = self.a, self.b, self.c
 
-        with warnings.catch_warnings():
-            warnings.filterwarnings(
-                "ignore",
-                message=r"(divide by zero|invalid value) encountered in scalar"
-                        r" power",
-                category=RuntimeWarning,
-            )
-
+        with np.errstate(divide="ignore", invalid="ignore"):
             if self.convex:
                 ps = (c / (b - a)) * ((ys - a) / (b - a))**(c - 1)
             else:  # concave

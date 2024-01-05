@@ -20,29 +20,9 @@ jobs:
           python-version-file: .default-python-version
       - name: Build the documentation.
         run: |
-          python -Im pip install .[docs]
-          rm -rf docs/_build/
-          rm -rf docs/reference/
-          SPHINX_APIDOC_OPTIONS='members' \
-            python -Im sphinx.ext.apidoc \
-              --force \
-              --separate \
-              --no-toc \
-              --maxdepth 1 \
-              --module-first \
-              --output-dir docs/reference/ \
-              src/opda/
-          python -Im sphinx \
-            --jobs auto \
-            -T \
-            -W \
-            --keep-going \
-            -a \
-            -E \
-            -d "docs/_build/doctrees/" \
-            -b html \
-            docs/ docs/_build/html/
-      - name: Upload the site artifact.
+          python -Im pip install .[ci]
+          python -Im nox --session docs
+      - name: Upload the GitHub Pages artifact.
         uses: actions/upload-pages-artifact@v3
         with:
           path: docs/_build/html/
