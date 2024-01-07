@@ -364,6 +364,7 @@ def docs(session):
         "python", "-Im",
         "pytest",
         "--quiet",
+        "--pythonwarnings", "error",
         "--doctest-modules",
         "--doctest-glob", "**/*.rst",
         "--",
@@ -429,6 +430,7 @@ def test(session, **kwargs):
         "python", "-Im",
         "pytest",
         "--quiet",
+        "--pythonwarnings", "error",
         "--all-levels",
     )
 
