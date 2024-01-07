@@ -8,7 +8,6 @@ on:
     # Run continuous integration on the 15th day of each quarter, to see
     # if maintenance is necessary (e.g., updating dependencies).
     - cron: "15 10 15 */3 *"
-  workflow_dispatch:
   workflow_call:
 env:
   FORCE_COLOR: true
