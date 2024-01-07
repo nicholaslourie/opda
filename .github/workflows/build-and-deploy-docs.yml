@@ -6,6 +6,11 @@ on: workflow_dispatch
 concurrency:
   group: pages
   cancel-in-progress: false
+env:
+  FORCE_COLOR: true
+  PIP_NO_INPUT: true
+  PIP_QUIET: true
+  PIP_DISABLE_PIP_VERSION_CHECK: true
 jobs:
   build:
     permissions:
@@ -21,7 +26,9 @@ jobs:
       - name: Build the documentation.
         run: |
           python -Im pip install .[ci]
-          python -Im nox --session docs
+          python -Im nox \
+            --non-interactive \
+            --session docs
       - name: Upload the GitHub Pages artifact.
         uses: actions/upload-pages-artifact@v3
         with:
