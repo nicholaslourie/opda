@@ -107,12 +107,12 @@ jobs:
           )
           echo "python-versions=${PYTHON_VERSIONS}" | tee -a "${GITHUB_OUTPUT}"
   test:
+    name: Test with Python ${{ matrix.python-version }}.
     needs: matrix
     strategy:
       fail-fast: false
       matrix:
         python-version: ${{ fromJson(needs.matrix.outputs.python-versions) }}
-    name: Test with Python ${{ matrix.python-version }}.
     runs-on: ubuntu-latest
     steps:
       - name: Clone the repo.

@@ -18,8 +18,10 @@ concurrency:
   cancel-in-progress: false
 jobs:
   build:
+    name: Build and test artifacts.
     uses: ./.github/workflows/build.yml
   pages:
+    name: Deploy docs to GitHub Pages.
     needs: build
     environment:
       name: github-pages
