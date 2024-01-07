@@ -9,7 +9,6 @@ concurrency:
 env:
   FORCE_COLOR: true
   PIP_NO_INPUT: true
-  PIP_QUIET: true
   PIP_DISABLE_PIP_VERSION_CHECK: true
 permissions: {}  # Explicitly set permissions on each job.
 jobs:
@@ -24,9 +23,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version-file: .default-python-version
+          cache: pip
       - name: Build the documentation.
         run: |
-          python -Im pip install .[ci]
+          python -Im pip install --quiet .[ci]
           python -Im nox \
             --non-interactive \
             --session docs
