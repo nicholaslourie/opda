@@ -1,0 +1,34 @@
+###
+# Deploy the project.
+#
+# Requirements:
+# - Configure the repo to serve pages from a custom action.
+# - Make a protected github-pages environment for deploying the docs.
+##
+on:
+  push:
+    tags: ["v*"]
+env:
+  FORCE_COLOR: true
+  PIP_NO_INPUT: true
+  PIP_DISABLE_PIP_VERSION_CHECK: true
+permissions: {}  # Explicitly set permissions on each job.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  build:
+    name: Build and test artifacts.
+    uses: ./.github/workflows/build.yml
+  pages:
+    name: Deploy docs to GitHub Pages.
+    needs: build
+    environment:
+      name: github-pages
+    permissions:
+      pages: write
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy the GitHub Pages site.
+        uses: actions/deploy-pages@v4

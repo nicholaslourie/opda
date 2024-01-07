@@ -1,0 +1,147 @@
+###
+# Build and validate the project.
+##
+on:
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run continuous integration on the 15th day of each quarter, to see
+    # if maintenance is necessary (e.g., updating dependencies).
+    - cron: "15 10 15 */3 *"
+  workflow_call:
+env:
+  FORCE_COLOR: true
+  PIP_NO_INPUT: true
+  PIP_DISABLE_PIP_VERSION_CHECK: true
+permissions: {}  # Explicitly set permissions on each job.
+jobs:
+  support:
+    name: Check support policy.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone the repo.
+        uses: actions/checkout@v4
+      - name: Install Python.
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .default-python-version
+          cache: pip
+      - name: Check compliance with the support policy.
+        run: |
+          python -Im pip install --quiet .[ci]
+          python -Im nox \
+            --non-interactive \
+            --session support
+  lint:
+    name: Run lint.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone the repo.
+        uses: actions/checkout@v4
+      - name: Install Python.
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .default-python-version
+          cache: pip
+      - name: Run the linter.
+        run: |
+          python -Im pip install --quiet .[ci]
+          python -Im nox \
+            --non-interactive \
+            --session lint
+  docs:
+    name: Build and test docs.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone the repo.
+        uses: actions/checkout@v4
+      - name: Install Python.
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .default-python-version
+          cache: pip
+      - name: Build and test the documentation.
+        run: |
+          python -Im pip install --quiet .[ci]
+          python -Im nox \
+            --non-interactive \
+            --session docs
+      - name: Upload the GitHub Pages artifact.
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/_build/html/
+          retention-days: 60
+  matrix:
+    name: Compute test matrix.
+    runs-on: ubuntu-latest
+    outputs:
+      python-versions: ${{ steps.get-python-versions.outputs.python-versions }}
+    steps:
+      - name: Clone the repo.
+        uses: actions/checkout@v4
+      - name: Install Python.
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .default-python-version
+          cache: pip
+      - name: Build the test matrix from available nox sessions.
+        id: get-python-versions
+        run: |
+          python -Im pip install --quiet .[ci]
+          PYTHON_VERSIONS=$( \
+            python -Im \
+              nox \
+                --session test \
+                --list \
+                --json \
+              | jq \
+                --raw-output \
+                '.[].python' \
+              | sort --version-sort \
+              | uniq \
+              | jq \
+                --raw-input \
+                --slurp \
+                --compact-output \
+                'split("\n")[:-1]' \
+          )
+          echo "python-versions=${PYTHON_VERSIONS}" | tee -a "${GITHUB_OUTPUT}"
+  test:
+    name: Test with Python ${{ matrix.python-version }}.
+    needs: matrix
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ${{ fromJson(needs.matrix.outputs.python-versions) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone the repo.
+        uses: actions/checkout@v4
+      - name: Install Python.
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Run the tests with Python ${{ matrix.python-version }}.
+        env:
+          PYTHON_VERSION: ${{ matrix.python-version }}
+        run: |
+          python -Im pip install --quiet .[ci]
+          python -Im nox \
+            --non-interactive \
+            --session "test-${PYTHON_VERSION}"
+  verify:
+    name: Verify all checks passed.
+    if: always()
+    needs:
+      - support
+      - lint
+      - docs
+      - matrix
+      - test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify that all checks passed successfully.
+        uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe  # v1.2.2
+        with:
+          jobs: ${{ toJSON(needs) }}
