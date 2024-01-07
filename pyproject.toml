@@ -92,7 +92,7 @@ opda = []
 [tool.pytest.ini_options]
 minversion = "6.0"
 log_level = "INFO"
-addopts = "--strict-markers"
+addopts = "--strict-markers --strict-config"
 markers = ["level"]
 testpaths = ["tests"]
 
