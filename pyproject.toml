@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "opda"
-version = "0.2.0"
+version = "0.3.0"
 authors = [{ name = "Nicholas Lourie", email = "dev@nicholaslourie.com" }]
 description = "Design and analyze optimal deep learning models."
 readme = "README.rst"
