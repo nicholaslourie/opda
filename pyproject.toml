@@ -53,14 +53,13 @@ nbs = [
 ]
 # development
 docs = [
-  "opda[experiments]",
   "furo == 2023.9.10",
+  "matplotlib == 3.7.4",
   "numpydoc == 1.6.0",
   "sphinx == 7.1.2",
   "tomli; python_version<'3.11'",  # backwards compatibility
 ]
 lint = [
-  "opda[experiments]",
   "ruff == 0.1.6",
 ]
 tests = [
@@ -68,7 +67,6 @@ tests = [
   "pytest == 7.4.3",
 ]
 ci = [
-  "opda[experiments]",
   "nox == 2023.4.22",
   "lxml == 4.9.3",
   "tomli; python_version<'3.11'",  # backwards compatibility
