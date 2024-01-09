@@ -288,6 +288,22 @@ def support(session):
 
 
 @nox.session(python=DEFAULT_PYTHON_VERSION)
+def lint(session):
+    """Run lint."""
+    session.install("pip >= 21.2")  # backwards compatibility
+
+    session.install(".[lint]")
+    session.run(
+        "python", "-Im",
+        "ruff",
+        "check",
+        "--show-source",
+        "--",
+        ".",
+    )
+
+
+@nox.session(python=DEFAULT_PYTHON_VERSION)
 def docs(session):
     """Build and test the documentation."""
     session.install("pip >= 21.2")  # backwards compatibility
@@ -371,22 +387,6 @@ def docs(session):
         "README.rst",
         "docs/",
         "src/",
-    )
-
-
-@nox.session(python=DEFAULT_PYTHON_VERSION)
-def lint(session):
-    """Run lint."""
-    session.install("pip >= 21.2")  # backwards compatibility
-
-    session.install(".[lint]")
-    session.run(
-        "python", "-Im",
-        "ruff",
-        "check",
-        "--show-source",
-        "--",
-        ".",
     )
 
 
