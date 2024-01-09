@@ -391,6 +391,21 @@ def docs(session):
 
 
 @nox.session(python=DEFAULT_PYTHON_VERSION)
+def test(session):
+    """Run tests."""
+    session.install("pip >= 21.2")  # backwards compatibility
+
+    session.install(".[test]")
+    session.run(
+        "python", "-Im",
+        "pytest",
+        "--quiet",
+        "--pythonwarnings", "error",
+        "--all-levels",
+    )
+
+
+@nox.session(python=DEFAULT_PYTHON_VERSION)
 def package(session):
     """Build the distribution package."""
     session.install("pip >= 21.2")  # backwards compatibility
@@ -423,6 +438,8 @@ def package(session):
                     continue
                 pyproject_file.write(ln)
         #   Actually build the distribution package.
+        # NOTE: By default, `python -m build` builds the wheel *from*
+        # the sdist, thus guaranteeing the sdist can produce a wheel.
         session.run(
             "python", "-Im",
             "build",
@@ -493,8 +510,10 @@ def package(session):
         *map(sorted_versions, SUPPORTED_PACKAGE_VERSIONS.values()),
     )),
 )
-def test(session, **kwargs):
-    """Run tests."""
+def testpackage(session, **kwargs):
+    """Test the distribution package."""
+    (package_fpath,) = session.posargs
+
     session.install("pip >= 22.2")  # backwards compatibility
 
     # Check the dependencies are compatible and have wheels available.
@@ -518,7 +537,7 @@ def test(session, **kwargs):
 
     # Run the tests.
     session.install(
-        ".[test]",
+        f"{package_fpath}[test]",
         *(f"{package}=={version}" for package, version in kwargs.items()),
     )
     session.run(
@@ -526,7 +545,9 @@ def test(session, **kwargs):
         "pytest",
         "--quiet",
         "--pythonwarnings", "error",
-        "--all-levels",
+        "--noconftest",
+        "--",
+        "tests/opda",
     )
 
 
@@ -534,5 +555,5 @@ def test(session, **kwargs):
 nox.options.sessions = [
     "lint",
     "docs",
-    f"test-{DEFAULT_PYTHON_VERSION}({test.parametrize[0]})",
+    "test",
 ]

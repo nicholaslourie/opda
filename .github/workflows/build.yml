@@ -71,6 +71,23 @@ jobs:
         with:
           path: docs/_build/html/
           retention-days: 90
+  test:
+    name: Run tests.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone the repo.
+        uses: actions/checkout@v4
+      - name: Install Python.
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .default-python-version
+          cache: pip
+      - name: Run the tests.
+        run: |
+          python -Im pip install --quiet .[ci]
+          python -Im nox \
+            --non-interactive \
+            --session test
   package:
     name: Package the source.
     runs-on: ubuntu-latest
@@ -115,7 +132,7 @@ jobs:
           PYTHON_VERSIONS=$( \
             python -Im \
               nox \
-                --session test \
+                --session testpackage \
                 --list \
                 --json \
               | jq \
@@ -130,9 +147,11 @@ jobs:
                 'split("\n")[:-1]' \
           )
           echo "python-versions=${PYTHON_VERSIONS}" | tee -a "${GITHUB_OUTPUT}"
-  test:
-    name: Test with Python ${{ matrix.python-version }}.
-    needs: matrix
+  testpackage:
+    name: Test package with Python ${{ matrix.python-version }}.
+    needs:
+      - package
+      - matrix
     strategy:
       fail-fast: false
       matrix:
@@ -146,14 +165,23 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
-      - name: Run the tests with Python ${{ matrix.python-version }}.
+      - name: Download the package artifact.
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - name: Run tests on the package with Python ${{ matrix.python-version }}.
         env:
           PYTHON_VERSION: ${{ matrix.python-version }}
+        # NOTE: Since the package job builds the wheel from the sdist,
+        # test the wheel as it should cover both.
         run: |
           python -Im pip install --quiet .[ci]
           python -Im nox \
             --non-interactive \
-            --session "test-${PYTHON_VERSION}"
+            --session "testpackage-${PYTHON_VERSION}" \
+            -- \
+            dist/*.whl
   verify:
     name: Verify all checks passed.
     if: always()
@@ -161,9 +189,10 @@ jobs:
       - support
       - lint
       - docs
+      - test
       - package
       - matrix
-      - test
+      - testpackage
     runs-on: ubuntu-latest
     steps:
       - name: Verify that all checks passed successfully.
