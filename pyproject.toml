@@ -38,17 +38,17 @@ classifiers = [
   "Operating System :: OS Independent",
   "Topic :: Scientific/Engineering",
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
-  "Private :: Do Not Upload",
+  "Private :: Do Not Upload",                        # build: local-only
 ]
 
 [project.optional-dependencies]
 # experiments
-experiments = [
-  "autograd >= 1.6.0",
-  "matplotlib >= 3.7.0",
-]
+experiments = [                                      # build: local-only
+  "autograd >= 1.6.0",                               # build: local-only
+  "matplotlib >= 3.7.0",                             # build: local-only
+]                                                    # build: local-only
 nbs = [
-  "opda[experiments]",
+  "opda[experiments]",                               # build: local-only
   "notebook == 7.0.6",
 ]
 # development
@@ -60,10 +60,10 @@ docs = [
   "matplotlib == 3.7.4",
   "numpydoc == 1.6.0",
   "sphinx == 7.1.2",
-  "tomli; python_version<'3.11'",  # backwards compatibility
+  "tomli; python_version<'3.11'",              # backwards compatibility
 ]
 test = [
-  "opda[experiments]",
+  "opda[experiments]",                               # build: local-only
   "pytest == 7.4.3",
 ]
 package = [
@@ -73,7 +73,7 @@ package = [
 ci = [
   "nox == 2023.4.22",
   "lxml == 4.9.3",
-  "tomli; python_version<'3.11'",  # backwards compatibility
+  "tomli; python_version<'3.11'",              # backwards compatibility
 ]
 
 [project.urls]
@@ -83,12 +83,21 @@ Source = "https://github.com/nalourie/opda"
 
 
 [tool.setuptools]
-package-dir = {"" = "src"}
-packages = ["experiments", "opda"]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = [
+  "experiments*",                                    # build: local-only
+  "opda*",
+]
+namespaces = false
 
 [tool.setuptools.package-data]
-experiments = ["default.mplstyle"]
+experiments = ["default.mplstyle"]                   # build: local-only
 opda = []
+# -- build: local-only -------------------------------------------------
+# NOTE: The rest of this file is omitted for distribution packages.
 
 
 [tool.pytest.ini_options]

@@ -1,0 +1,13 @@
+# The file manifest for the distribution package.
+#
+# NOTE: This manifest is used for building the *distribution package*,
+# not local installations which include the experiments package.
+
+exclude **
+
+include LICENSE
+include README.rst
+include pyproject.toml
+include src/opda/**.py
+include tests/*.py
+include tests/opda/**.py
