@@ -2,8 +2,8 @@
 # Deploy the project.
 #
 # Requirements:
-# - Configure the repo to serve pages from a custom action.
-# - Make a protected github-pages environment for deploying the docs.
+# - Configure the repo to serve GitHub Pages from a custom action.
+# - Make a protected "release" environment for making releases.
 ##
 on:
   push:
@@ -14,7 +14,7 @@ env:
   PIP_DISABLE_PIP_VERSION_CHECK: true
 permissions: {}  # Explicitly set permissions on each job.
 concurrency:
-  group: pages
+  group: release
   cancel-in-progress: false
 jobs:
   build:
@@ -24,7 +24,7 @@ jobs:
     name: Deploy docs to GitHub Pages.
     needs: build
     environment:
-      name: github-pages
+      name: release
     permissions:
       pages: write
       id-token: write
