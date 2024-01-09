@@ -292,7 +292,7 @@ def docs(session):
     """Build and test the documentation."""
     session.install("pip >= 21.2")  # backwards compatibility
 
-    # Build the documentaiton.
+    # Build the documentation.
 
     session.install(".[docs]")
     # Ensure no files are left over from previous builds.
