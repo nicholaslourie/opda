@@ -70,7 +70,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: docs/_build/html/
-          retention-days: 60
+          retention-days: 90
   matrix:
     name: Compute test matrix.
     runs-on: ubuntu-latest
