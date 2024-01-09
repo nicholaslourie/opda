@@ -6,6 +6,7 @@ import json
 import pathlib
 import re
 import shutil
+import tempfile
 import urllib.request
 
 from lxml import etree
@@ -387,6 +388,102 @@ def docs(session):
         "docs/",
         "src/",
     )
+
+
+@nox.session(python=DEFAULT_PYTHON_VERSION)
+def package(session):
+    """Build the distribution package."""
+    session.install("pip >= 21.2")  # backwards compatibility
+
+    build_dpath = ROOT / "build"
+    dist_dpath = ROOT / "dist"
+
+    # Build the package.
+
+    session.install(".[package]")
+    # Ensure no files are left over from previous builds.
+    if build_dpath.exists():
+        shutil.rmtree(build_dpath)
+    if dist_dpath.exists():
+        shutil.rmtree(dist_dpath)
+    # Build the distribution package.
+    try:
+        tmp_dpath = tempfile.mkdtemp()
+        pyproject_fpath = ROOT / "pyproject.toml"
+        tmp_pyproject_fpath = pathlib.Path(tmp_dpath) / "pyproject.toml"
+        #   Remove local-only sections from pyproject.toml
+        session.log("Filtering local-only lines from pyproject.toml.")
+        shutil.move(pyproject_fpath, tmp_pyproject_fpath)
+        with pyproject_fpath.open("w") as pyproject_file, \
+             tmp_pyproject_fpath.open("r") as tmp_pyproject_file:
+            for ln in tmp_pyproject_file:
+                if ln.startswith("# -- build: local-only ----------"):
+                    break
+                if ln.strip().endswith("# build: local-only"):
+                    continue
+                pyproject_file.write(ln)
+        #   Actually build the distribution package.
+        session.run(
+            "python", "-Im",
+            "build",
+            "--outdir", "dist/",
+            "--config-setting=--global-option=--quiet",
+            "--",
+            ".",
+        )
+    finally:
+        #   Restore pyproject.toml
+        session.log("Restoring original pyproject.toml.")
+
+        shutil.move(tmp_pyproject_fpath, pyproject_fpath)
+        shutil.rmtree(tmp_dpath)
+
+    # Lint the package.
+
+    session.run(
+        "python", "-Im",
+        "twine", "check",
+        "--strict",
+        "--",
+        *dist_dpath.glob("*"),
+    )
+
+    # Run tests from the sdist.
+
+    # Extract sdist.
+    (sdist_fpath,) = dist_dpath.glob("opda-*.tar.gz")
+    shutil.unpack_archive(filename=sdist_fpath, extract_dir=dist_dpath)
+    (sdist_dpath,) = (p for p in dist_dpath.glob("opda-*") if p.is_dir())
+    # Uninstall all packages from the virtual environment.
+    requirements = session.run(
+        "python", "-Im",
+        "pip", "freeze",
+        silent=True,
+    )
+    session.run(
+        "python", "-Im",
+        "pip", "uninstall",
+        "--quiet",
+        "--yes",
+        *(
+            requirement
+            for requirement in requirements.split("\n")
+            if requirement != ""
+        ),
+    )
+    # Run sdist against the tests packaged inside it.
+    session.chdir(sdist_dpath)
+    session.install(".[test]")
+    session.run(
+        "python", "-Im",
+        "pytest",
+        "--quiet",
+        "--pythonwarnings", "error",
+        "--noconftest",
+    )
+    # Clean up the extracted sdist, but leave the sdist and wheel
+    # archives.
+    shutil.rmtree(sdist_dpath)
 
 
 @nox.session(python=sorted_versions(SUPPORTED_PYTHON_VERSIONS))

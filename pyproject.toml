@@ -97,7 +97,8 @@ namespaces = false
 experiments = ["default.mplstyle"]                   # build: local-only
 opda = []
 # -- build: local-only -------------------------------------------------
-# NOTE: The rest of this file is omitted for distribution packages.
+# NOTE: The rest of this file is omitted for distribution packages. See
+# the "package" session in noxfile.py for how "local-only" is processed.
 
 
 [tool.pytest.ini_options]
