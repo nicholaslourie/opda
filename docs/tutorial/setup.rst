@@ -62,12 +62,12 @@ Install any of the following if you want to:
 
      $ pip install .[nbs]
 
-``opda[tests]``
+``opda[test]``
   Run the tests.
 
   .. code-block:: console
 
-     $ pip install .[tests]
+     $ pip install .[test]
 
 ``opda[lint]``
   Run the linter (when developing or extending opda):
@@ -95,7 +95,7 @@ You can also install any combination or all of the above:
 
 .. code-block:: console
 
-   $ pip install .[ci,docs,experiments,lint,nbs,tests]
+   $ pip install .[ci,docs,experiments,lint,nbs,test]
 
 See :doc:`Usage </tutorial/usage>` and :doc:`Development
 </tutorial/development>` for more information on how to use these

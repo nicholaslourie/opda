@@ -52,6 +52,9 @@ nbs = [
   "notebook == 7.0.6",
 ]
 # development
+lint = [
+  "ruff == 0.1.6",
+]
 docs = [
   "furo == 2023.9.10",
   "matplotlib == 3.7.4",
@@ -59,10 +62,7 @@ docs = [
   "sphinx == 7.1.2",
   "tomli; python_version<'3.11'",  # backwards compatibility
 ]
-lint = [
-  "ruff == 0.1.6",
-]
-tests = [
+test = [
   "opda[experiments]",
   "pytest == 7.4.3",
 ]

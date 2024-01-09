@@ -352,7 +352,7 @@ def docs(session):
 
     # Test the documentation.
 
-    session.install(".[tests]")
+    session.install(".[test]")
     # Check for broken links.
     session.run(
         "python", "-Im",
@@ -421,7 +421,7 @@ def test(session, **kwargs):
 
     # Run the tests.
     session.install(
-        ".[tests]",
+        ".[test]",
         *(f"{package}=={version}" for package, version in kwargs.items()),
     )
     session.run(
