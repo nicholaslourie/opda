@@ -295,8 +295,7 @@ def lint(session):
     session.install(".[lint]")
     session.run(
         "python", "-Im",
-        "ruff",
-        "check",
+        "ruff", "check",
         "--show-source",
         "--",
         ".",
@@ -404,8 +403,7 @@ def test(session, **kwargs):
     # Check the dependencies are compatible and have wheels available.
     output = session.run(
         "python", "-Im",
-        "pip",
-        "install",
+        "pip", "install",
         "--ignore-install",
         "--only-binary=:all:",
         "--dry-run",
