@@ -511,7 +511,19 @@ def package(session):
     )),
 )
 def testpackage(session, **kwargs):
-    """Test the distribution package."""
+    """Test the distribution package.
+
+    Provide this session exactly one positional argument: the path to
+    the package to test.
+
+        $ nox --session testpackage -- path/to/package
+
+    """
+    if len(session.posargs) != 1:
+        session.error(
+            "testpackage takes exactly 1 positional argument: the"
+            " package to test.",
+        )
     (package_fpath,) = session.posargs
 
     session.install("pip >= 22.2")  # backwards compatibility
