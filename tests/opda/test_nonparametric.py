@@ -1650,16 +1650,19 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                 )
                 ws_sorted_cumsum = np.clip(np.cumsum(ws_sorted), 0., 1.)
                 # NOTE: Make sure to include 0 < ns <= len(ys) and ns > len(ys).
+                def normalize(ps): return ps / np.sum(ps)
                 ns = np.arange(10) + 0.5
                 ts = np.mean([
                     self.generator.choice(
                         ys_sorted,
-                        p=(
-                            (1-np.concatenate([[0], ws_sorted_cumsum[:-1]]))**n
-                            - (1-ws_sorted_cumsum)**n
+                        p=normalize(
+                            # Normalize the probabilities to fix round errors.
+                            np.diff(
+                                (1-ws_sorted_cumsum[::-1])**n,
+                                append=[1.],
+                            )[::-1]
                             if minimize else
-                            ws_sorted_cumsum**n
-                            - np.concatenate([[0], ws_sorted_cumsum[:-1]])**n
+                            np.diff(ws_sorted_cumsum**n, prepend=[0.]),
                         ),
                         size=n_trials,
                     )
