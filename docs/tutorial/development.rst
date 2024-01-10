@@ -55,23 +55,12 @@ are always run. To run all levels, use the ``--all-levels`` option:
 
    $ pytest --all-levels
 
-You can also use `nox <https://nox.thea.codes/en/stable/>`_ to run
-tests against all supported versions of Python and the core
-dependencies:
+You can also use `nox <https://nox.thea.codes/en/stable/>`_ to run the
+tests (e.g., in continuous integration):
 
 .. code-block:: console
 
    $ nox --session test
-
-There are many possible combinations of supported versions, so running
-these tests will take a long time. You might prefer to run a
-particular combination instead:
-
-.. code-block:: console
-
-   $ nox --session "test-3.11(numpy='1.26', scipy='1.12')"
-
-Use ``nox --list`` to see all supported combinations.
 
 
 Lint
@@ -186,3 +175,42 @@ In continuous integration, we build and test the documentation via
 .. code-block:: console
 
    $ nox --session docs
+
+
+Packaging
+=========
+Before building the package, you must preprocess
+:source-file:`pyproject.toml` to remove parts specific to local
+installations. The easiest way to do this is to run the ``package``
+session using `nox <https://nox.thea.codes/en/stable/>`_:
+
+.. code-block:: console
+
+   $ nox --session package
+
+After running this session, you'll find the ``dist/`` directory
+containing the built distributions. See the ``package`` session in
+:source-file:`noxfile.py` for further details.
+
+You can test the package against all supported versions of Python and
+the core dependencies using the ``testpackage`` nox session.
+
+.. code-block:: console
+
+   $ nox --session testpackage -- dist/*.whl
+
+It takes one positional argument: the package to test. The separator for
+options and arguments, ``--``, is required.
+
+As there are many possible combinations of supported versions, running
+all of these tests will take a long time. You might prefer to run a
+particular combination instead:
+
+.. code-block:: console
+
+   $ nox \
+       --session "testpackage-3.11(numpy='1.26', scipy='1.12')" \
+       -- \
+       dist/*.whl
+
+Use ``nox --list`` to see all supported combinations.
