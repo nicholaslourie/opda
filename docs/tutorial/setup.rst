@@ -62,12 +62,12 @@ Install any of the following if you want to:
 
      $ pip install .[nbs]
 
-``opda[tests]``
+``opda[test]``
   Run the tests.
 
   .. code-block:: console
 
-     $ pip install .[tests]
+     $ pip install .[test]
 
 ``opda[lint]``
   Run the linter (when developing or extending opda):
@@ -83,6 +83,13 @@ Install any of the following if you want to:
 
      $ pip install .[docs]
 
+``opda[package]``
+  Build the distribution package.
+
+  .. code-block:: console
+
+     $ pip install .[package]
+
 ``opda[ci]``
   Run continuous integration commands using `nox
   <https://nox.thea.codes/en/stable/>`_:
@@ -95,7 +102,7 @@ You can also install any combination or all of the above:
 
 .. code-block:: console
 
-   $ pip install .[ci,docs,experiments,lint,nbs,tests]
+   $ pip install .[ci,docs,experiments,lint,nbs,package,test]
 
 See :doc:`Usage </tutorial/usage>` and :doc:`Development
 </tutorial/development>` for more information on how to use these

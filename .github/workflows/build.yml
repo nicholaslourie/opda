@@ -69,8 +69,50 @@ jobs:
       - name: Upload the GitHub Pages artifact.
         uses: actions/upload-pages-artifact@v3
         with:
+          name: docs
           path: docs/_build/html/
-          retention-days: 60
+          retention-days: 90
+  test:
+    name: Run tests.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone the repo.
+        uses: actions/checkout@v4
+      - name: Install Python.
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .default-python-version
+          cache: pip
+      - name: Run the tests.
+        run: |
+          python -Im pip install --quiet .[ci]
+          python -Im nox \
+            --non-interactive \
+            --session test
+  package:
+    name: Package the source.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone the repo.
+        uses: actions/checkout@v4
+      - name: Install Python.
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .default-python-version
+          cache: pip
+      - name: Build the distribution package.
+        run: |
+          python -Im pip install --quiet .[ci]
+          python -Im nox \
+            --non-interactive \
+            --session package
+      - name: Upload the package artifact.
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+          compression-level: 0  # packages are already compressed.
   matrix:
     name: Compute test matrix.
     runs-on: ubuntu-latest
@@ -91,7 +133,7 @@ jobs:
           PYTHON_VERSIONS=$( \
             python -Im \
               nox \
-                --session test \
+                --session testpackage \
                 --list \
                 --json \
               | jq \
@@ -106,9 +148,11 @@ jobs:
                 'split("\n")[:-1]' \
           )
           echo "python-versions=${PYTHON_VERSIONS}" | tee -a "${GITHUB_OUTPUT}"
-  test:
-    name: Test with Python ${{ matrix.python-version }}.
-    needs: matrix
+  testpackage:
+    name: Test package with Python ${{ matrix.python-version }}.
+    needs:
+      - package
+      - matrix
     strategy:
       fail-fast: false
       matrix:
@@ -122,14 +166,23 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
-      - name: Run the tests with Python ${{ matrix.python-version }}.
+      - name: Download the package artifact.
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - name: Run tests on the package with Python ${{ matrix.python-version }}.
         env:
           PYTHON_VERSION: ${{ matrix.python-version }}
+        # NOTE: Since the package job builds the wheel from the sdist,
+        # test the wheel as it should cover both.
         run: |
           python -Im pip install --quiet .[ci]
           python -Im nox \
             --non-interactive \
-            --session "test-${PYTHON_VERSION}"
+            --session "testpackage-${PYTHON_VERSION}" \
+            -- \
+            dist/*.whl
   verify:
     name: Verify all checks passed.
     if: always()
@@ -137,8 +190,10 @@ jobs:
       - support
       - lint
       - docs
-      - matrix
       - test
+      - package
+      - matrix
+      - testpackage
     runs-on: ubuntu-latest
     steps:
       - name: Verify that all checks passed successfully.

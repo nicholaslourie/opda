@@ -6,6 +6,7 @@ import json
 import pathlib
 import re
 import shutil
+import tempfile
 import urllib.request
 
 from lxml import etree
@@ -288,11 +289,26 @@ def support(session):
 
 
 @nox.session(python=DEFAULT_PYTHON_VERSION)
+def lint(session):
+    """Run lint."""
+    session.install("pip >= 21.2")  # backwards compatibility
+
+    session.install(".[lint]")
+    session.run(
+        "python", "-Im",
+        "ruff", "check",
+        "--show-source",
+        "--",
+        ".",
+    )
+
+
+@nox.session(python=DEFAULT_PYTHON_VERSION)
 def docs(session):
     """Build and test the documentation."""
     session.install("pip >= 21.2")  # backwards compatibility
 
-    # Build the documentaiton.
+    # Build the documentation.
 
     session.install(".[docs]")
     # Ensure no files are left over from previous builds.
@@ -337,7 +353,7 @@ def docs(session):
 
     # Test the documentation.
 
-    session.install(".[tests]")
+    session.install(".[test]")
     # Check for broken links.
     session.run(
         "python", "-Im",
@@ -375,19 +391,116 @@ def docs(session):
 
 
 @nox.session(python=DEFAULT_PYTHON_VERSION)
-def lint(session):
-    """Run lint."""
+def test(session):
+    """Run tests."""
     session.install("pip >= 21.2")  # backwards compatibility
 
-    session.install(".[lint]")
+    session.install(".[test]")
     session.run(
         "python", "-Im",
-        "ruff",
-        "check",
-        "--show-source",
-        "--",
-        ".",
+        "pytest",
+        "--quiet",
+        "--pythonwarnings", "error",
+        "--all-levels",
     )
+
+
+@nox.session(python=DEFAULT_PYTHON_VERSION)
+def package(session):
+    """Build the distribution package."""
+    session.install("pip >= 21.2")  # backwards compatibility
+
+    build_dpath = ROOT / "build"
+    dist_dpath = ROOT / "dist"
+
+    # Build the package.
+
+    session.install(".[package]")
+    # Ensure no files are left over from previous builds.
+    if build_dpath.exists():
+        shutil.rmtree(build_dpath)
+    if dist_dpath.exists():
+        shutil.rmtree(dist_dpath)
+    # Build the distribution package.
+    try:
+        tmp_dpath = tempfile.mkdtemp()
+        pyproject_fpath = ROOT / "pyproject.toml"
+        tmp_pyproject_fpath = pathlib.Path(tmp_dpath) / "pyproject.toml"
+        #   Remove local-only sections from pyproject.toml
+        session.log("Filtering local-only lines from pyproject.toml.")
+        shutil.move(pyproject_fpath, tmp_pyproject_fpath)
+        with pyproject_fpath.open("w") as pyproject_file, \
+             tmp_pyproject_fpath.open("r") as tmp_pyproject_file:
+            for ln in tmp_pyproject_file:
+                if ln.startswith("# -- build: local-only ----------"):
+                    break
+                if ln.strip().endswith("# build: local-only"):
+                    continue
+                pyproject_file.write(ln)
+        #   Actually build the distribution package.
+        # NOTE: By default, `python -m build` builds the wheel *from*
+        # the sdist, thus guaranteeing the sdist can produce a wheel.
+        session.run(
+            "python", "-Im",
+            "build",
+            "--outdir", "dist/",
+            "--config-setting=--global-option=--quiet",
+            "--",
+            ".",
+        )
+    finally:
+        #   Restore pyproject.toml
+        session.log("Restoring original pyproject.toml.")
+
+        shutil.move(tmp_pyproject_fpath, pyproject_fpath)
+        shutil.rmtree(tmp_dpath)
+
+    # Lint the package.
+
+    session.run(
+        "python", "-Im",
+        "twine", "check",
+        "--strict",
+        "--",
+        *dist_dpath.glob("*"),
+    )
+
+    # Run tests from the sdist.
+
+    # Extract sdist.
+    (sdist_fpath,) = dist_dpath.glob("opda-*.tar.gz")
+    shutil.unpack_archive(filename=sdist_fpath, extract_dir=dist_dpath)
+    (sdist_dpath,) = (p for p in dist_dpath.glob("opda-*") if p.is_dir())
+    # Uninstall all packages from the virtual environment.
+    requirements = session.run(
+        "python", "-Im",
+        "pip", "freeze",
+        silent=True,
+    )
+    session.run(
+        "python", "-Im",
+        "pip", "uninstall",
+        "--quiet",
+        "--yes",
+        *(
+            requirement
+            for requirement in requirements.split("\n")
+            if requirement != ""
+        ),
+    )
+    # Run sdist against the tests packaged inside it.
+    session.chdir(sdist_dpath)
+    session.install(".[test]")
+    session.run(
+        "python", "-Im",
+        "pytest",
+        "--quiet",
+        "--pythonwarnings", "error",
+        "--noconftest",
+    )
+    # Clean up the extracted sdist, but leave the sdist and wheel
+    # archives.
+    shutil.rmtree(sdist_dpath)
 
 
 @nox.session(python=sorted_versions(SUPPORTED_PYTHON_VERSIONS))
@@ -397,15 +510,28 @@ def lint(session):
         *map(sorted_versions, SUPPORTED_PACKAGE_VERSIONS.values()),
     )),
 )
-def test(session, **kwargs):
-    """Run tests."""
+def testpackage(session, **kwargs):
+    """Test the distribution package.
+
+    Provide this session exactly one positional argument: the path to
+    the package to test.
+
+        $ nox --session testpackage -- path/to/package
+
+    """
+    if len(session.posargs) != 1:
+        session.error(
+            "testpackage takes exactly 1 positional argument: the"
+            " package to test.",
+        )
+    (package_fpath,) = session.posargs
+
     session.install("pip >= 22.2")  # backwards compatibility
 
     # Check the dependencies are compatible and have wheels available.
     output = session.run(
         "python", "-Im",
-        "pip",
-        "install",
+        "pip", "install",
         "--ignore-install",
         "--only-binary=:all:",
         "--dry-run",
@@ -423,7 +549,7 @@ def test(session, **kwargs):
 
     # Run the tests.
     session.install(
-        ".[tests]",
+        f"{package_fpath}[test]",
         *(f"{package}=={version}" for package, version in kwargs.items()),
     )
     session.run(
@@ -431,7 +557,9 @@ def test(session, **kwargs):
         "pytest",
         "--quiet",
         "--pythonwarnings", "error",
-        "--all-levels",
+        "--noconftest",
+        "--",
+        "tests/opda",
     )
 
 
@@ -439,5 +567,5 @@ def test(session, **kwargs):
 nox.options.sessions = [
     "lint",
     "docs",
-    f"test-{DEFAULT_PYTHON_VERSION}({test.parametrize[0]})",
+    "test",
 ]
