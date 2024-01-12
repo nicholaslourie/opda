@@ -30,7 +30,7 @@ Now that you're acquainted with opda, check out the :doc:`Setup
    :maxdepth: 2
    :caption: Contributing
 
-   Development </tutorial/development>
+   Development </contributing/development>
 
 
 Indices and tables

@@ -105,7 +105,7 @@ You can also install any combination or all of the above:
    $ pip install .[ci,docs,experiments,lint,nbs,package,test]
 
 See :doc:`Usage </tutorial/usage>` and :doc:`Development
-</tutorial/development>` for more information on how to use these
+</contributing/development>` for more information on how to use these
 dependencies.
 
 
@@ -113,8 +113,8 @@ Python Versions
 ===============
 Opda uses tools like `nox <https://nox.thea.codes/en/stable/>`_ to test
 itself against the Python versions it supports. To :doc:`develop
-</tutorial/development>` opda, you must install these Python versions.
-They can be found in the package's metadata:
+</contributing/development>` opda, you must install these Python
+versions. They can be found in the package's metadata:
 
 .. code-block:: python
 
