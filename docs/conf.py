@@ -223,4 +223,8 @@ plot_html_show_formats = False
 
 # toctreelinks
 toctreelinks_caption = "Links"
-toctreelinks_urls = PYPROJECT["project"]["urls"]
+toctreelinks_urls = {
+    name: url
+    for name, url in PYPROJECT["project"]["urls"].items()
+    if not url.startswith(documentation_url)
+}
