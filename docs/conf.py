@@ -25,13 +25,19 @@ else:
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
+PYPROJECT = tomllib.loads(ROOT.joinpath("pyproject.toml").read_text())
+
 COMMIT = subprocess.run(
     ["git", "rev-parse", "--short", "HEAD"],  # noqa: S603, S607
     check=True,
     stdout=subprocess.PIPE,
 ).stdout.decode().strip()
 
-PYPROJECT = tomllib.loads(ROOT.joinpath("pyproject.toml").read_text())
+IS_RELEASE = f"v{PYPROJECT['project']['version']}" == subprocess.run(
+    ["git", "tag", "--points-at", "HEAD"],  # noqa: S603, S607
+    check=True,
+    stdout=subprocess.PIPE,
+).stdout.decode().strip()
 
 # global variables
 
@@ -122,7 +128,10 @@ warnings.filterwarnings("error")
 
 html_theme = "furo"
 html_theme_options = {
-    "announcement": None,
+    "announcement":
+        None
+        if IS_RELEASE else
+        f"These docs were built for an unreleased version (commit: {COMMIT}).",
     "top_of_page_button": None,
 }
 
