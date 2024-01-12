@@ -6,6 +6,7 @@ https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 import pathlib
 import re
+import subprocess
 import sys
 import warnings
 
@@ -22,6 +23,12 @@ else:
 # constants
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
+
+COMMIT = subprocess.run(
+    ["git", "rev-parse", "--short", "HEAD"],  # noqa: S603, S607
+    check=True,
+    stdout=subprocess.PIPE,
+).stdout.decode().strip()
 
 PYPROJECT = tomllib.loads(ROOT.joinpath("pyproject.toml").read_text())
 
@@ -57,6 +64,7 @@ source_url = PYPROJECT["project"]["urls"]["Source"]
 
 # custom substitutions
 rst_epilog += f"""
+.. |commit| replace:: {COMMIT}
 .. |description| replace:: {description}
 .. |minimum_python_version| replace:: {minimum_python_version}
 """
