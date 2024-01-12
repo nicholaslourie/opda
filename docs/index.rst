@@ -19,12 +19,18 @@ Now that you're acquainted with opda, check out the :doc:`Setup
 
    Setup </tutorial/setup>
    Usage </tutorial/usage>
-   Development </tutorial/development>
    Examples </tutorial/examples>
    Citation </tutorial/citation>
    API Reference </reference/opda>
 
 .. toctreelinks::
+
+.. toctree::
+   :hidden:
+   :maxdepth: 2
+   :caption: Contributing
+
+   Development </tutorial/development>
 
 
 Indices and tables
