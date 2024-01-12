@@ -4,6 +4,7 @@ For the full list of built-in configuration values, see Sphinx's documentation:
 https://www.sphinx-doc.org/en/master/usage/configuration.html
 """
 
+import os
 import pathlib
 import re
 import subprocess
@@ -143,6 +144,9 @@ htmlhelp_basename = "opdadoc"
 # -- Options for the linkcheck builder ---------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-the-linkcheck-builder
 
+linkcheck_ignore = [
+    # For more ignored URLs, see sphinx.ext.extlinks configuration below.
+]
 linkcheck_anchors_ignore_for_url = [
     # linkcheck fails to validate anchor tags in GitHub READMEs, see
     # https://github.com/sphinx-doc/sphinx/issues/9016.
@@ -163,10 +167,17 @@ autosectionlabel_prefix_document = True
 
 # sphinx.ext.extlinks
 extlinks = {
-    "source-file": (f"{source_url}/blob/main/%s", "%s"),
-    "source-dir": (f"{source_url}/tree/main/%s", "%s"),
+    "source-file": (f"{source_url}/blob/{COMMIT}/%s", "%s"),
+    "source-dir": (f"{source_url}/tree/{COMMIT}/%s", "%s"),
 }
 extlinks_detect_hardcoded_links = True
+if not os.getenv("CI"):
+    # When running outside of CI, the source code probably isn't yet
+    # available on GitHub.
+    linkcheck_ignore.extend([
+        rf"{source_url}/blob/{COMMIT}/.*",
+        rf"{source_url}/tree/{COMMIT}/.*",
+    ])
 
 # sphinx.ext.intersphinx
 intersphinx_mapping = {
