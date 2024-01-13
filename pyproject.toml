@@ -78,8 +78,8 @@ ci = [
 
 [project.urls]
 Documentation = "https://nalourie.github.io/opda"
-Issues = "https://github.com/nalourie/opda/issues"
 Source = "https://github.com/nalourie/opda"
+Issues = "https://github.com/nalourie/opda/issues"
 
 
 [tool.setuptools]

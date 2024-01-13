@@ -4,8 +4,10 @@ For the full list of built-in configuration values, see Sphinx's documentation:
 https://www.sphinx-doc.org/en/master/usage/configuration.html
 """
 
+import os
 import pathlib
 import re
+import subprocess
 import sys
 import warnings
 
@@ -24,6 +26,18 @@ else:
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 PYPROJECT = tomllib.loads(ROOT.joinpath("pyproject.toml").read_text())
+
+COMMIT = subprocess.run(
+    ["git", "rev-parse", "--short", "HEAD"],  # noqa: S603, S607
+    check=True,
+    stdout=subprocess.PIPE,
+).stdout.decode().strip()
+
+IS_RELEASE = f"v{PYPROJECT['project']['version']}" == subprocess.run(
+    ["git", "tag", "--points-at", "HEAD"],  # noqa: S603, S607
+    check=True,
+    stdout=subprocess.PIPE,
+).stdout.decode().strip()
 
 # global variables
 
@@ -57,6 +71,7 @@ source_url = PYPROJECT["project"]["urls"]["Source"]
 
 # custom substitutions
 rst_epilog += f"""
+.. |commit| replace:: {COMMIT}
 .. |description| replace:: {description}
 .. |minimum_python_version| replace:: {minimum_python_version}
 """
@@ -113,7 +128,10 @@ warnings.filterwarnings("error")
 
 html_theme = "furo"
 html_theme_options = {
-    "announcement": None,
+    "announcement":
+        None
+        if IS_RELEASE else
+        f"These docs were built for an unreleased version (commit: {COMMIT}).",
     "top_of_page_button": None,
 }
 
@@ -135,6 +153,9 @@ htmlhelp_basename = "opdadoc"
 # -- Options for the linkcheck builder ---------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-the-linkcheck-builder
 
+linkcheck_ignore = [
+    # For more ignored URLs, see sphinx.ext.extlinks configuration below.
+]
 linkcheck_anchors_ignore_for_url = [
     # linkcheck fails to validate anchor tags in GitHub READMEs, see
     # https://github.com/sphinx-doc/sphinx/issues/9016.
@@ -155,10 +176,17 @@ autosectionlabel_prefix_document = True
 
 # sphinx.ext.extlinks
 extlinks = {
-    "source-file": (f"{source_url}/blob/main/%s", "%s"),
-    "source-dir": (f"{source_url}/tree/main/%s", "%s"),
+    "source-file": (f"{source_url}/blob/{COMMIT}/%s", "%s"),
+    "source-dir": (f"{source_url}/tree/{COMMIT}/%s", "%s"),
 }
 extlinks_detect_hardcoded_links = True
+if not os.getenv("CI"):
+    # When running outside of CI, the source code probably isn't yet
+    # available on GitHub.
+    linkcheck_ignore.extend([
+        rf"{source_url}/blob/{COMMIT}/.*",
+        rf"{source_url}/tree/{COMMIT}/.*",
+    ])
 
 # sphinx.ext.intersphinx
 intersphinx_mapping = {
@@ -204,4 +232,8 @@ plot_html_show_formats = False
 
 # toctreelinks
 toctreelinks_caption = "Links"
-toctreelinks_urls = PYPROJECT["project"]["urls"]
+toctreelinks_urls = {
+    name: url
+    for name, url in PYPROJECT["project"]["urls"].items()
+    if not url.startswith(documentation_url)
+}
