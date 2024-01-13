@@ -55,11 +55,35 @@ jobs:
     steps:
       - name: Clone the repo.
         uses: actions/checkout@v4
+        with:
+          # Fetch all history as the job needs the pull request's full
+          # branch to check that the changelog has been updated.
+          fetch-depth: 0
       - name: Install Python.
         uses: actions/setup-python@v5
         with:
           python-version-file: .default-python-version
           cache: pip
+      - name: Check the changelog has been updated.
+        if: |
+          github.event_name == 'pull_request'
+          && github.base_ref == 'main'
+          && github.head_ref != 'main'
+        run: |
+          if git diff \
+              --name-only \
+              origin/main HEAD \
+            | grep \
+              --quiet \
+              --fixed-strings \
+              --line-regexp \
+              "CHANGELOG.rst";
+          then
+              echo "Success! The pull request updates the changelog."
+          else
+              echo "Failure! The pull request doesn't update the changelog."
+              exit 1
+          fi
       - name: Build and test the documentation.
         run: |
           python -Im pip install --quiet .[ci]

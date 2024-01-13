@@ -22,6 +22,7 @@ Now that you're acquainted with opda, check out the :doc:`Setup
    Examples </tutorial/examples>
    Citation </tutorial/citation>
    API Reference </reference/opda>
+   Changelog </changelog>
 
 .. toctreelinks::
 

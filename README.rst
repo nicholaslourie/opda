@@ -4,6 +4,7 @@ opda: optimal design analysis
 `Docs <https://nalourie.github.io/opda>`_
 | `Source <https://github.com/nalourie/opda>`_
 | `Issues <https://github.com/nalourie/opda/issues>`_
+| `Changelog <https://nalourie.github.io/opda/changelog.html>`_
 
 ..
   The content below is included into the docs.
