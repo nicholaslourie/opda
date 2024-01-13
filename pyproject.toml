@@ -80,6 +80,7 @@ ci = [
 Documentation = "https://nalourie.github.io/opda"
 Source = "https://github.com/nalourie/opda"
 Issues = "https://github.com/nalourie/opda/issues"
+Changelog = "https://nalourie.github.io/opda/changelog.html"
 
 
 [tool.setuptools]
