@@ -10,7 +10,7 @@ from scipy import special, stats
 from opda import utils
 import opda.random
 
-# backwards compatibility
+# backwards compatibility (Python < 3.9)
 
 import sys  # ruff: isort: skip
 

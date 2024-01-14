@@ -11,7 +11,7 @@ import subprocess
 import sys
 import warnings
 
-# backwards compatibility
+# backwards compatibility (Python < 3.11)
 
 if sys.version_info < (3, 11, 0):
     import tomli as tomllib

@@ -11,7 +11,7 @@ import opda.random
 
 from tests import testcases
 
-# backwards compatibility
+# backwards compatibility (numpy < 1.22)
 
 import importlib.metadata  # ruff: isort: skip
 
@@ -750,7 +750,8 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                         None
                     )
                     dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-                    if numpy_version < (1, 22):  # backwards compatibility
+                    # backwards compatibility (numpy < 1.22)
+                    if numpy_version < (1, 22):
                         curve = np.sort(
                             np.minimum.accumulate(
                                 self.generator.choice(
@@ -1002,7 +1003,8 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
                         None
                     )
                     dist = nonparametric.EmpiricalDistribution(ys, ws=ws)
-                    if numpy_version < (1, 22):  # backwards compatibility
+                    # backwards compatibility (numpy < 1.22)
+                    if numpy_version < (1, 22):
                         curve = np.sort(
                             np.minimum.accumulate(
                                 self.generator.choice(
