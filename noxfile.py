@@ -3,6 +3,7 @@
 import datetime
 import itertools
 import json
+import os
 import pathlib
 import re
 import shutil
@@ -552,6 +553,143 @@ def testpackage(session, **kwargs):
         f"{package_fpath}[test]",
         *(f"{package}=={version}" for package, version in kwargs.items()),
     )
+    session.run(
+        "python", "-Im",
+        "pytest",
+        "--quiet",
+        "--pythonwarnings", "error",
+        "--noconftest",
+        "--",
+        "tests/opda",
+    )
+
+
+@nox.session(python=DEFAULT_PYTHON_VERSION)
+def release(session):
+    """Upload a new release to PyPI.
+
+    Provide this session exactly one positional argument: the path to
+    the directory containing the packages to release.
+
+        $ nox --session release -- path/to/dist/
+
+    This session also requires the following environment variables:
+
+    ``TWINE_USERNAME``
+      The username to use for uploading the packages. The usernames for
+      TestPyPI and PyPI are assumed to be the same (e.g., "__token__").
+    ``TWINE_TESTPYPI_PASSWORD``
+      The password for uploading to TestPyPI.
+    ``TWINE_PYPI_PASSWORD``
+      The password for uploading to PyPI.
+    """
+    # Validate the positional argument.
+    if len(session.posargs) != 1:
+        session.error(
+            "release takes exactly 1 positional argument: the directory"
+            " containing the packages to upload to PyPI.",
+        )
+    (dist_dpath,) = session.posargs
+
+    # Validate the environment variables.
+    required_envs = [
+        "TWINE_USERNAME",
+        "TWINE_TESTPYPI_PASSWORD",
+        "TWINE_PYPI_PASSWORD",
+    ]
+    for env in required_envs:
+        if os.getenv(env) is None:
+            session.error(
+                f"The {env} environment variable is unavailable. Make"
+                f" sure you export it to the python process.",
+        )
+
+    pyproject = tomllib.loads(ROOT.joinpath("pyproject.toml").read_text())
+    dists = list(pathlib.Path(dist_dpath).iterdir())
+
+    session.install("pip >= 21.2")  # backwards compatibility (pip < 21.2)
+
+    # Validate the packages before uploading.
+
+    # Check the distribution directory contains only the expected files.
+    if len(dists) != 2:
+        session.error(
+            f"Expected exactly 2 distributions (sdist and wheel) in"
+            f" {dist_dpath}. Found {len(dists)}.",
+        )
+    if not any(dist.name.endswith(".tar.gz") for dist in dists):
+        session.error(f"No sdist found in {dist_dpath}.")
+    if not any(dist.name.endswith(".whl") for dist in dists):
+        session.error(f"No wheel found in {dist_dpath}.")
+    # Upload to TestPyPI.
+    session.install(".[package]")
+    session.run(
+        "python", "-Im",
+        "twine", "upload",
+        "--disable-progress-bar",
+        "--non-interactive",
+        "--repository", "testpypi",
+        *dists,
+        env={
+            "TWINE_USERNAME": os.getenv("TWINE_USERNAME"),
+            "TWINE_PASSWORD": os.getenv("TWINE_TESTPYPI_PASSWORD"),
+        },
+    )
+    # Test the package from TestPyPI.
+    uninstall_all_packages(session)
+    #   Install the package from TestPyPI.
+    #     For security, install from TestPyPI *without dependencies*,
+    #     because we can't trust the dependencies are the expected packages.
+    session.install(
+        "--index-url", "https://test.pypi.org/simple/",
+        "--no-deps",
+        f"opda == {pyproject['project']['version']}",
+    )
+    #     Then, install the dependencies from PyPI.
+    # backwards compatibility (github.com/pypa/pip/issues/11440)
+    # The code below should be replaced by pip's --only-deps feature
+    # run against the local copy of the package in dist_dpath, if the
+    # feature gets implemented. See https://github.com/pypa/pip/issues/11440.
+    session.install(*(
+        dependency
+        for dependency in
+            pyproject["project"]["dependencies"]
+            + pyproject["project"]["optional-dependencies"]["test"]
+        if "opda" not in dependency
+    ))
+    #   Test the package.
+    session.run(
+        "python", "-Im",
+        "pytest",
+        "--quiet",
+        "--pythonwarnings", "error",
+        "--noconftest",
+        "--",
+        "tests/opda",
+    )
+
+    # Upload the package.
+
+    # Upload the package to PyPI.
+    session.install(".[package]")
+    session.run(
+        "python", "-Im",
+        "twine", "upload",
+        "--disable-progress-bar",
+        "--non-interactive",
+        *dists,
+        env={
+            "TWINE_USERNAME": os.getenv("TWINE_USERNAME"),
+            "TWINE_PASSWORD": os.getenv("TWINE_PYPI_PASSWORD"),
+        },
+    )
+    # Test the package from PyPI.
+    uninstall_all_packages(session)
+    #   Install the package from PyPI.
+    session.install(
+        f"opda[test] == {pyproject['project']['version']}",
+    )
+    #   Test the package.
     session.run(
         "python", "-Im",
         "pytest",
