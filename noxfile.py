@@ -129,17 +129,13 @@ def uninstall_all_packages(session):
         "python", "-Im",
         "pip", "freeze",
         silent=True,
-    )
+    ).strip()
     session.run(
         "python", "-Im",
         "pip", "uninstall",
         "--quiet",
         "--yes",
-        *(
-            requirement
-            for requirement in requirements.split("\n")
-            if requirement != ""
-        ),
+        *requirements.split("\n"),
     )
 
 
