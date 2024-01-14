@@ -66,8 +66,9 @@ minimum_python_version = re.match(
 ).groups()[0]
 
 documentation_url = PYPROJECT["project"]["urls"]["Documentation"]
-issues_url = PYPROJECT["project"]["urls"]["Issues"]
 source_url = PYPROJECT["project"]["urls"]["Source"]
+issues_url = PYPROJECT["project"]["urls"]["Issues"]
+changelog_url = PYPROJECT["project"]["urls"]["Changelog"]
 
 # custom substitutions
 rst_epilog += f"""
