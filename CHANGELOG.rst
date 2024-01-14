@@ -44,6 +44,10 @@ The format is based on `Keep a Changelog
 `Unreleased`_
 =============
 .. rubric:: Additions
+
+* Add a continuous integration job to ensure every pull request
+  updates the changelog.
+
 .. rubric:: Changes
 .. rubric:: Deprecations
 .. rubric:: Removals
