@@ -130,6 +130,31 @@ jobs:
           python -Im nox \
             --non-interactive \
             --session package
+      - name: List the packages' contents.
+        run: |
+          for build in sdist wheel; do
+            mkdir "dist/${build}/"
+
+            if [[ "${build}" == "sdist" ]]; then
+              tar -x --directory "dist/${build}/" --file dist/*.tar.gz
+            elif [[ "${build}" == "wheel" ]]; then
+              unzip -qq -d "dist/${build}/" dist/*.whl
+            else
+              echo "Unrecognized build."
+              exit 1
+            fi
+
+            echo "${build} files:"
+            find \
+              "dist/${build}" \
+              -type f \
+              -exec echo {} \; \
+            | cut -d'/' -f3- \
+            | sort \
+            | awk '{ print "  " $0 } END { print "" }'
+
+            rm -rf "dist/${build}/"
+          done
       - name: Upload the package artifact.
         uses: actions/upload-artifact@v4
         with:
