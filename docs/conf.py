@@ -177,8 +177,10 @@ autosectionlabel_prefix_document = True
 
 # sphinx.ext.extlinks
 extlinks = {
-    "source-file": (f"{source_url}/blob/{COMMIT}/%s", "%s"),
+    "repo-release": (f"{source_url}/releases/%s", "%s"),
+    "repo-workflow": (f"{source_url}/actions/workflows/%s", "%s"),
     "source-dir": (f"{source_url}/tree/{COMMIT}/%s", "%s"),
+    "source-file": (f"{source_url}/blob/{COMMIT}/%s", "%s"),
 }
 extlinks_detect_hardcoded_links = True
 if not os.getenv("CI"):
