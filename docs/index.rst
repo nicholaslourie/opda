@@ -32,6 +32,7 @@ Now that you're acquainted with opda, check out the :doc:`Setup
    :caption: Contributing
 
    Development </contributing/development>
+   Release </contributing/release>
 
 
 Indices and tables
