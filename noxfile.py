@@ -123,6 +123,26 @@ def fetch_supported_package_versions(package):
     return supported_versions
 
 
+def uninstall_all_packages(session):
+    """Uninstall all packages from the session's virtual environment."""
+    requirements = session.run(
+        "python", "-Im",
+        "pip", "freeze",
+        silent=True,
+    )
+    session.run(
+        "python", "-Im",
+        "pip", "uninstall",
+        "--quiet",
+        "--yes",
+        *(
+            requirement
+            for requirement in requirements.split("\n")
+            if requirement != ""
+        ),
+    )
+
+
 # nox configuration
 
 # Use Python's built-in virtual environment backend.
@@ -471,25 +491,9 @@ def package(session):
     (sdist_fpath,) = dist_dpath.glob("opda-*.tar.gz")
     shutil.unpack_archive(filename=sdist_fpath, extract_dir=dist_dpath)
     (sdist_dpath,) = (p for p in dist_dpath.glob("opda-*") if p.is_dir())
-    # Uninstall all packages from the virtual environment.
-    requirements = session.run(
-        "python", "-Im",
-        "pip", "freeze",
-        silent=True,
-    )
-    session.run(
-        "python", "-Im",
-        "pip", "uninstall",
-        "--quiet",
-        "--yes",
-        *(
-            requirement
-            for requirement in requirements.split("\n")
-            if requirement != ""
-        ),
-    )
     # Run sdist against the tests packaged inside it.
     session.chdir(sdist_dpath)
+    uninstall_all_packages(session)
     session.install(".[test]")
     session.run(
         "python", "-Im",
