@@ -214,3 +214,38 @@ particular combination instead:
        dist/*.whl
 
 Use ``nox --list`` to see all supported combinations.
+
+
+Conventions
+===========
+This project uses the following unique conventions to help with
+maintenance.
+
+``# backwards compatibility``
+  All backwards compatibility code should have a ``# backwards
+  compatibility (${DEPENDENCY} < ${VERSION})`` comment either before:
+
+  .. code-block:: python
+
+     # backwards compatibility (Python < 3.11)
+
+     import sys
+     ...
+
+  or on the same line:
+
+  .. code-block:: python
+
+     session.install("pip >= 21.2")  # backwards compatibility (pip < 21.2)
+
+  That way, when dependencies are updated, it's easy to find and
+  remove unnecessary backwards compatibility code.
+``# build: local-only``
+  Some lines in :source-file:`pyproject.toml` should only be used for
+  local builds, and not the distribution package. Mark these lines
+  with a ``# build: local-only`` comment at the end, or place these
+  lines after the ``# -- build: local-only -----`` header.
+Pull request conventions
+  Merge new changes via pull requests. Use the branch name for the
+  pull request's name. Merge commit messages should match git's
+  default: ``"Merge branch '${BRANCH}'"`` with no further description.

@@ -12,7 +12,7 @@ import urllib.request
 from lxml import etree
 import nox
 
-# backwards compatibility
+# backwards compatibility (Python < 3.11)
 
 # ruff: isort: off
 import sys
@@ -291,7 +291,7 @@ def support(session):
 @nox.session(python=DEFAULT_PYTHON_VERSION)
 def lint(session):
     """Run lint."""
-    session.install("pip >= 21.2")  # backwards compatibility
+    session.install("pip >= 21.2")  # backwards compatibility (pip < 21.2)
 
     session.install(".[lint]")
     session.run(
@@ -306,7 +306,7 @@ def lint(session):
 @nox.session(python=DEFAULT_PYTHON_VERSION)
 def docs(session):
     """Build and test the documentation."""
-    session.install("pip >= 21.2")  # backwards compatibility
+    session.install("pip >= 21.2")  # backwards compatibility (pip < 21.2)
 
     # Build the documentation.
 
@@ -393,7 +393,7 @@ def docs(session):
 @nox.session(python=DEFAULT_PYTHON_VERSION)
 def test(session):
     """Run tests."""
-    session.install("pip >= 21.2")  # backwards compatibility
+    session.install("pip >= 21.2")  # backwards compatibility (pip < 21.2)
 
     session.install(".[test]")
     session.run(
@@ -408,7 +408,7 @@ def test(session):
 @nox.session(python=DEFAULT_PYTHON_VERSION)
 def package(session):
     """Build the distribution package."""
-    session.install("pip >= 21.2")  # backwards compatibility
+    session.install("pip >= 21.2")  # backwards compatibility (pip < 21.2)
 
     build_dpath = ROOT / "build"
     dist_dpath = ROOT / "dist"
@@ -526,7 +526,7 @@ def testpackage(session, **kwargs):
         )
     (package_fpath,) = session.posargs
 
-    session.install("pip >= 22.2")  # backwards compatibility
+    session.install("pip >= 22.2")  # backwards compatibility (pip < 22.2)
 
     # Check the dependencies are compatible and have wheels available.
     output = session.run(
