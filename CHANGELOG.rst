@@ -47,6 +47,8 @@ The format is based on `Keep a Changelog
 
 * Add a continuous integration job to ensure every pull request
   updates the changelog.
+* In the continuous integration job for building the packages, add a
+  step to list the packages' contents.
 
 .. rubric:: Changes
 .. rubric:: Deprecations
@@ -67,6 +69,7 @@ The format is based on `Keep a Changelog
 * Add an announcement banner to the documentation when it's built for
   an unreleased version.
 * Add a changelog (``CHANGELOG.rst``).
+* Document conventions used in the project in the development docs.
 
 .. rubric:: Security
 
