@@ -155,6 +155,11 @@ htmlhelp_basename = "opdadoc"
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-the-linkcheck-builder
 
 linkcheck_ignore = [
+    # Ignore ref comparison URLs that compare to the current release.
+    # NOTE: Just before a new release, the changelog contains this URL
+    # even though the new tag is not yet available on GitHub. Thus, we
+    # must ignore the URL so continuous integration passes.
+    rf"{source_url}/compare/v\d+\.\d+\.\d+\.\.\.v{release}",
     # For more ignored URLs, see sphinx.ext.extlinks configuration below.
 ]
 linkcheck_anchors_ignore_for_url = [
