@@ -52,6 +52,9 @@ The format is based on `Keep a Changelog
 * Add the "release" nox session for making new releases to PyPI.
 
 .. rubric:: Changes
+
+* Upgrade the development dependencies.
+
 .. rubric:: Deprecations
 .. rubric:: Removals
 .. rubric:: Fixes
