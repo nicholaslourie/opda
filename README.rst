@@ -37,7 +37,7 @@ Install opda via ``pip``:
 
 .. code-block:: console
 
-   $ pip install git+https://github.com/nalourie/opda.git
+   $ pip install opda
 
 See the `Setup <https://nalourie.github.io/opda/tutorial/setup.html>`_
 documentation for information on optional dependencies and development
