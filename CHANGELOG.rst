@@ -41,8 +41,10 @@ The format is based on `Keep a Changelog
            .. _unreleased: https://github.com/nalourie/opda/compare/${VERSION}...HEAD
 
 
-`Unreleased`_
-=============
+`v0.5.0`_ - 2024-01-15
+======================
+This version is the first uploaded to PyPI and available via ``pip``!
+
 .. rubric:: Additions
 
 * Add a continuous integration job to ensure every pull request
@@ -54,9 +56,9 @@ The format is based on `Keep a Changelog
 .. rubric:: Changes
 
 * Upgrade the development dependencies.
+* Upgrade the ``Development Status`` PyPI classifier for opda from
+  ``3 - Alpha`` to ``4 - Beta``.
 
-.. rubric:: Deprecations
-.. rubric:: Removals
 .. rubric:: Fixes
 
 * Fix flakiness in the test:
@@ -64,19 +66,19 @@ The format is based on `Keep a Changelog
 
 .. rubric:: Documentation
 
-* Pin links to the source on GitHub to the commit that built the
+* Pin links to the source on GitHub to the commit that builds the
   documentation.
 * Move development documentation into the "Contributing" section of
   the sidebar and URL tree.
-* Omit project URLs that link to the documentation from the
-  documentation's sidebar.
+* Omit from the documentation's sidebar any project URLs that link to
+  the documentation.
 * Add an announcement banner to the documentation when it's built for
   an unreleased version.
 * Add a changelog (``CHANGELOG.rst``).
-* Document conventions used in the project in the development docs.
-* Add the "Release" documentation to document the release process.
-
-.. rubric:: Security
+* Document the project's various conventions in the development docs.
+* Add the "Release" doc describing the release process.
+* Update the docs to suggest installing opda from PyPI rather than the
+  source for regular usage.
 
 
 `v0.4.0`_ - 2024-01-10
@@ -300,7 +302,7 @@ The format is based on `Keep a Changelog
 ..
   Link Definitions
 
-.. _unreleased: https://github.com/nalourie/opda/compare/v0.4.0...HEAD
+.. _v0.5.0: https://github.com/nalourie/opda/compare/v0.4.0...v0.5.0
 .. _v0.4.0: https://github.com/nalourie/opda/compare/v0.3.0...v0.4.0
 .. _v0.3.0: https://github.com/nalourie/opda/compare/v0.2.0...v0.3.0
 .. _v0.2.0: https://github.com/nalourie/opda/compare/v0.1.0...v0.2.0
