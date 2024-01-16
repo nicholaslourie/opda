@@ -49,8 +49,8 @@ need to be installed with `pip v21.2 or higher
 Install any of the following if you want to:
 
 ``opda[experiments]``
-  Use the ``experiments`` package (available only in checkouts of the
-  repo):
+  Use the ``experiments`` package (**available only in checkouts of the
+  repo**):
 
   .. code-block:: console
 
