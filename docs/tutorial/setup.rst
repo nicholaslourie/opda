@@ -20,23 +20,24 @@ Check that you have a virtual environment with Python
 
 Basic Setup
 ===========
-Clone the repo and cd into it:
+Install opda via ``pip``:
+
+.. code-block:: console
+
+   $ pip install opda
+
+Or, if you're interested in *development*, clone the repo and do an
+``--editable`` install:
 
 .. code-block:: console
 
    $ git clone https://github.com/nalourie/opda.git
    $ cd opda
+   $ pip install --editable .
 
-Then install opda with ``pip``:
-
-.. code-block:: console
-
-   $ pip install .
-
-Use ``pip install --editable`` if setting up the repository for
-development. The ``--editable`` option automatically updates the package
-when you change the source code. Editable installs require `pip v21.3 or
-higher <https://pip.pypa.io/en/stable/news/#v21-3>`_.
+The ``--editable`` option automatically updates the package when you
+change the source code. Editable installs require `pip v21.3 or higher
+<https://pip.pypa.io/en/stable/news/#v21-3>`_.
 
 
 Optional Dependencies
@@ -60,35 +61,35 @@ Install any of the following if you want to:
 
   .. code-block:: console
 
-     $ pip install .[nbs]
+     $ pip install opda[nbs]
 
 ``opda[test]``
   Run the tests.
 
   .. code-block:: console
 
-     $ pip install .[test]
+     $ pip install opda[test]
 
 ``opda[lint]``
   Run the linter (when developing or extending opda):
 
   .. code-block:: console
 
-     $ pip install .[lint]
+     $ pip install opda[lint]
 
 ``opda[docs]``
   Build the documentation.
 
   .. code-block:: console
 
-     $ pip install .[docs]
+     $ pip install opda[docs]
 
 ``opda[package]``
   Build the distribution package.
 
   .. code-block:: console
 
-     $ pip install .[package]
+     $ pip install opda[package]
 
 ``opda[ci]``
   Run continuous integration commands using `nox
@@ -96,13 +97,16 @@ Install any of the following if you want to:
 
   .. code-block:: console
 
-     $ pip install .[ci]
+     $ pip install opda[ci]
 
 You can also install any combination or all of the above:
 
 .. code-block:: console
 
-   $ pip install .[ci,docs,experiments,lint,nbs,package,test]
+   $ pip install opda[ci,docs,experiments,lint,nbs,package,test]
+
+For local development setups, use a ``.`` in place of ``opda`` in all
+of the above.
 
 See :doc:`Usage </tutorial/usage>` and :doc:`Development
 </contributing/development>` for more information on how to use these
