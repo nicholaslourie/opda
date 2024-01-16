@@ -49,6 +49,7 @@ The format is based on `Keep a Changelog
   updates the changelog.
 * In the continuous integration job for building the packages, add a
   step to list the packages' contents.
+* Add the "release" nox session for making new releases to PyPI.
 
 .. rubric:: Changes
 .. rubric:: Deprecations
@@ -70,6 +71,7 @@ The format is based on `Keep a Changelog
   an unreleased version.
 * Add a changelog (``CHANGELOG.rst``).
 * Document conventions used in the project in the development docs.
+* Add the "Release" documentation to document the release process.
 
 .. rubric:: Security
 
