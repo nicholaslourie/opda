@@ -35,8 +35,9 @@ def ellipse_volume(cs):
 def get_approximation_parameters(func, bounds):
     """Return parameters approximating random search on ``func``.
 
-    Return parameters for the asymptotic approximation of the tail of
-    values obtained by applying random search to ``func``.
+    Return :py:class:`opda.parametric.QuadraticDistribution` parameters
+    that give the asymptotic approximation of the tail of the
+    distribution obtained by applying random search to ``func``.
 
     Parameters
     ----------
@@ -50,9 +51,9 @@ def get_approximation_parameters(func, bounds):
     Returns
     -------
     float, float, float
-        The parameters, ``a``, ``b``, and ``c`` for the quadratic
-        distribution asymptotically approximating the random search
-        distribution.
+        Parameters for :py:class:`opda.parametric.QuadraticDistribution`
+        (``a``, ``b``, and ``c``) that asymptotically approximate the
+        tail of the score distribution from random search.
     """
     bounds = np.array(bounds)
     if not len(bounds.shape) == 2:

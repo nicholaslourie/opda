@@ -53,6 +53,10 @@ The format is based on `Keep a Changelog
 .. rubric:: Removals
 .. rubric:: Fixes
 .. rubric:: Documentation
+
+* Improve the docstring for
+  ``experiments.analytic.get_approximation_parameters``.
+
 .. rubric:: Security
 
 
