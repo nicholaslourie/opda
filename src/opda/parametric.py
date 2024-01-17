@@ -22,8 +22,8 @@ class QuadraticDistribution:
         The minimum value that the distribution can take.
     b : float, required
         The maximum value that the distribution can take.
-    c : float, required
-        Half the dimension of distribution's search space.
+    c : positive int, required
+        The *effective* number of hyperparameters.
     convex : bool, optional (default=False)
         Whether or not to use the convex form of the quadratic
         distribution, as opposed to the concave form. When optimizing
@@ -47,6 +47,10 @@ class QuadraticDistribution:
 
         if not np.isscalar(c):
             raise ValueError("c must be a scalar.")
+        if c % 1 != 0:
+            raise ValueError("c must be an integer.")
+        if c <= 0:
+            raise ValueError("c must be positive.")
 
         if not isinstance(convex, bool):
             raise TypeError("convex must be a boolean.")
@@ -137,10 +141,9 @@ class QuadraticDistribution:
 
         with np.errstate(divide="ignore", invalid="ignore"):
             if self.convex:
-                ps = (c / (b - a)) * ((ys - a) / (b - a))**(c - 1)
+                ps = (c / (2*(b - a))) * ((ys - a) / (b - a))**(c/2 - 1)
             else:  # concave
-                ps = (c / (b - a)) * ((b - ys) / (b - a))**(c - 1)
-
+                ps = (c / (2*(b - a))) * ((b - ys) / (b - a))**(c/2 - 1)
         ps = np.where(
             (ys < a) | (ys > b),
             0.,
@@ -178,9 +181,9 @@ class QuadraticDistribution:
         ys = np.clip(ys, a, b)
 
         if self.convex:
-            qs = ((ys - a) / (b - a))**c
+            qs = ((ys - a) / (b - a))**(c/2)
         else:  # concave
-            qs = 1 - ((b - ys) / (b - a))**c
+            qs = 1 - ((b - ys) / (b - a))**(c/2)
 
         return qs
 
@@ -215,9 +218,9 @@ class QuadraticDistribution:
         a, b, c = self.a, self.b, self.c
 
         if self.convex:
-            ys = a + (b - a) * qs**(1/c)
+            ys = a + (b - a) * qs**(2/c)
         else:  # concave
-            ys = b - (b - a) * (1 - qs)**(1/c)
+            ys = b - (b - a) * (1 - qs)**(2/c)
 
         return ys
 
@@ -260,14 +263,14 @@ class QuadraticDistribution:
 
         if self.convex:
             if minimize:
-                ys = a + (b - a) * (1 - q**(1/ns))**(1/c)
+                ys = a + (b - a) * (1 - q**(1/ns))**(2/c)
             else:  # maximize
-                ys = a + (b - a) * q**(1/(c * ns))
+                ys = a + (b - a) * q**(2/(c * ns))
         else:  # concave
             if minimize:
-                ys = b - (b - a) * q**(1/(c * ns))
+                ys = b - (b - a) * q**(2/(c * ns))
             else:  # maximize
-                ys = b - (b - a) * (1 - q**(1/ns))**(1/c)
+                ys = b - (b - a) * (1 - q**(1/ns))**(2/c)
 
         return ys
 
@@ -305,19 +308,19 @@ class QuadraticDistribution:
             if minimize:
                 ys = a + (b - a) * np.exp(
                     special.loggamma(ns + 1)
-                    + special.loggamma((c + 1) / c)
-                    - special.loggamma(ns + (c + 1) / c),
+                    + special.loggamma((c + 2) / c)
+                    - special.loggamma(ns + (c + 2) / c),
                 )
             else:  # maximize
-                ys = a + (b - a) * ns / (ns + 1/c)
+                ys = a + (b - a) * ns / (ns + 2/c)
         else:  # concave
             if minimize:
-                ys = b - (b - a) * ns / (ns + 1/c)
+                ys = b - (b - a) * ns / (ns + 2/c)
             else:  # maximize
                 ys = b - (b - a) * np.exp(
                     special.loggamma(ns + 1)
-                    + special.loggamma((c + 1) / c)
-                    - special.loggamma(ns + (c + 1) / c),
+                    + special.loggamma((c + 2) / c)
+                    - special.loggamma(ns + (c + 2) / c),
                 )
 
         return ys
@@ -382,7 +385,7 @@ class QuadraticDistribution:
         a = ys_fraction[0]
         b = ys_fraction[-1]
         # Initialize c with its MLE assuming a and b are known.
-        c = (
+        c = 2 * (
             1. / np.mean(np.log((b - a) / (ys_fraction[1:-1] - a)))
             if convex else
             1. / np.mean(np.log((b - a) / (b - ys_fraction[1:-1])))
@@ -393,14 +396,14 @@ class QuadraticDistribution:
             # Push a a bit lower than min(ys).
             a = a - 0.05 * (b - a)
             # Set b so that P(y <= ys_fraction[-1]) = fraction.
-            b = a + (b - a) / fraction**(1/c)
+            b = a + (b - a) / fraction**(2/c)
             # Push b a little higher.
             b = b + 0.05 * (b - a)
         else:
             # Push b a bit higher than max(ys).
             b = b + 0.05 * (b - a)
             # Set a so that P(y > ys_fraction[0]) = fraction.
-            a = b - (b - a) / fraction**(1/c)
+            a = b - (b - a) / fraction**(2/c)
             # Push a a little lower.
             a = a - 0.05 * (b - a)
 

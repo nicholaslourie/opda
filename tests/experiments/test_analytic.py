@@ -83,8 +83,8 @@ class GetApproximationParametersTestCase(unittest.TestCase):
             )
             self.assertAlmostEqual(
                 c,
-                # dimension / 2
-                n_dims / 2,
+                # dimension
+                n_dims,
             )
         # Non-Quadratic Functions
         n_trials = 10_000
