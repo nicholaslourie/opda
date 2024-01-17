@@ -45,6 +45,10 @@ The format is based on `Keep a Changelog
 =============
 .. rubric:: Additions
 .. rubric:: Changes
+
+* Reparametrize ``parametric.QuadraticDistribution`` so ``c`` is the
+  effective number of hyperparameters instead of half the number.
+
 .. rubric:: Deprecations
 .. rubric:: Removals
 .. rubric:: Fixes

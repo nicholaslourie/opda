@@ -83,6 +83,6 @@ def get_approximation_parameters(func, bounds):
 
     a = y_max - (1 / omega)**(2 / n_dims)
     b = y_max
-    c = n_dims / 2
+    c = n_dims
 
     return a, b, c
