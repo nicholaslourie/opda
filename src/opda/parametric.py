@@ -155,8 +155,8 @@ class QuadraticDistribution:
     def cdf(self, ys):
         r"""Return the cumulative probability at ``ys``.
 
-        We define the cumulative distribution function, F, using less
-        than or equal to:
+        We define the cumulative distribution function, :math:`F`, using
+        less than or equal to:
 
         .. math::
 
@@ -190,13 +190,13 @@ class QuadraticDistribution:
     def ppf(self, qs):
         r"""Return the quantile at ``qs``.
 
-        We define the quantile function, Q, as:
+        We define the quantile function, :math:`Q`, as:
 
         .. math::
 
            Q(p) = \inf \{y\in\mathbb{R}\mid p\leq F(y)\}
 
-        where F is the cumulative distribution function.
+        where :math:`F` is the cumulative distribution function.
 
         Parameters
         ----------

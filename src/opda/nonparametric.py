@@ -396,8 +396,8 @@ class EmpiricalDistribution:
     def cdf(self, ys):
         r"""Return the cumulative probability at ``ys``.
 
-        We define the cumulative distribution function, F, using less
-        than or equal to:
+        We define the cumulative distribution function, :math:`F`, using
+        less than or equal to:
 
         .. math::
 
@@ -421,20 +421,20 @@ class EmpiricalDistribution:
 
         Since the empirical distribution is discrete, its exact
         quantiles are ambiguous. We use the following definition of
-        the quantile function, Q:
+        the quantile function, :math:`Q`:
 
         .. math::
 
            Q(p) = \inf \{y\in[a, b]\mid p\leq F(y)\}
 
-        where F is the cumulative distribution function and ``a`` and
-        ``b`` are the optional bounds provided for the distribution's
-        support. Note that this definition is different from the most
-        standard one in which ``y`` is quantified over the whole real
-        line; however, quantifying over the reals leads to
-        counterintuitive behavior at zero, which then always evaluates
-        to negative infinity. Instead, the above definition will have
-        zero evaluate to the lower bound on the support.
+        where :math:`F` is the cumulative distribution function and
+        :math:`a` and :math:`b` are the optional bounds provided for the
+        distribution's support. Note that this definition is different
+        from the most standard one in which :math:`y` is quantified over
+        the whole real line; however, quantifying over the reals leads
+        to counterintuitive behavior at zero, which then always
+        evaluates to negative infinity. Instead, the above definition
+        will have zero evaluate to the lower bound on the support.
 
         Parameters
         ----------
