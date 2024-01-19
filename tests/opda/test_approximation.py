@@ -4,6 +4,7 @@ import itertools
 import unittest
 
 import numpy as np
+import pytest
 
 from opda import approximation
 
@@ -92,3 +93,125 @@ class LagrangeInterpolateTestCase(unittest.TestCase):
                         interpolant0(grid),
                         interpolant1(grid),
                     ))
+
+
+class RemezTestCase(unittest.TestCase):
+    """Test opda.approximation.remez."""
+
+    def test_remez(self):
+        # Test argument validation.
+        #   when f is not a callable
+        with self.assertRaises(TypeError):
+            approximation.remez(None, 0., 1., 1)
+        with self.assertRaises(TypeError):
+            approximation.remez(1., 0., 1., 1)
+        with self.assertRaises(TypeError):
+            approximation.remez("f", 0., 1., 1)
+        #   when a is not a scalar
+        with self.assertRaises(ValueError):
+            approximation.remez(np.exp, [0.], 1., 1)
+        #   when b is not a scalar
+        with self.assertRaises(ValueError):
+            approximation.remez(np.exp, 0., [1.], 1)
+        #   when n is not a scalar
+        with self.assertRaises(ValueError):
+            approximation.remez(np.exp, 0., 1., [1])
+        #   when n is not an integer
+        with self.assertRaises(ValueError):
+            approximation.remez(np.exp, 0., 1., 1.5)
+        #   when n is negative.
+        with self.assertRaises(ValueError):
+            approximation.remez(np.exp, 0., 1., -1)
+        #   when atol is negative.
+        with self.assertRaises(ValueError):
+            approximation.remez(np.exp, 0., 1., 1, atol=-1e-5)
+        #   when a > b
+        with self.assertRaises(ValueError):
+            approximation.remez(np.exp, 1., 0., 1)
+
+        # Test remez recovers the minimax approximation to x**n.
+        # NOTE: The minimax approximation of x**n by a polynomial of
+        # degree less than n is well-known. For example, see:
+        # https://mathworld.wolfram.com/ChebyshevPolynomialoftheFirstKind.html#eqn49.
+        a, b = -1., 1.
+        for n, expected_rs, expected_ys, expected_err in [
+                # x**1 ~ 0
+                (1, [-1., 1.],  [-1., 1.], 1.),
+                # x**2 ~ 1/2
+                (2, [-1., 0., 1.], [1., 0., 1.], 0.5),
+                # x**3 ~ 3/4x
+                (3, [-1., -0.5, 0.5, 1.], [-1., -0.125, 0.125, 1.], 0.25),
+        ]:
+            def f(xs, n=n): return xs**n
+
+            rs, ys, err = approximation.remez(f, a, b, n-1)
+            self.assertTrue(np.allclose(rs, expected_rs))
+            self.assertTrue(np.allclose(ys, expected_ys))
+            self.assertAlmostEqual(err, expected_err)
+
+        # Test remez on degenerate polynomial approximations.
+        a, b = -1., 1.
+        for n in [0, 1, 2]:
+            for extra_n in [0, 1, 2]:
+                def f(xs, n=n): return xs**n
+
+                rs, ys, err = approximation.remez(f, a, b, n + extra_n)
+
+                self.assertLess(np.abs(err), 1e-15)
+
+                # Construct the minimax polynomial approximation.
+                ns = np.arange(n + extra_n + 2)
+                p0 = approximation.lagrange_interpolate(rs[:-1], ys[:-1])
+                p1 = approximation.lagrange_interpolate(rs[:-1], (-1)**ns[:-1])
+                h = (p0(rs[-1]) - ys[-1]) / (p1(rs[-1]) + (-1)**n)
+                p = approximation.lagrange_interpolate(
+                    rs[:-1],
+                    ys[:-1] - h * (-1)**ns[:-1],
+                )
+
+                grid = np.linspace(a, b, num=1_000)
+                self.assertTrue(np.allclose(f(grid), p(grid)))
+
+    @pytest.mark.level(2)
+    def test_remez_on_general_functions(self):
+        atol = 256. * np.spacing(1.)
+        for f, a, b in [
+                ( np.abs,      -1.,      1.),
+                (np.sqrt,       0.,      1.),
+                ( np.exp,      -1.,      1.),
+                ( np.sin, -2*np.pi, 2*np.pi),
+        ]:
+            for n in [0, 1, 2, 5, 15]:
+                rs, ys, err = approximation.remez(f, a, b, n, atol=atol)
+
+                # Construct the minimax polynomial approximation.
+                ns = np.arange(n + 2)
+                p0 = approximation.lagrange_interpolate(rs[:-1], ys[:-1])
+                p1 = approximation.lagrange_interpolate(rs[:-1], (-1)**ns[:-1])
+                h = (p0(rs[-1]) - ys[-1]) / (p1(rs[-1]) + (-1)**n)
+                p = approximation.lagrange_interpolate(
+                    rs[:-1],
+                    ys[:-1] - h * (-1)**ns[:-1],
+                )
+                errs = f(rs) - p(rs)
+
+                # Check values returned by remez.
+                #   rs
+                #     error on rs should be *equal*
+                self.assertTrue(np.allclose(np.abs(errs[0]), np.abs(errs)))
+                #     error on rs should be *oscillating*
+                self.assertTrue(np.array_equal(
+                    np.sign(errs),
+                    np.sign(errs[0]) * (-1)**ns,
+                ))
+                #     error on rs should be close to err.
+                self.assertTrue(np.allclose(np.abs(errs), err, atol=atol))
+                #   ys
+                self.assertTrue(np.allclose(ys, f(rs)))
+                #   err
+                grid = np.linspace(a, b, num=1_000)
+                self.assertGreater(err, 0.)
+                self.assertGreater(
+                    err,
+                    np.max(np.abs(f(grid) - p(grid))) - atol,
+                )
