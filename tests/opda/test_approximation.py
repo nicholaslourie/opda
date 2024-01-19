@@ -2,6 +2,7 @@
 
 import itertools
 import unittest
+import warnings
 
 import numpy as np
 import pytest
@@ -360,4 +361,192 @@ class MinimaxPolynomialApproximationTestCase(unittest.TestCase):
                 self.assertGreater(
                     err,
                     np.max(np.abs(f(grid) - p(grid))) - atol,
+                )
+
+
+class MinimaxPolynomialCoefficientsTestCase(unittest.TestCase):
+    """Test opda.approximation.minimax_polynomial_coefficients."""
+
+    def test_minimax_polynomial_coefficients(self):
+        # Test argument validation.
+        #   when f is not a callable
+        with self.assertRaises(TypeError):
+            approximation.minimax_polynomial_coefficients(
+                None, 0., 1., 1,
+            )
+        with self.assertRaises(TypeError):
+            approximation.minimax_polynomial_coefficients(
+                1., 0., 1., 1,
+            )
+        with self.assertRaises(TypeError):
+            approximation.minimax_polynomial_coefficients(
+                "f", 0., 1., 1,
+            )
+        #   when a is not a scalar
+        with self.assertRaises(ValueError):
+            approximation.minimax_polynomial_coefficients(
+                np.exp, [0.], 1., 1,
+            )
+        #   when b is not a scalar
+        with self.assertRaises(ValueError):
+            approximation.minimax_polynomial_coefficients(
+                np.exp, 0., [1.], 1,
+            )
+        #   when n is not a scalar
+        with self.assertRaises(ValueError):
+            approximation.minimax_polynomial_coefficients(
+                np.exp, 0., 1., [1],
+            )
+        #   when n is not an integer
+        with self.assertRaises(ValueError):
+            approximation.minimax_polynomial_coefficients(
+                np.exp, 0., 1., 1.5,
+            )
+        #   when n is negative.
+        with self.assertRaises(ValueError):
+            approximation.minimax_polynomial_coefficients(
+                np.exp, 0., 1., -1,
+            )
+        #   when transform is not length 2
+        with self.assertRaises(ValueError):
+            approximation.minimax_polynomial_coefficients(
+                np.exp, 0., 1., 1, transform=(),
+            )
+        with self.assertRaises(ValueError):
+            approximation.minimax_polynomial_coefficients(
+                np.exp, 0., 1., 1, transform=(1.,),
+            )
+        with self.assertRaises(ValueError):
+            approximation.minimax_polynomial_coefficients(
+                np.exp, 0., 1., 1, transform=(0., 1., 2.),
+            )
+        #   when transform bounds are in wrong order
+        with self.assertRaises(ValueError):
+            approximation.minimax_polynomial_coefficients(
+                np.exp, 0., 1., 1, transform=(1., -1.),
+            )
+        #   when atol is negative.
+        with self.assertRaises(ValueError):
+            approximation.minimax_polynomial_coefficients(
+                np.exp, 0., 1., 1, atol=-1e-5,
+            )
+        #   when a > b
+        with self.assertRaises(ValueError):
+            approximation.minimax_polynomial_coefficients(
+                np.exp, 1., 0., 1,
+            )
+
+        # Test minimax_polynomial_coefficients against x**n.
+        # NOTE: The minimax approximation of x**n by a polynomial of
+        # degree less than n is well-known. For example, see:
+        # https://mathworld.wolfram.com/ChebyshevPolynomialoftheFirstKind.html#eqn49.
+        a, b = -1., 1.
+        for n, expected_coeffs, expected_err in [
+                # x**1 ~ 0
+                (1, (0.,),                           1.),
+                # x**2 ~ 1/2
+                (2, (0.5, 0.),                      0.5),
+                # x**3 ~ 3/4x
+                (3, (0., 0.75, 0.),                0.25),
+                # x**4 ~ x**2 - 1/8
+                (4, (-0.125, 0., 1., 0.),         0.125),
+                # x**5 ~ 5/4x**3 - 5/16x
+                (5, (0., -0.3125, 0., 1.25, 0.), 0.0625),
+        ]:
+            def f(xs, n=n): return xs**n
+
+            # NOTE: The best polynomial approximation to x**n of degree
+            # less than n has degree n-2. Thus, we can find the same
+            # approximation when considering polynomials of both degree
+            # n-2 and n-1.
+
+            # degree n-1
+            coeffs, err = approximation.minimax_polynomial_coefficients(
+                f, a, b, n-1,
+            )
+
+            self.assertTrue(np.allclose(coeffs, expected_coeffs))
+            self.assertAlmostEqual(err, expected_err)
+
+            # degree n-2
+            if n < 2:
+                continue
+
+            coeffs, err = approximation.minimax_polynomial_coefficients(
+                f, a, b, n-2,
+            )
+
+            self.assertTrue(np.allclose(coeffs, expected_coeffs[:-1]))
+            self.assertAlmostEqual(err, expected_err)
+
+        # Test minimax_polynomial_coefficients on lower degree polynomials.
+        a, b = -1., 1.
+        for n in [0, 1, 2]:
+            for extra_n in [0, 1, 2]:
+                def f(xs, n=n): return xs**n
+
+                with warnings.catch_warnings():
+                    warnings.filterwarnings(
+                        "ignore",
+                        message=r"f can be approximated with error"
+                                r" less than atol.",
+                        category=RuntimeWarning,
+                    )
+                    coeffs, err = approximation.minimax_polynomial_coefficients(
+                        f, a, b, n + extra_n,
+                    )
+
+                self.assertLess(np.abs(err), 1e-15)
+                self.assertTrue(np.allclose(
+                    coeffs,
+                    np.array([
+                        1. if i == n else 0.
+                        for i in range(n + extra_n + 1)
+                    ]),
+                ))
+
+    @pytest.mark.level(2)
+    def test_minimax_polynomial_coefficients_on_general_functions(self):
+        atol = 256. * np.spacing(1.)
+        for f, a, b in [
+                ( np.abs,      -1.,      1.),
+                (np.sqrt,       0.,      1.),
+                ( np.exp,      -1.,      1.),
+                ( np.sin, -2*np.pi, 2*np.pi),
+        ]:
+            for n in [0, 1, 2, 5, 15]:
+                with warnings.catch_warnings():
+                    warnings.filterwarnings(
+                        "ignore",
+                        message=r"f can be approximated with error"
+                                r" less than atol.",
+                        category=RuntimeWarning,
+                    )
+                    coeffs, err = approximation.minimax_polynomial_coefficients(
+                        f, a, b, n, atol=atol,
+                    )
+
+                def p(xs, coeffs=coeffs):
+                    # Evaluate the polynomial with coeffs as coefficients.
+                    ys = np.zeros_like(xs)
+                    for coeff in coeffs[::-1]:
+                        ys *= xs
+                        ys += coeff
+                    return ys
+
+                grid = np.linspace(a, b, num=1_000)
+
+                # Check the coefficients give the minimax polynomial.
+                p_minimax, _ = approximation.minimax_polynomial_approximation(
+                    f, a, b, n, atol=atol,
+                )
+                self.assertTrue(np.allclose(p(grid), p_minimax(grid)))
+                # Check that err bounds the maximum error.
+                self.assertGreater(err, 0.)
+                self.assertGreater(
+                    # Computing the coefficients incurs some rounding
+                    # error, so use a slightly increased number instead
+                    # of err directly.
+                    1.01 * err + atol,
+                    np.max(np.abs(f(grid) - p(grid))),
                 )

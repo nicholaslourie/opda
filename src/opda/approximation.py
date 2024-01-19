@@ -1,6 +1,9 @@
 """Approximation of univariate functions."""
 
+import warnings
+
 import numpy as np
+from scipy import special
 
 from opda import exceptions
 
@@ -436,3 +439,199 @@ def minimax_polynomial_approximation(f, a, b, n, *, atol=None):
     p = lagrange_interpolate(rs[:-1], ys[:-1] - h * (-1)**ns[:-1])
 
     return p, err
+
+
+def minimax_polynomial_coefficients(
+        f,
+        a,
+        b,
+        n,
+        *,
+        transform=(-1., 1.),
+        atol=None,
+):
+    """Return the minimax polynomial's coefficients.
+
+    Typically, computations for the coefficients of the minimax
+    polynomial suffer from numerical issues when the degree of the
+    polynomial is high (e.g., greater than 20 or so). These numerical
+    issues stem from the fact that the Vandermonde matrix is usually
+    ill-conditioned for high degrees.
+
+    For evaluating the minimax polynomial, there exist numerically
+    stable algorithms that should be used instead. See the function:
+    :py:func:`minimax_polynomial_approximation`.
+
+    Parameters
+    ----------
+    f : function, required
+        The function to approximate. The function should map floats to
+        floats.
+    a : float, required
+        The lower end point of the interval over which to approximate
+        ``f``.
+    b : float, required
+        The upper end point of the interval over which to approximate
+        ``f``.
+    n : non-negative int, required
+        The degree of the polynomial approximation.
+    transform : pair of floats or None, optional (default=(-1., 1.))
+        For numerical stability, it can be helpful to map the inputs
+        to some other range, e.g. -1 to 1, compute the minimax
+        polynomial's coefficients in this space, and then transform
+        the coefficients back to the original space. The intervals
+        from -1 to 1 or 0 to 1 are good choices. If ``None``, then no
+        transformation is applied.
+    atol : non-negative float or None, optional (default=None)
+        The absolute tolerance to use for stopping the computation. The
+        algorithm ends when the current approximation has a maximum
+        error within ``atol`` of the best possible approximation. If
+        ``None``, then it will be set to a multiple of machine epsilon.
+
+        Only set this value if you encounter numerical or optimization
+        issues. In that case, raise the value until the numerical issues
+        disappear and as long as the new absolute tolerance represents
+        an acceptable level of error above the best approximation.
+
+        See the docstring of the :py:func:`remez` function for details.
+
+    Returns
+    -------
+    1D array of floats
+        The coefficients of the minimax polynomial approximation to
+        ``f``, starting with the constant term followed by
+        coefficients of increasing order.
+    float
+        The worst case absolute error of the minimax polynomial
+        approximation to ``f`` from ``a`` to ``b``.
+    """
+    # Validate the arguments.
+    if not callable(f):
+        raise TypeError("f must be callable.")
+
+    if not np.isscalar(a):
+        raise ValueError("a must be a scalar.")
+
+    if not np.isscalar(b):
+        raise ValueError("b must be a scalar.")
+
+    if not np.isscalar(n):
+        raise ValueError("n must be a scalar.")
+    if n % 1 != 0:
+        raise ValueError("n must be an integer.")
+    if n < 0:
+        raise ValueError("n must be non-negative.")
+
+    if len(transform) != 2:
+        raise ValueError(
+            "transform must have exactly two elements: a lower bound"
+            " and an upper bound.",
+        )
+    if transform[0] >= transform[1]:
+        raise ValueError(
+            "transform's first element (lower bound) must be strictly"
+            " less than the second element (upper bound).",
+        )
+
+    if atol is not None and atol < 0:
+        raise ValueError("atol must be non-negative.")
+
+    if a > b:
+        raise ValueError("a must be less than or equal to b.")
+
+    # Set arguments to appropriate defaults.
+    if atol is None:
+        machine_epsilon = np.spacing(1.)
+        # NOTE: The factor, 256, was chosen empirically to avoid
+        # numerical issues when f can be fit exactly.
+        atol = 256. * machine_epsilon
+
+    # Compute the minimax polynomial coefficients.
+
+    # Apply the input transformation.
+
+    if transform is not None:
+        a_orig, b_orig = a, b
+        a, b = transform
+
+        m = (b_orig - a_orig) / (b - a)
+        f_orig = f
+        def f(xs): return f_orig(a_orig + m * (xs - a))
+
+    # Compute the minimax polynomial.
+
+    p, err = minimax_polynomial_approximation(f, a, b, n, atol=atol)
+
+    # Solve for the polynomial's coefficients using least squares.
+
+    # NOTE: The Chebyshev nodes provide more numerical stability than
+    # evenly spaced nodes.
+    ns = np.arange(n + 1)
+    xs = a + (b - a) * 0.5 * (1 - np.cos(np.pi * (ns + 0.5)/(n+1)))
+    coeffs = np.linalg.lstsq(xs[:, None]**ns[None, :], p(xs), rcond=None)[0]
+
+    # Unapply the input transformation.
+
+    if transform is not None:
+        # Untransform the minimax polynomial and interpolation nodes.
+        m_inv = 1. / m
+        p_orig = p
+        def p(xs): return p_orig(a + m_inv * (xs - a_orig))
+
+        xs = a_orig + m * (xs - a)
+
+        # Untransform the polynomial's coefficients.
+        #
+        # We can compute the coefficients for the polynomial after
+        # transforming x as follows:
+        #
+        #   a_n (c(x + b))^n + ... + a_0
+        #   = a_n c^n (x + b)^n + ... + a_0
+        #   = a_n c^n \sum_{i=0}^n \binom{n, i} b^{n - i} x^i
+        #     + ...
+        #     + a_0
+        #   = \sum_{i=0}^n \binom{n, i} b^{n - i} c^n a_n x^i
+        #     + ...
+        #     + a_0
+        #
+        # Collecting terms for x^i leads to the following formula:
+        #
+        #   a_i' = \sum_{j=i}^n \binom{j, i} b^{j - i} c^j a_j
+        #
+        # We then just need to apply this formula to the inverse of the
+        # transform we initially applied to the inputs.
+        ##
+        coeffs = np.array([
+            np.sum(
+                special.binom(np.arange(i, n+1), i)
+                * (m * a - a_orig)**(np.arange(i, n+1) - i)
+                * m_inv**np.arange(i, n+1)
+                * coeffs[i:],
+            )
+            for i in range(len(coeffs))
+        ])
+
+    # Check that the minimax polynomial was effectively recovered.
+
+    if err < atol:
+        warnings.warn(
+            "f can be approximated with error less than atol. The"
+            " minimax polynomial coefficients may be unstable. Consider"
+            " reducing n, the degree of the approximation.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+
+    interpolation_err = np.max(np.abs(
+        p(xs) - xs[:, None]**ns[None, :] @ coeffs,
+    ))
+    if interpolation_err > 0.01 * err + atol:
+        raise exceptions.NumericalError(
+            "Numerical instability detected when solving for the"
+            " minimax polynomial coefficients. Try using the"
+            " transform parameter, reducing the polynomial degree,"
+            " or evaluating the minimax polynomial directly using"
+            " minimax_polynomial_approximation.",
+        )
+
+    return coeffs, err
