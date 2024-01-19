@@ -215,3 +215,149 @@ class RemezTestCase(unittest.TestCase):
                     err,
                     np.max(np.abs(f(grid) - p(grid))) - atol,
                 )
+
+
+class MinimaxPolynomialApproximationTestCase(unittest.TestCase):
+    """Test opda.approximation.minimax_polynomial_approximation."""
+
+    def test_minimax_polynomial_approximation(self):
+        # Test argument validation.
+        #   when f is not a callable
+        with self.assertRaises(TypeError):
+            approximation.minimax_polynomial_approximation(
+                None, 0., 1., 1,
+            )
+        with self.assertRaises(TypeError):
+            approximation.minimax_polynomial_approximation(
+                1., 0., 1., 1,
+            )
+        with self.assertRaises(TypeError):
+            approximation.minimax_polynomial_approximation(
+                "f", 0., 1., 1,
+            )
+        #   when a is not a scalar
+        with self.assertRaises(ValueError):
+            approximation.minimax_polynomial_approximation(
+                np.exp, [0.], 1., 1,
+            )
+        #   when b is not a scalar
+        with self.assertRaises(ValueError):
+            approximation.minimax_polynomial_approximation(
+                np.exp, 0., [1.], 1,
+            )
+        #   when n is not a scalar
+        with self.assertRaises(ValueError):
+            approximation.minimax_polynomial_approximation(
+                np.exp, 0., 1., [1],
+            )
+        #   when n is not an integer
+        with self.assertRaises(ValueError):
+            approximation.minimax_polynomial_approximation(
+                np.exp, 0., 1., 1.5,
+            )
+        #   when n is negative.
+        with self.assertRaises(ValueError):
+            approximation.minimax_polynomial_approximation(
+                np.exp, 0., 1., -1,
+            )
+        #   when atol is negative.
+        with self.assertRaises(ValueError):
+            approximation.minimax_polynomial_approximation(
+                np.exp, 0., 1., 1, atol=-1e-5,
+            )
+        #   when a > b
+        with self.assertRaises(ValueError):
+            approximation.minimax_polynomial_approximation(
+                np.exp, 1., 0., 1,
+            )
+
+        # Test minimax_polynomial_approximation against x**n.
+        # NOTE: The minimax approximation of x**n by a polynomial of
+        # degree less than n is well-known. For example, see:
+        # https://mathworld.wolfram.com/ChebyshevPolynomialoftheFirstKind.html#eqn49.
+        a, b = -1., 1.
+        for n, expected_p, expected_err in [
+                # x**1 ~ 0
+                (1, lambda x: np.full_like(x,  0.),     1.),
+                # x**2 ~ 1/2
+                (2, lambda x: np.full_like(x, 0.5),    0.5),
+                # x**3 ~ 3/4x
+                (3, lambda x:               0.75*x,   0.25),
+                # x**4 ~ x**2 - 1/8
+                (4, lambda x:         x**2 - 0.125,  0.125),
+                # x**5 ~ 5/4x**3 - 5/16x
+                (5, lambda x: 1.25*x**3 - 0.3125*x, 0.0625),
+        ]:
+            def f(xs, n=n): return xs**n
+
+            # NOTE: The best polynomial approximation to x**n of degree
+            # less than n has degree n-2. Thus, we can find the same
+            # approximation when considering polynomials of both degree
+            # n-2 and n-1.
+
+            # degree n-1
+            p, err = approximation.minimax_polynomial_approximation(
+                f, a, b, n-1,
+            )
+
+            grid = np.linspace(a, b, num=1_000)
+            self.assertTrue(np.allclose(p(grid), expected_p(grid)))
+            self.assertAlmostEqual(err, expected_err)
+
+            # degree n-2
+            if n < 2:
+                continue
+
+            p, err = approximation.minimax_polynomial_approximation(
+                f, a, b, n-2,
+            )
+
+            grid = np.linspace(a, b, num=1_000)
+            self.assertTrue(np.allclose(p(grid), expected_p(grid)))
+            self.assertAlmostEqual(err, expected_err)
+
+        # Test minimax_polynomial_approximation on lower degree polynomials.
+        a, b = -1., 1.
+        for n in [0, 1, 2]:
+            for extra_n in [0, 1, 2]:
+                def f(xs, n=n): return xs**n
+
+                p, err = approximation.minimax_polynomial_approximation(
+                    f, a, b, n + extra_n,
+                )
+
+                self.assertLess(np.abs(err), 1e-15)
+
+                grid = np.linspace(a, b, num=1_000)
+                self.assertTrue(np.allclose(f(grid), p(grid)))
+
+    @pytest.mark.level(2)
+    def test_minimax_polynomial_approximation_on_general_functions(self):
+        atol = 256. * np.spacing(1.)
+        for f, a, b in [
+                ( np.abs,      -1.,      1.),
+                (np.sqrt,       0.,      1.),
+                ( np.exp,      -1.,      1.),
+                ( np.sin, -2*np.pi, 2*np.pi),
+        ]:
+            for n in [0, 1, 2, 5, 15]:
+                p, err = approximation.minimax_polynomial_approximation(
+                    f, a, b, n, atol=atol,
+                )
+
+                grid = np.linspace(a, b, num=1_000)
+
+                # Check minimax is better than Chebyshev approximation.
+                ns = np.arange(n + 1)
+                xs = a + (b - a) * 0.5 * (1 - np.cos(np.pi * (ns + 0.5)/(n+1)))
+                p_cheb = approximation.lagrange_interpolate(xs, f(xs))
+                self.assertLess(
+                    np.max(np.abs(f(grid) - p(grid))),
+                    np.max(np.abs(f(grid) - p_cheb(grid))) + atol,
+                )
+                # Check that err bounds the maximum error.
+                self.assertGreater(err, 0.)
+                self.assertGreater(
+                    err,
+                    np.max(np.abs(f(grid) - p(grid))) - atol,
+                )

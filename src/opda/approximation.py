@@ -351,3 +351,88 @@ def remez(f, a, b, n, *, atol=None):
         )
 
     return rs, f(rs), err_hi
+
+
+def minimax_polynomial_approximation(f, a, b, n, *, atol=None):
+    """Return a function for evaluating the minimax polynomial.
+
+    Parameters
+    ----------
+    f : function, required
+        The function to approximate. The function should map floats to
+        floats.
+    a : float, required
+        The lower end point of the interval over which to approximate
+        ``f``.
+    b : float, required
+        The upper end point of the interval over which to approximate
+        ``f``.
+    n : non-negative int, required
+        The degree of the polynomial approximation.
+    atol : non-negative float or None, optional (default=None)
+        The absolute tolerance to use for stopping the computation. The
+        algorithm ends when the current approximation has a maximum
+        error within ``atol`` of the best possible approximation. If
+        ``None``, then it will be set to a multiple of machine epsilon.
+
+        Only set this value if you encounter numerical or optimization
+        issues. In that case, raise the value until the numerical issues
+        disappear and as long as the new absolute tolerance represents
+        an acceptable level of error above the best approximation.
+
+        See the docstring of the :py:func:`remez` function for details.
+
+    Returns
+    -------
+    function
+        A function that evaluates the minimax polynomial on arrays of
+        floats, entrywise.
+    float
+        The worst case absolute error of the minimax polynomial
+        approximation to ``f`` from ``a`` to ``b``.
+    """
+    # Validate the arguments.
+    if not callable(f):
+        raise TypeError("f must be callable.")
+
+    if not np.isscalar(a):
+        raise ValueError("a must be a scalar.")
+
+    if not np.isscalar(b):
+        raise ValueError("b must be a scalar.")
+
+    if not np.isscalar(n):
+        raise ValueError("n must be a scalar.")
+    if n % 1 != 0:
+        raise ValueError("n must be an integer.")
+    if n < 0:
+        raise ValueError("n must be non-negative.")
+
+    if atol is not None and atol < 0:
+        raise ValueError("atol must be non-negative.")
+
+    if a > b:
+        raise ValueError("a must be less than or equal to b.")
+
+    # Set arguments to appropriate defaults.
+    if atol is None:
+        machine_epsilon = np.spacing(1.)
+        # NOTE: The factor, 256, was chosen empirically to avoid
+        # numerical issues when f can be fit exactly.
+        atol = 256. * machine_epsilon
+
+    # Compute the minimax polynomial approximation.
+    rs, ys, err = remez(f, a, b, n, atol=atol)
+
+    ns = np.arange(n + 2)
+
+    # NOTE: See the ``remez`` function for background on the Remez
+    # exchange algorithm and why the following computation yields the
+    # minimax polynomial approximation to ``f``.
+    p0 = lagrange_interpolate(rs[:-1], ys[:-1])
+    p1 = lagrange_interpolate(rs[:-1], (-1)**ns[:-1])
+    h = (p0(rs[-1]) - ys[-1]) / (p1(rs[-1]) + (-1)**n)
+
+    p = lagrange_interpolate(rs[:-1], ys[:-1] - h * (-1)**ns[:-1])
+
+    return p, err
