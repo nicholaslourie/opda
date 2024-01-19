@@ -550,3 +550,113 @@ class MinimaxPolynomialCoefficientsTestCase(unittest.TestCase):
                     1.01 * err + atol,
                     np.max(np.abs(f(grid) - p(grid))),
                 )
+
+
+class PiecewisePolynomialKnotsTestCase(unittest.TestCase):
+    """Test opda.approximation.piecewise_polynomial_knots."""
+
+    def test_piecewise_polynomial_knots(self):
+        # Test argument validation.
+        #   when f is not a callable
+        with self.assertRaises(TypeError):
+            approximation.piecewise_polynomial_knots(
+                None, 0., 1., [1, 2],
+            )
+        with self.assertRaises(TypeError):
+            approximation.piecewise_polynomial_knots(
+                1., 0., 1., [1, 2],
+            )
+        with self.assertRaises(TypeError):
+            approximation.piecewise_polynomial_knots(
+                "f", 0., 1., [1, 2],
+            )
+        #   when a is not a scalar
+        with self.assertRaises(ValueError):
+            approximation.piecewise_polynomial_knots(
+                np.exp, [0.], 1., [1, 2],
+            )
+        #   when b is not a scalar
+        with self.assertRaises(ValueError):
+            approximation.piecewise_polynomial_knots(
+                np.exp, 0., [1.], [1, 2],
+            )
+        #   when ns is not a 1D array
+        with self.assertRaises(ValueError):
+            approximation.piecewise_polynomial_knots(
+                np.exp, 0., 1., 1,
+            )
+        with self.assertRaises(ValueError):
+            approximation.piecewise_polynomial_knots(
+                np.exp, 0., 1., [[1], [2]],
+            )
+        #   when ns is not all integers
+        with self.assertRaises(ValueError):
+            approximation.piecewise_polynomial_knots(
+                np.exp, 0., 1., [1.5],
+            )
+        with self.assertRaises(ValueError):
+            approximation.piecewise_polynomial_knots(
+                np.exp, 0., 1., [1, 1.5],
+            )
+        with self.assertRaises(ValueError):
+            approximation.piecewise_polynomial_knots(
+                np.exp, 0., 1., [1.5, 1],
+            )
+        #   when ns is not all non-negative.
+        with self.assertRaises(ValueError):
+            approximation.piecewise_polynomial_knots(
+                np.exp, 0., 1., [-1],
+            )
+        with self.assertRaises(ValueError):
+            approximation.piecewise_polynomial_knots(
+                np.exp, 0., 1., [-1, 1],
+            )
+        with self.assertRaises(ValueError):
+            approximation.piecewise_polynomial_knots(
+                np.exp, 0., 1., [1, -1],
+            )
+        #   when atol is negative.
+        with self.assertRaises(ValueError):
+            approximation.piecewise_polynomial_knots(
+                np.exp, 0., 1., [1, 2], atol=-1e-5,
+            )
+        #   when a > b
+        with self.assertRaises(ValueError):
+            approximation.piecewise_polynomial_knots(
+                np.exp, 1., 0., [1, 2],
+            )
+
+        # Test piecewise_polynomial_knots.
+
+        f, a, b, ns = lambda xs: xs**2, -1., 1., [1, 1, 1]
+        # A piecewise polynomial approximation should have error at most
+        # that of the minimax polynomial.
+        err_bound = 0.5  # minimax polynomial approximation error for x**2
+
+        knots, err = approximation.piecewise_polynomial_knots(f, a, b, ns)
+
+        # Check knots.
+        self.assertEqual(knots[0], a)
+        self.assertEqual(knots[-1], b)
+        self.assertEqual(len(knots), len(ns) + 1)
+        self.assertEqual(knots.tolist(), sorted(knots.tolist()))
+        # Check err.
+        self.assertGreater(err, 0)
+        self.assertLess(err, err_bound)
+
+    @pytest.mark.level(3)
+    def test_piecewise_polynomial_knots_on_general_functions(self):
+        for f, a, b, ns in [
+                (lambda xs: xs**2, -1., 1., [1, 0, 1]),
+                (          np.exp, -1., 1., [0, 1, 2]),
+        ]:
+            knots, err = approximation.piecewise_polynomial_knots(f, a, b, ns)
+
+            _, _, err0 = approximation.remez(f, knots[0], knots[1], ns[0])
+            _, _, err1 = approximation.remez(f, knots[1], knots[2], ns[1])
+            _, _, err2 = approximation.remez(f, knots[2], knots[3], ns[2])
+
+            # Overall error should equal the error on each piece.
+            self.assertAlmostEqual(err, err0, delta=0.01 * err)
+            self.assertAlmostEqual(err, err1, delta=0.01 * err)
+            self.assertAlmostEqual(err, err2, delta=0.01 * err)

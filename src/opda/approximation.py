@@ -635,3 +635,146 @@ def minimax_polynomial_coefficients(
         )
 
     return coeffs, err
+
+
+def piecewise_polynomial_knots(f, a, b, ns, *, atol=None):
+    """Return knots for the minimax piecewise polynomial approximation.
+
+    The knots of a piecewise polynomial (i.e., spline) are the points
+    that divide the domain into pieces. This function computes the
+    minimax polynomial approximation to ``f`` independently on each
+    piece, so in general the piecewise polynomial will be
+    discontinuous. The returned points are chosen such that the worst
+    case approximation error is minimized.
+
+    Parameters
+    ----------
+    f : function, required
+        The function to approximate. The function should map floats to
+        floats.
+    a : float, required
+        The lower end point of the interval over which to approximate
+        ``f``.
+    b : float, required
+        The upper end point of the interval over which to approximate
+        ``f``.
+    ns : 1D array of non-negative ints, required
+        The degree of the polynomial approximation on each piece. The
+        length of ``ns`` determines the number of pieces.
+    atol : non-negative float or None, optional (default=None)
+        The absolute tolerance to use for stopping the computation. The
+        algorithm ends when the current approximation has a maximum
+        error within ``atol`` of the best possible approximation. If
+        ``None``, then it will be set to a multiple of machine epsilon.
+
+        Only set this value if you encounter numerical or optimization
+        issues. In that case, raise the value until the numerical issues
+        disappear and as long as the new absolute tolerance represents
+        an acceptable level of error above the best approximation.
+
+        See the docstring of the :py:func:`remez` function for details.
+
+    Returns
+    -------
+    1D array of floats
+        The ``len(ns) + 1`` knots defining the optimal pieces.
+    float
+        The worst case absolute error of the piecewise minimax
+        polynomial approximation to ``f`` from ``a`` to ``b`` using the
+        returned knots.
+    """
+    # Validate the arguments.
+    if not callable(f):
+        raise TypeError("f must be callable.")
+
+    if not np.isscalar(a):
+        raise ValueError("a must be a scalar.")
+
+    if not np.isscalar(b):
+        raise ValueError("b must be a scalar.")
+
+    ns = np.array(ns)
+    if len(ns.shape) != 1:
+        raise ValueError("ns must be a 1D array.")
+    if np.any(ns % 1 != 0):
+        raise ValueError("ns must all be integers.")
+    if np.any(ns < 0):
+        raise ValueError("ns must all be non-negative.")
+
+    if atol is not None and atol < 0:
+        raise ValueError("atol must be non-negative.")
+
+    if a > b:
+        raise ValueError("a must be less than or equal to b.")
+
+    # Define constants.
+    machine_epsilon = np.spacing(1.)
+
+    # Set arguments to appropriate defaults.
+    if atol is None:
+        # NOTE: The factor, 256, was chosen empirically to avoid
+        # numerical issues when f can be fit exactly.
+        atol = 256. * machine_epsilon
+
+    # Compute the piecewise polynomial knots.
+    knots = a + (b - a) * np.arange(len(ns)+1) / len(ns)
+    errs = np.array([
+        remez(f, a, b, n, atol=atol)[2]
+        for a, b, n in zip(knots[:-1], knots[1:], ns)
+    ])
+    err_min, err_max = np.min(errs), np.max(errs)
+
+    # Run binary search *on the worst case error* to find the level at
+    # which each of the polynomial pieces has the same error.
+    #
+    # NOTE: err_min and err_max measure the quality of the *current*
+    # approximation, while err_lo and err_hi bound the error level
+    # we're seeking via binary search.
+    err_lo, err_hi = err_min, err_max
+    for _ in range(100):
+        # Check if the solution has been found.
+
+        if (err_max - err_min) / err_min < 0.01:
+            break
+
+        # Set the target error.
+
+        # NOTE: Use the geometric mean to choose a point halfway
+        # between the bounds in log space.
+        err_target = (err_lo * err_hi)**0.5
+
+        # Find the knots.
+
+        errs = []
+        knots = [a]
+        for n in ns[:-1]:
+            # Using binary search, find where the next knot must be to
+            # achieve the target error.
+            knot_prev = knots[-1]
+            knot_lo, knot_hi = knot_prev, b
+            for _ in range(int(np.ceil(np.log(machine_epsilon) / np.log(0.5)))):
+                knot_curr = (knot_lo + knot_hi) / 2
+                _, _, err = remez(f, knot_prev, knot_curr, n)
+                if err >= err_target:
+                    knot_hi = knot_curr
+                elif err <= err_target:
+                    knot_lo = knot_curr
+            errs.append(err)
+            knots.append(knot_curr)
+
+        knot_prev = knots[-1]
+        knot_curr = b
+        _, _, err = remez(f, knot_prev, knot_curr, ns[-1])
+
+        errs.append(err)
+        knots.append(knot_curr)
+
+        err_min, err_max = np.min(errs), np.max(errs)
+        err_lo = max(err_min, err_lo)
+        err_hi = min(err_max, err_hi)
+    else:
+        raise exceptions.OptimizationError(
+            "Convergence failed in the allocated number of iterations.",
+        )
+
+    return np.array(knots), err_hi
