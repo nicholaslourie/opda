@@ -131,7 +131,6 @@ select = [
   "D",        # pydocstyle
   "DTZ",      # flake8-datetimez
   "E", "W",   # pycodestyle (errors, warnings)
-  "ERA",      # eradicate
   "EXE",      # flake8-executable
   "F",        # Pyflakes
   "FIX",      # flake8-fixme
@@ -190,7 +189,6 @@ extend-select = [
   "E501",     # Line too long
   "T201",     # `print` found
   "T203",     # `pprint` found
-  "ERA001",   # Found commented-out code
   "D10",      # (rule range) require doc strings
 ]
 "**/conftest.py" = [
@@ -198,7 +196,6 @@ extend-select = [
 ]
 "**/test_*.py" = [
   "D102",     # Missing docstring in public method
-  "ERA001",   # Found commented-out code
 ]
 
 [tool.ruff.lint.pydocstyle]

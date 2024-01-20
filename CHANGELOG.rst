@@ -44,10 +44,30 @@ The format is based on `Keep a Changelog
 `Unreleased`_
 =============
 .. rubric:: Additions
+
+* Add ``opda.approximation``, a module for approximation-theoretic
+  operations, with the following functions:
+
+  * ``opda.approximation.lagrange_interpolate``: Interpolate points with
+    a polynomial.
+  * ``opda.approximation.remez``: Identify the reference corresponding
+    to the minimax polynomial approximation of a function.
+  * ``opda.approximation.minimax_polynomial_approximation``: Evaluate
+    the minimax polynomial approximation of a function.
+  * ``opda.approximation.minimax_polynomial_coefficients``: Compute the
+    coefficients of the minimax polynomial approximation of a function.
+  * ``opda.approximation.piecewise_polynomial_knots``: Find the knots
+    for the minimax piecewise polynomial approximation of a function.
+
+* Add ``opda.exceptions.NumericalError``, an exception for numerical
+  issues.
+
 .. rubric:: Changes
 
 * Reparametrize ``parametric.QuadraticDistribution`` so ``c`` is the
   effective number of hyperparameters instead of half the number.
+* Completely disable the eradicate (``ERA``) lint rules.
+* Enable ``"py"`` as the primary domain in the documentation.
 
 .. rubric:: Deprecations
 .. rubric:: Removals

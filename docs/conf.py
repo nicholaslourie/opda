@@ -112,7 +112,7 @@ extensions = [
 templates_path = ["_templates"]
 exclude_patterns = []
 
-primary_domain = None
+primary_domain = "py"
 default_role = None
 
 nitpicky = True
