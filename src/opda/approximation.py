@@ -85,7 +85,12 @@ def remez(f, a, b, n, *, atol=None):
     achieves its equioscillating maximal error.
 
     The reference for the minimax polynomial is primarily useful as an
-    input for other approximation theoretic operations.
+    input for other approximation theoretic operations. Most users will
+    prefer instead to use other functions that implement these
+    operations such as :py:func:`minimax_polynomial_approximation` to
+    evaluate the minimax polynomial or
+    :py:func:`minimax_polynomial_coefficients` to compute its
+    coefficients.
 
     For background on the Remez algorithm and approximation theory, see
     "Approximation theory and methods" [1]_.

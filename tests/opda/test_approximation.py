@@ -161,6 +161,7 @@ class RemezTestCase(unittest.TestCase):
                 self.assertLess(np.abs(err), 1e-15)
 
                 # Construct the minimax polynomial approximation.
+                # See minimax_polynomial_approximation for details.
                 ns = np.arange(n + extra_n + 2)
                 p0 = approximation.lagrange_interpolate(rs[:-1], ys[:-1])
                 p1 = approximation.lagrange_interpolate(rs[:-1], (-1)**ns[:-1])
@@ -186,6 +187,7 @@ class RemezTestCase(unittest.TestCase):
                 rs, ys, err = approximation.remez(f, a, b, n, atol=atol)
 
                 # Construct the minimax polynomial approximation.
+                # See minimax_polynomial_approximation for details.
                 ns = np.arange(n + 2)
                 p0 = approximation.lagrange_interpolate(rs[:-1], ys[:-1])
                 p1 = approximation.lagrange_interpolate(rs[:-1], (-1)**ns[:-1])
