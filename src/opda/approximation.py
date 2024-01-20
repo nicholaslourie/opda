@@ -130,6 +130,13 @@ def remez(f, a, b, n, *, atol=None):
         The worst case absolute error of the minimax polynomial
         approximation to ``f`` from ``a`` to ``b``.
 
+    See Also
+    --------
+    minimax_polynomial_approximation :
+        Return a function representing the minimax polynomial.
+    minimax_polynomial_coefficients :
+        Return the minimax polynomial's coefficients.
+
     References
     ----------
     .. [1] Powell, M.J.D., "Approximation theory and methods"
@@ -398,6 +405,13 @@ def minimax_polynomial_approximation(f, a, b, n, *, atol=None):
     float
         The worst case absolute error of the minimax polynomial
         approximation to ``f`` from ``a`` to ``b``.
+
+    See Also
+    --------
+    minimax_polynomial_coefficients :
+        Return the minimax polynomial's coefficients.
+    remez :
+        Return the reference for the minimax polynomial.
     """
     # Validate the arguments.
     if not callable(f):
@@ -509,6 +523,13 @@ def minimax_polynomial_coefficients(
     float
         The worst case absolute error of the minimax polynomial
         approximation to ``f`` from ``a`` to ``b``.
+
+    See Also
+    --------
+    minimax_polynomial_approximation :
+        Return a function representing the minimax polynomial.
+    remez :
+        Return the reference for the minimax polynomial.
     """
     # Validate the arguments.
     if not callable(f):
