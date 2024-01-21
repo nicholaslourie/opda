@@ -1,6 +1,8 @@
 """Tests for opda.parametric."""
 
 import numpy as np
+import pytest
+from scipy import stats
 
 from opda import parametric
 import opda.random
@@ -744,6 +746,23 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
             self.assertEqual(dist.pdf(a), 1.)
             self.assertEqual(dist.pdf(b), 1.)
 
+    def test_pdf_matches_numerical_derivative_of_cdf(self):
+        for a, b in [(-1., 1.), (0., 1.), (1., 10.)]:
+            for c in [1, 2, 3]:
+                for convex in [False, True]:
+                    dist = parametric.QuadraticDistribution(
+                        a, b, c, convex=convex,
+                    )
+
+                    # Omit a and b from the numerical derivatives since
+                    # they're on the boundary.
+                    ys = np.linspace(a, b, num=102)[1:-1]
+                    dy = 1e-7
+                    self.assertTrue(np.allclose(
+                        dist.pdf(ys),
+                        (dist.cdf(ys + dy) - dist.cdf(ys - dy)) / (2 * dy),
+                    ))
+
     def test_cdf_on_boundary_of_support(self):
         for convex in [False, True]:
             a, b, c = 0., 1., 1
@@ -755,6 +774,41 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
             dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
             self.assertEqual(dist.cdf(a), 0.)
             self.assertEqual(dist.cdf(b), 1.)
+
+    @pytest.mark.level(1)
+    def test_cdf_agrees_with_sampling_definition(self):
+        for a, b in [(-1., 1.), (0., 1.), (1., 10.)]:
+            for c in [1, 2, 3]:
+                for convex in [False, True]:
+                    dist = parametric.QuadraticDistribution(
+                        a, b, c, convex=convex,
+                    )
+
+                    # Sample from the quadratic distribution according
+                    # to its derivation: uniform random variates passed
+                    # through a quadratic function.
+                    ys = np.sum(
+                        self.generator.uniform(-1., 1., size=(150_000, c))**2,
+                        axis=-1,
+                    )
+                    # Filter for points in the sphere of radius 1, to
+                    # avoid distortions from the hypercube's boundary.
+                    ys = ys[ys <= 1]
+                    # Adjust the data for the distribution's parameters.
+                    ys = (
+                        a + (b - a) * ys
+                        if convex else
+                        b - (b - a) * ys
+                    )
+
+                    # Check the sample comes from the distribution using
+                    # the KS test.
+                    p_value = stats.kstest(
+                        ys,
+                        dist.cdf,
+                        alternative="two-sided",
+                    ).pvalue
+                    self.assertGreater(p_value, 1e-6)
 
     def test_ppf_is_inverse_of_cdf(self):
         # NOTE: For continuous distributions like the quadratic
