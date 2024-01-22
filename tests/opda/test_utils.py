@@ -1144,3 +1144,49 @@ class BinomialConfidenceIntervalTestCase(unittest.TestCase):
                 )
                 self.assertAlmostEqual(lo1, 1 - hi2)
                 self.assertAlmostEqual(hi1, 1 - lo2)
+
+
+class NormalPdfTestCase(unittest.TestCase):
+    """Test opda.utils.normal_pdf."""
+
+    def test_normal_pdf(self):
+        norm = stats.norm(0., 1.)
+        # scalar
+        for x in [
+                  0.,
+                -1e2, -1e1, -1e0, -1e-1, 1e-1, 1e0, 1e1, 1e2,
+                -5e2, -5e1, -5e0, -5e-1, 5e-1, 5e0, 5e1, 5e2,
+        ]:
+            self.assertTrue(np.isscalar(utils.normal_pdf(x)))
+            self.assertAlmostEqual(utils.normal_pdf(x), norm.pdf(x))
+        # 1D array
+        xs = np.linspace(-10., 10., num=1_000)
+        self.assertEqual(utils.normal_pdf(xs).shape, xs.shape)
+        self.assertTrue(np.allclose(utils.normal_pdf(xs), norm.pdf(xs)))
+        # 2D array
+        xs = np.linspace(-10., 10., num=1_000).reshape((100, 10))
+        self.assertEqual(utils.normal_pdf(xs).shape, xs.shape)
+        self.assertTrue(np.allclose(utils.normal_pdf(xs), norm.pdf(xs)))
+
+
+class NormalCdfTestCase(unittest.TestCase):
+    """Test opda.utils.normal_cdf."""
+
+    def test_normal_cdf(self):
+        norm = stats.norm(0., 1.)
+        # scalar
+        for x in [
+                  0.,
+                -1e2, -1e1, -1e0, -1e-1, 1e-1, 1e0, 1e1, 1e2,
+                -5e2, -5e1, -5e0, -5e-1, 5e-1, 5e0, 5e1, 5e2,
+        ]:
+            self.assertTrue(np.isscalar(utils.normal_cdf(x)))
+            self.assertAlmostEqual(utils.normal_cdf(x), norm.cdf(x))
+        # 1D array
+        xs = np.linspace(-10., 10., num=1_000)
+        self.assertEqual(utils.normal_cdf(xs).shape, xs.shape)
+        self.assertTrue(np.allclose(utils.normal_cdf(xs), norm.cdf(xs)))
+        # 2D array
+        xs = np.linspace(-10., 10., num=1_000).reshape((100, 10))
+        self.assertEqual(utils.normal_cdf(xs).shape, xs.shape)
+        self.assertTrue(np.allclose(utils.normal_cdf(xs), norm.cdf(xs)))
