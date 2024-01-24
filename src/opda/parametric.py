@@ -29,6 +29,13 @@ class QuadraticDistribution:
         distribution, as opposed to the concave form. When optimizing
         via random search, the tail of the score distribution approaches
         the convex form when minimizing and the concave when maximizing.
+
+    Attributes
+    ----------
+    mean : float
+        The distribution's mean.
+    variance : float
+        The distribution's variance.
     """
 
     def __init__(
@@ -58,11 +65,19 @@ class QuadraticDistribution:
         if a > b:
             raise ValueError("a must be less than or equal to b.")
 
-        # Bind attributes to the instance.
+        # Bind arguments to the instance as attributes.
         self.a = a
         self.b = b
         self.c = c
         self.convex = convex
+
+        # Bind other attributes to the instance.
+        self.mean = (
+            a + (b - a) * c / (c + 2)
+            if convex else
+            a + (b - a) * 2 / (c + 2)
+        )
+        self.variance = (b - a)**2 * 4 * c / ((c + 2)**2 * (c + 4))
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
