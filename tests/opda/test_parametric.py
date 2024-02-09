@@ -821,6 +821,23 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
             self.assertEqual(dist.cdf(a), 0.)
             self.assertEqual(dist.cdf(b), 1.)
 
+    def test_cdf_is_consistent_across_scales(self):
+        for c in [1, 2, 10]:
+            for convex in [False, True]:
+                ys = np.linspace(0., 1., num=100)
+
+                ps = parametric.QuadraticDistribution(
+                    0., 1., c, convex=convex,
+                ).cdf(ys)
+                for a, b in [(-1., 1.), (1., 10.)]:
+                    dist = parametric.QuadraticDistribution(
+                        a, b, c, convex=convex,
+                    )
+                    self.assertTrue(np.allclose(
+                        ps,
+                        dist.cdf(a + (b - a) * ys),
+                    ))
+
     @pytest.mark.level(1)
     def test_cdf_agrees_with_sampling_definition(self):
         for a, b in [(-1., 1.), (0., 1.), (1., 10.)]:
