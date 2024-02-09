@@ -239,6 +239,7 @@ class EmpiricalDistribution:
             if np.abs(np.sum(ws) - 1.) > 1e-10:
                 raise ValueError("ws must sum to 1.")
 
+        a = np.array(a)[()]
         if not np.isscalar(a):
             raise ValueError("a must be a scalar.")
         if a > np.min(ys):
@@ -246,6 +247,7 @@ class EmpiricalDistribution:
                 f"a ({a}) cannot be greater than the min of ys ({np.min(ys)}).",
             )
 
+        b = np.array(b)[()]
         if not np.isscalar(b):
             raise ValueError("b must be a scalar.")
         if b < np.max(ys):
@@ -827,6 +829,7 @@ class EmpiricalDistribution:
                 stacklevel=2,
             )
 
+        confidence = np.array(confidence)[()]
         if not np.isscalar(confidence):
             raise ValueError("confidence must be a scalar.")
         if confidence < 0. or confidence > 1.:
@@ -834,6 +837,7 @@ class EmpiricalDistribution:
                 "confidence must be between 0 and 1, inclusive.",
             )
 
+        a = np.array(a)[()]
         if not np.isscalar(a):
             raise ValueError("a must be a scalar.")
         if a > np.min(ys):
@@ -841,6 +845,7 @@ class EmpiricalDistribution:
                 f"a ({a}) cannot be greater than the min of ys ({np.min(ys)}).",
             )
 
+        b = np.array(b)[()]
         if not np.isscalar(b):
             raise ValueError("b must be a scalar.")
         if b < np.max(ys):

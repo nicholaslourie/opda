@@ -46,12 +46,15 @@ class QuadraticDistribution:
             convex = False,
     ):
         # Validate the arguments.
+        a = np.array(a)[()]
         if not np.isscalar(a):
             raise ValueError("a must be a scalar.")
 
+        b = np.array(b)[()]
         if not np.isscalar(b):
             raise ValueError("b must be a scalar.")
 
+        c = np.array(c)[()]
         if not np.isscalar(c):
             raise ValueError("c must be a scalar.")
         if c % 1 != 0:
@@ -265,6 +268,7 @@ class QuadraticDistribution:
         if np.any(ns <= 0):
             raise ValueError("ns must be positive.")
 
+        q = np.array(q)[()]
         if not np.isscalar(q):
             raise ValueError("q must be a scalar.")
         if q < 0. or q > 1.:
@@ -380,6 +384,7 @@ class QuadraticDistribution:
         if len(ys) == 0:
             raise ValueError("ys must be non-empty.")
 
+        fraction = np.array(fraction)[()]
         if not np.isscalar(fraction):
             raise ValueError("fraction must be a scalar.")
         if fraction < 0. or fraction > 1.:
