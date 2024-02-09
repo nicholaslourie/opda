@@ -775,6 +775,23 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
             self.assertEqual(dist.pdf(a), 1.)
             self.assertEqual(dist.pdf(b), 1.)
 
+    def test_pdf_is_consistent_across_scales(self):
+        for c in [1, 2, 10]:
+            for convex in [False, True]:
+                ys = np.linspace(0., 1., num=100)
+
+                ps = parametric.QuadraticDistribution(
+                    0., 1., c, convex=convex,
+                ).pdf(ys)
+                for a, b in [(-1., 1.), (1., 10.)]:
+                    dist = parametric.QuadraticDistribution(
+                        a, b, c, convex=convex,
+                    )
+                    self.assertTrue(np.allclose(
+                        ps / (b - a),
+                        dist.pdf(a + (b - a) * ys),
+                    ))
+
     def test_pdf_matches_numerical_derivative_of_cdf(self):
         for a, b in [(-1., 1.), (0., 1.), (1., 10.)]:
             for c in [1, 2, 10]:
