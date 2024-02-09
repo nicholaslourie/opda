@@ -1084,6 +1084,32 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
 class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
     """Test opda.parametric.NoisyQuadraticDistribution."""
 
+    @pytest.mark.level(2)
+    def test_attributes(self):
+        n_samples = 1_000_000
+
+        bounds = [(-10., -1.), (-1., 0.), (0., 0.), (0., 1.), (1., 10.)]
+        cs = [1, 2, 10]
+        os = [1e-6, 1e-3, 1e0, 1e3]
+        for a, b in bounds:
+            for c in cs:
+                for o in os:
+                    for convex in [False, True]:
+                        dist = parametric.NoisyQuadraticDistribution(
+                            a, b, c, o, convex,
+                        )
+                        ys = dist.sample(n_samples)
+                        self.assertAlmostEqual(
+                            dist.mean,
+                            np.mean(ys),
+                            delta=6*np.std(ys)/n_samples**0.5,
+                        )
+                        self.assertAlmostEqual(
+                            dist.variance,
+                            np.mean((ys - dist.mean)**2),
+                            delta=6*np.std((ys - dist.mean)**2)/n_samples**0.5,
+                        )
+
     def test___eq__(self):
         bounds = [(-10., -1.), (-1., 0.), (0., 0.), (0., 1.), (1., 10.)]
         cs = [1, 2, 10]
