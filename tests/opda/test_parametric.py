@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from scipy import stats
 
-from opda import parametric
+from opda import parametric, utils
 import opda.random
 
 from tests import testcases
@@ -209,7 +209,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                 self.assertEqual(ys.shape, (10, 10))
                 self.assertLess(a, np.min(ys))
                 self.assertGreater(b, np.max(ys))
-        # Test when c = 2 and the samples should be uniformly distributed.
+        # Test c = 2, the samples should be uniformly distributed.
         a, b, c = 0., 1., 2
         ys = parametric.QuadraticDistribution(a, b, c).sample(2_500)
         self.assertLess(a, np.min(ys))
@@ -1318,3 +1318,67 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                 "a=0.0, b=1.0, c=1, o=1.0, convex=False"
             ")",
         )
+
+    def test_sample(self):
+        # Test sample when a = b and o = 0.
+        a, b = 0., 0.
+        for c in [1, 10]:
+            for convex in [False, True]:
+                dist = parametric.NoisyQuadraticDistribution(
+                    a, b, c, 0., convex=convex,
+                )
+                # without expicit value for size
+                y = dist.sample()
+                self.assertTrue(np.isscalar(y))
+                self.assertEqual(y, 0.)
+                # scalar
+                y = dist.sample(None)
+                self.assertTrue(np.isscalar(y))
+                self.assertEqual(y, 0.)
+                # 1D array
+                ys = dist.sample(100)
+                self.assertTrue(np.array_equal(ys, np.zeros(100)))
+                # 2D array
+                ys = dist.sample((10, 10))
+                self.assertTrue(np.array_equal(ys, np.zeros((10, 10))))
+
+        # Test sample when a != b.
+        a, b = 0., 1.
+        for c in [1, 10]:
+            for o in [1e-6, 1e-3, 1e0, 1e3]:
+                for convex in [False, True]:
+                    dist = parametric.NoisyQuadraticDistribution(
+                        a, b, c, o, convex=convex,
+                    )
+                    # without explicit value for size
+                    y = dist.sample()
+                    self.assertTrue(np.isscalar(y))
+                    self.assertLess(a - 6*o, y)
+                    self.assertGreater(b + 6*o, y)
+                    # scalar
+                    y = dist.sample(None)
+                    self.assertTrue(np.isscalar(y))
+                    self.assertLess(a - 6*o, y)
+                    self.assertGreater(b + 6*o, y)
+                    # 1D array
+                    ys = dist.sample(100)
+                    self.assertEqual(ys.shape, (100,))
+                    self.assertLess(a - 6*o, np.min(ys))
+                    self.assertGreater(b + 6*o, np.max(ys))
+                    # 2D array
+                    ys = dist.sample((10, 10))
+                    self.assertEqual(ys.shape, (10, 10))
+                    self.assertLess(a - 6*o, np.min(ys))
+                    self.assertGreater(b + 6*o, np.max(ys))
+        # Test c = 2 and o = 0, the samples should be uniformly distributed.
+        a, b, c, o = 0., 1., 2, 0.
+        ys = parametric.NoisyQuadraticDistribution(a, b, c, o).sample(2_500)
+        self.assertLess(a, np.min(ys))
+        self.assertGreater(b, np.max(ys))
+        self.assertLess(abs(np.mean(ys < 0.5) - 0.5), 0.05)
+        # Test a = b and o > 0, the samples should be normally distributed.
+        a, b, c, o = 0., 0., 1, 1.
+        ys = parametric.NoisyQuadraticDistribution(a, b, c, o).sample(2_500)
+        self.assertLess(a-7*o, np.min(ys))
+        self.assertGreater(b+7*o, np.max(ys))
+        self.assertLess(abs(np.mean(utils.normal_cdf(ys) < 0.5) - 0.5), 0.05)

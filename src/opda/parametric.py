@@ -579,3 +579,41 @@ class NoisyQuadraticDistribution:
             f" convex={self.convex!r}"
             f")"
         )
+
+    def sample(self, size=None, *, generator=None):
+        """Return a sample from the noisy quadratic distribution.
+
+        Parameters
+        ----------
+        size : None, int, or tuple of ints, optional (default=None)
+            The desired shape of the returned sample. If ``None``,
+            then the sample is a scalar.
+        generator : None or np.random.Generator, optional (default=None)
+            The random number generator to use. If ``None``, then the
+            global default random number generator is used. See
+            :py:mod:`opda.random` for more information.
+
+        Returns
+        -------
+        array of floats
+            The sample from the distribution.
+        """
+        # Validate arguments.
+        generator = (
+            generator
+            if generator is not None else
+            opda.random.DEFAULT_GENERATOR
+        )
+
+        # Compute the sample.
+        a, b, c, o = self.a, self.b, self.c, self.o
+        # Sample the quadratic distribution via inverse transform sampling.
+        qs = generator.uniform(0., 1., size=size)
+        if self.convex:
+            ys = a + (b - a) * qs**(2/c)
+        else:  # concave
+            ys = b - (b - a) * (1 - qs)**(2/c)
+        # Add the normally distributed noise.
+        ys += generator.normal(0, o, size=size)
+
+        return ys
