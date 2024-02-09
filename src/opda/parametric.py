@@ -568,3 +568,14 @@ class NoisyQuadraticDistribution:
             f" convex={self.convex!s}"
             f")"
         )
+
+    def __repr__(self):
+        return (
+            f"{self.__class__.__name__}("
+            f"a={self.a!r},"
+            f" b={self.b!r},"
+            f" c={self.c!r},"
+            f" o={self.o!r},"
+            f" convex={self.convex!r}"
+            f")"
+        )
