@@ -450,3 +450,99 @@ class QuadraticDistribution:
         ])
 
         return params, bounds
+
+
+class NoisyQuadraticDistribution:
+    """The Noisy Quadratic distribution.
+
+    When using random search to optimize a smooth function with additive
+    normal noise, the best score asymptotically approaches a noisy
+    quadratic distribution. In particular, if the search distribution is
+    a continuous distribution, the function is well-approximated by a
+    second-order Taylor expansion near the optimum, and the observed
+    score is the result of the function plus additive normal noise, then
+    the tail of the score distribution will approach a noisy quadratic
+    distribution.
+
+    Parameters
+    ----------
+    a : float, required
+        The minimum value that the distribution can take, without
+        accounting for the additive noise.
+    b : float, required
+        The maximum value that the distribution can take, without
+        accounting for the additive noise.
+    c : positive int, required
+        The *effective* number of hyperparameters. Values of ``c``
+        greater than 10 are not supported.
+    o : non-negative float, required
+        The standard deviation of the additive noise.
+    convex : bool, optional (default=False)
+        Whether or not to use the convex form of the noisy quadratic
+        distribution, as opposed to the concave form. When optimizing
+        via random search, the tail of the score distribution approaches
+        the convex form when minimizing and the concave when maximizing.
+
+    Attributes
+    ----------
+    mean : float
+        The distribution's mean.
+    variance : float
+        The distribution's variance.
+    """
+
+    def __init__(
+            self,
+            a,
+            b,
+            c,
+            o,
+            convex = False,
+    ):
+        # Validate the arguments.
+        a = np.array(a)[()]
+        if not np.isscalar(a):
+            raise ValueError("a must be a scalar.")
+
+        b = np.array(b)[()]
+        if not np.isscalar(b):
+            raise ValueError("b must be a scalar.")
+
+        c = np.array(c)[()]
+        if not np.isscalar(c):
+            raise ValueError("c must be a scalar.")
+        if c % 1 != 0:
+            raise ValueError("c must be an integer.")
+        if c <= 0:
+            raise ValueError("c must be positive.")
+        if c > 10:
+            raise ValueError(
+                "Values of c greater than 10 are not supported.",
+            )
+
+        o = np.array(o)[()]
+        if not np.isscalar(o):
+            raise ValueError("o must be a scalar.")
+        if o < 0:
+            raise ValueError("o must be non-negative.")
+
+        if not isinstance(convex, bool):
+            raise TypeError("convex must be a boolean.")
+
+        if a > b:
+            raise ValueError("a must be less than or equal to b.")
+
+        # Bind arguments to the instance as attributes.
+        self.a = a
+        self.b = b
+        self.c = c
+        self.o = o
+        self.convex = convex
+
+        # Bind other attributes to the instance.
+        self.mean = (
+            a + (b - a) * c / (c + 2)
+            if convex else
+            a + (b - a) * 2 / (c + 2)
+        )
+        self.variance = o**2 + (b - a)**2 * 4 * c / ((c + 2)**2 * (c + 4))

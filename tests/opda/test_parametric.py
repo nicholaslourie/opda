@@ -1079,3 +1079,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                       .QuadraticDistribution(-b, -a, c, convex=not convex)
                       .average_tuning_curve(ns, minimize=False),
                 ))
+
+
+class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
+    """Test opda.parametric.NoisyQuadraticDistribution."""
