@@ -245,6 +245,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                     dist.cdf(a + (n / 5.) * (b - a)),
                     n / 5.,
                 )
+            # broadcasting
             for _ in range(7):
                 # 1D array
                 us = self.generator.uniform(0, 1, size=5)
@@ -283,6 +284,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                 self.assertTrue(np.isscalar(dist.ppf(n / 5.)))
                 # When c = 2, the distribution is uniform.
                 self.assertAlmostEqual(dist.ppf(n / 5.), a + (n / 5.) * (b - a))
+            # broadcasting
             for _ in range(7):
                 # 1D array
                 us = self.generator.uniform(0, 1, size=5)
@@ -800,6 +802,8 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
     @pytest.mark.level(1)
     def test_cdf_agrees_with_sampling_definition(self):
         for a, b in [(-1., 1.), (0., 1.), (1., 10.)]:
+            # NOTE: Keep c low because the rejection sampling below will
+            # reject too many samples for large c.
             for c in [1, 2, 3]:
                 for convex in [False, True]:
                     dist = parametric.QuadraticDistribution(
