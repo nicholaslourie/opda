@@ -204,26 +204,29 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
             for n in range(6):
                 self.assertTrue(np.isscalar(dist.pdf(a + (n / 5.) * (b - a))))
                 # When c = 2, the distribution is uniform.
-                self.assertEqual(dist.pdf(a + (n / 5.) * (b - a)), 1.)
+                self.assertAlmostEqual(
+                    dist.pdf(a + (n / 5.) * (b - a)),
+                    1. / (b - a),
+                )
             # broadcasting
             for _ in range(7):
                 # 1D array
                 us = self.generator.uniform(0, 1, size=5)
                 self.assertEqual(
                     dist.pdf(a + us * (b - a)).tolist(),
-                    np.ones_like(us).tolist(),
+                    np.full_like(us, 1. / (b - a)).tolist(),
                 )
                 # 2D array
                 us = self.generator.uniform(0, 1, size=(5, 3))
                 self.assertEqual(
                     dist.pdf(a + us * (b - a)).tolist(),
-                    np.ones_like(us).tolist(),
+                    np.full_like(us, 1. / (b - a)).tolist(),
                 )
                 # 3D array
                 us = self.generator.uniform(0, 1, size=(5, 3, 2))
                 self.assertEqual(
                     dist.pdf(a + us * (b - a)).tolist(),
-                    np.ones_like(us).tolist(),
+                    np.full_like(us, 1. / (b - a)).tolist(),
                 )
 
         # Test outside of the distribution's support.
