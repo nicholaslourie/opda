@@ -1083,3 +1083,218 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
 
 class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
     """Test opda.parametric.NoisyQuadraticDistribution."""
+
+    def test___eq__(self):
+        bounds = [(-10., -1.), (-1., 0.), (0., 0.), (0., 1.), (1., 10.)]
+        cs = [1, 2, 10]
+        os = [1e-6, 1e-3, 1e0, 1e3]
+        for a, b in bounds:
+            for c in cs:
+                for o in os:
+                    for convex in [False, True]:
+                        # Test inequality with other objects.
+                        self.assertNotEqual(
+                            parametric.NoisyQuadraticDistribution(
+                                a, b, c, o, convex,
+                            ),
+                            None,
+                        )
+                        self.assertNotEqual(
+                            parametric.NoisyQuadraticDistribution(
+                                a, b, c, o, convex,
+                            ),
+                            1.,
+                        )
+                        self.assertNotEqual(
+                            parametric.NoisyQuadraticDistribution(
+                                a, b, c, o, convex,
+                            ),
+                            set(),
+                        )
+
+                        # Test (in)equality between instances of the same class.
+                        #   equality
+                        self.assertEqual(
+                            parametric.NoisyQuadraticDistribution(
+                                a, b, c, o, convex,
+                            ),
+                            parametric.NoisyQuadraticDistribution(
+                                a, b, c, o, convex,
+                            ),
+                        )
+                        #   inequality
+                        for a_, _ in bounds:
+                            if a_ == a or a_ > b:
+                                continue
+                            self.assertNotEqual(
+                                parametric.NoisyQuadraticDistribution(
+                                    a, b, c, o, convex,
+                                ),
+                                parametric.NoisyQuadraticDistribution(
+                                    a_, b, c, o, convex,
+                                ),
+                            )
+                        for _, b_ in bounds:
+                            if b_ == b or b_ < a:
+                                continue
+                            self.assertNotEqual(
+                                parametric.NoisyQuadraticDistribution(
+                                    a, b, c, o, convex,
+                                ),
+                                parametric.NoisyQuadraticDistribution(
+                                    a, b_, c, o, convex,
+                                ),
+                            )
+                        for c_ in cs:
+                            if c_ == c:
+                                continue
+                            self.assertNotEqual(
+                                parametric.NoisyQuadraticDistribution(
+                                    a, b, c, o, convex,
+                                ),
+                                parametric.NoisyQuadraticDistribution(
+                                    a, b, c_, o, convex,
+                                ),
+                            )
+                        for o_ in os:
+                            if o_ == o:
+                                continue
+                            self.assertNotEqual(
+                                parametric.NoisyQuadraticDistribution(
+                                    a, b, c, o, convex,
+                                ),
+                                parametric.NoisyQuadraticDistribution(
+                                    a, b, c, o_, convex,
+                                ),
+                            )
+                        for convex_ in [False, True]:
+                            if convex_ == convex:
+                                continue
+                            self.assertNotEqual(
+                                parametric.NoisyQuadraticDistribution(
+                                    a, b, c, o, convex,
+                                ),
+                                parametric.NoisyQuadraticDistribution(
+                                    a, b, c, o, convex_,
+                                ),
+                            )
+
+                        # Test (in)equality between instances of
+                        # different classes.
+                        class NoisyQuadraticDistributionSubclass(
+                                parametric.NoisyQuadraticDistribution,
+                        ):
+                            pass
+                        #   equality
+                        self.assertEqual(
+                            parametric.NoisyQuadraticDistribution(
+                                a, b, c, o, convex,
+                            ),
+                            NoisyQuadraticDistributionSubclass(
+                                a, b, c, o, convex,
+                            ),
+                        )
+                        self.assertEqual(
+                            NoisyQuadraticDistributionSubclass(
+                                a, b, c, o, convex,
+                            ),
+                            parametric.NoisyQuadraticDistribution(
+                                a, b, c, o, convex,
+                            ),
+                        )
+                        #   inequality
+                        for a_, _ in bounds:
+                            if a_ == a or a_ > b:
+                                continue
+                            self.assertNotEqual(
+                                parametric.NoisyQuadraticDistribution(
+                                    a, b, c, o, convex,
+                                ),
+                                NoisyQuadraticDistributionSubclass(
+                                    a_, b, c, o, convex,
+                                ),
+                            )
+                            self.assertNotEqual(
+                                NoisyQuadraticDistributionSubclass(
+                                    a_, b, c, o, convex,
+                                ),
+                                parametric.NoisyQuadraticDistribution(
+                                    a, b, c, o, convex,
+                                ),
+                            )
+                        for _, b_ in bounds:
+                            if b_ == b or b_ < a:
+                                continue
+                            self.assertNotEqual(
+                                parametric.NoisyQuadraticDistribution(
+                                    a, b, c, o, convex,
+                                ),
+                                NoisyQuadraticDistributionSubclass(
+                                    a, b_, c, o, convex,
+                                ),
+                            )
+                            self.assertNotEqual(
+                                NoisyQuadraticDistributionSubclass(
+                                    a, b_, c, o, convex,
+                                ),
+                                parametric.NoisyQuadraticDistribution(
+                                    a, b, c, o, convex,
+                                ),
+                            )
+                        for c_ in cs:
+                            if c_ == c:
+                                continue
+                            self.assertNotEqual(
+                                parametric.NoisyQuadraticDistribution(
+                                    a, b, c, o, convex,
+                                ),
+                                NoisyQuadraticDistributionSubclass(
+                                    a, b, c_, o, convex,
+                                ),
+                            )
+                            self.assertNotEqual(
+                                NoisyQuadraticDistributionSubclass(
+                                    a, b, c_, o, convex,
+                                ),
+                                parametric.NoisyQuadraticDistribution(
+                                    a, b, c, o, convex,
+                                ),
+                            )
+                        for o_ in os:
+                            if o_ == o:
+                                continue
+                            self.assertNotEqual(
+                                parametric.NoisyQuadraticDistribution(
+                                    a, b, c, o, convex,
+                                ),
+                                NoisyQuadraticDistributionSubclass(
+                                    a, b, c, o_, convex,
+                                ),
+                            )
+                            self.assertNotEqual(
+                                NoisyQuadraticDistributionSubclass(
+                                    a, b, c, o_, convex,
+                                ),
+                                parametric.NoisyQuadraticDistribution(
+                                    a, b, c, o, convex,
+                                ),
+                            )
+                        for convex_ in [False, True]:
+                            if convex_ == convex:
+                                continue
+                            self.assertNotEqual(
+                                parametric.NoisyQuadraticDistribution(
+                                    a, b, c, o, convex,
+                                ),
+                                NoisyQuadraticDistributionSubclass(
+                                    a, b, c, o, convex_,
+                                ),
+                            )
+                            self.assertNotEqual(
+                                NoisyQuadraticDistributionSubclass(
+                                    a, b, c, o, convex_,
+                                ),
+                                parametric.NoisyQuadraticDistribution(
+                                    a, b, c, o, convex,
+                                ),
+                            )

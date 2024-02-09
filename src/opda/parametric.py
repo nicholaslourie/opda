@@ -546,3 +546,14 @@ class NoisyQuadraticDistribution:
             a + (b - a) * 2 / (c + 2)
         )
         self.variance = o**2 + (b - a)**2 * 4 * c / ((c + 2)**2 * (c + 4))
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return (
+                self.a == other.a
+                and self.b == other.b
+                and self.c == other.c
+                and self.o == other.o
+                and self.convex == other.convex
+            )
+        return NotImplemented
