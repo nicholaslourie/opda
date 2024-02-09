@@ -1298,3 +1298,13 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                                     a, b, c, o, convex,
                                 ),
                             )
+
+    def test___str__(self):
+        self.assertEqual(
+            str(parametric.NoisyQuadraticDistribution(
+                0., 1., 1, 1., convex=False,
+            )),
+            "NoisyQuadraticDistribution("
+                "a=0.0, b=1.0, c=1, o=1.0, convex=False"
+            ")",
+        )

@@ -557,3 +557,14 @@ class NoisyQuadraticDistribution:
                 and self.convex == other.convex
             )
         return NotImplemented
+
+    def __str__(self):
+        return (
+            f"{self.__class__.__name__}("
+            f"a={self.a!s},"
+            f" b={self.b!s},"
+            f" c={self.c!s},"
+            f" o={self.o!s},"
+            f" convex={self.convex!s}"
+            f")"
+        )
