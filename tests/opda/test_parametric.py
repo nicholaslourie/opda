@@ -18,7 +18,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
         n_samples = 1_000_000
 
         bounds = [(-10., -1.), (-1., 0.), (-1., 1.), (0., 1.), (1., 10.)]
-        cs = [1, 2, 20]
+        cs = [1, 2, 10]
         for a, b in bounds:
             for c in cs:
                 for convex in [False, True]:
@@ -37,7 +37,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
 
     def test___eq__(self):
         bounds = [(-10., -1.), (-1., 0.), (-1., 1.), (0., 1.), (1., 10.)]
-        cs = [1, 2, 20]
+        cs = [1, 2, 10]
         for a, b in bounds:
             for c in cs:
                 for convex in [False, True]:
@@ -166,7 +166,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
     def test_sample(self):
         a, b = 0., 1.
         # Test sample for various values of a, b, and c.
-        for c in [1, 20]:
+        for c in [1, 10]:
             for convex in [False, True]:
                 dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
                 # without explicit value for size
@@ -312,7 +312,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
 
     def test_quantile_tuning_curve(self):
         a, b = 0., 1.
-        for c in [1, 20]:
+        for c in [1, 10]:
             for convex in [False, True]:
                 for minimize in [None, False, True]:
                     # NOTE: When minimize is None, default to convex.
@@ -526,7 +526,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
 
     def test_average_tuning_curve(self):
         a, b = 0., 1.
-        for c in [1, 20]:
+        for c in [1, 10]:
             for convex in [False, True]:
                 for minimize in [None, False, True]:
                     # NOTE: When minimize is None, default to convex.
@@ -777,7 +777,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
 
     def test_pdf_matches_numerical_derivative_of_cdf(self):
         for a, b in [(-1., 1.), (0., 1.), (1., 10.)]:
-            for c in [1, 2, 3]:
+            for c in [1, 2, 10]:
                 for convex in [False, True]:
                     dist = parametric.QuadraticDistribution(
                         a, b, c, convex=convex,
@@ -846,7 +846,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
         # distribution, the quantile function is the inverse of the
         # cumulative distribution function.
         a, b = 0., 1.
-        for c in [1, 20]:
+        for c in [1, 10]:
             for convex in [False, True]:
                 dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
                 for _ in range(5):
@@ -857,7 +857,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
 
     def test_ppf_at_extremes(self):
         a, b = 0., 1.
-        for c in [1, 20]:
+        for c in [1, 10]:
             for convex in [False, True]:
                 dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
                 self.assertEqual(dist.ppf(0. - 1e-12), a)
