@@ -181,10 +181,12 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                 self.assertGreater(b, y)
                 # 1D array
                 ys = dist.sample(100)
+                self.assertEqual(ys.shape, (100,))
                 self.assertLess(a, np.min(ys))
                 self.assertGreater(b, np.max(ys))
                 # 2D array
                 ys = dist.sample((10, 10))
+                self.assertEqual(ys.shape, (10, 10))
                 self.assertLess(a, np.min(ys))
                 self.assertGreater(b, np.max(ys))
         # Test when c = 2 and the samples should be uniformly distributed.
