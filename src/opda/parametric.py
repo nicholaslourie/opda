@@ -213,7 +213,7 @@ class QuadraticDistribution:
 
         .. math::
 
-           Q(p) = \inf \{y\in\mathbb{R}\mid p\leq F(y)\}
+           Q(p) = \inf \{y\in[a, b]\mid p\leq F(y)\}
 
         where :math:`F` is the cumulative distribution function.
 
