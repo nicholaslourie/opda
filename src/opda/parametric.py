@@ -627,6 +627,80 @@ class NoisyQuadraticDistribution:
 
         return ys
 
+    def _chebyshev_coefficients(self, lo, hi, k, n):
+        # NOTE: This function returns the coefficients of the nth degree
+        # Chebyshev approximation to x^k from lo to hi. The Chebyshev
+        # approximation is just the Lagrange interpolating polynomial on
+        # the Chebyshev nodes.
+        #
+        # The Lagrange polynomial is constructed in terms of its
+        # roots. For example, consider a single basis polynomial (see
+        # https://en.wikipedia.org/wiki/Lagrange_polynomial):
+        #
+        #     l_j(x) = \prod_{m=0..n\\ m\not=j} \frac{x - x_m}{x_j - x_m}
+        #
+        # However, we need the polynomial's *coefficients* to compute
+        # the partial normal moment. If we view the Lagrange polynomial
+        # as a linear combination of monic polynomials:
+        #
+        #     \prod_{m=0..n\\ m\not=j} x - x_m
+        #
+        # with weights:
+        #
+        #     y_j \prod_{m=0..n\\ m\not=j} \frac{1}{x_j - x_m}
+        #
+        # Then we could compute the coefficients of these monic
+        # polynomials, and sum them up to get the coefficients of the
+        # Lagrange polynomial. Vieta's formulas give a polynomial's
+        # coefficients in terms of its roots (see
+        # https://en.wikipedia.org/wiki/Vieta%27s_formulas):
+        #
+        #     (-1)^k \frac{a_{n-k}}{a_n} = e_k(r_1, \dots, r_n)
+        #
+        # Where e_k is the kth elementary symmetric polynomial. We can
+        # recursively compute the elementary symmetric polynomials using
+        # Newton's identities (see "Application to the Roots of a
+        # Polynomial" in
+        # https://en.wikipedia.org/wiki/Newton's_identities):
+        #
+        #     e_0 = 1
+        #     (-1)^k e_k = 1/k \sum_{i=1..k} (-1)^i e_{k-i} p_i
+        #
+        # Where p_k is the sum of kth powers.
+
+        # Compute the Chebyshev nodes.
+        ns = np.arange(n+1)
+        # NOTE: Use Chebyshev nodes that don't include the end points,
+        # since x^-0.5 -> infinity as x -> 0.
+        xs = lo[..., None] + (hi - lo)[..., None] * 0.5 * (
+            1 - np.cos(np.pi * (2 * ns + 1) / (2 * (n + 1)))
+        )
+
+        # Compute the Lagrange interpolation weights.
+        ws = xs[..., :, None] - xs[..., None, :]
+        ws[..., ns, ns] = 1.
+        ws = xs**k / np.prod(ws, axis=-1)
+
+        # Compute the coefficients of the interpolating polynomial.
+        es = [np.ones_like(xs)]
+        ps = []
+        cs = [np.sum(ws, axis=-1)]
+        for i in range(1, n+1):
+            p = np.sum(xs**i, axis=-1, keepdims=True) - xs**i
+            ps.append(p)
+
+            e = np.sum(
+                (-1)**np.arange(i)
+                * np.stack(es[::-1], axis=-1)
+                * np.stack(ps, axis=-1),
+                axis=-1,
+            ) / i
+            es.append(e)
+
+            cs.append((-1)**i * np.sum(ws * e, axis=-1))
+
+        return cs[::-1]
+
 
 _APPROXIMATIONS = {
     float(exponent): [
