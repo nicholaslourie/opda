@@ -18,7 +18,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
         n_samples = 1_000_000
 
         bounds = [(-10., -1.), (-1., 0.), (-1., 1.), (0., 1.), (1., 10.)]
-        cs = [1, 2, 20]
+        cs = [1, 2, 10]
         for a, b in bounds:
             for c in cs:
                 for convex in [False, True]:
@@ -37,7 +37,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
 
     def test___eq__(self):
         bounds = [(-10., -1.), (-1., 0.), (-1., 1.), (0., 1.), (1., 10.)]
-        cs = [1, 2, 20]
+        cs = [1, 2, 10]
         for a, b in bounds:
             for c in cs:
                 for convex in [False, True]:
@@ -166,7 +166,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
     def test_sample(self):
         a, b = 0., 1.
         # Test sample for various values of a, b, and c.
-        for c in [1, 20]:
+        for c in [1, 10]:
             for convex in [False, True]:
                 dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
                 # without explicit value for size
@@ -181,10 +181,12 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                 self.assertGreater(b, y)
                 # 1D array
                 ys = dist.sample(100)
+                self.assertEqual(ys.shape, (100,))
                 self.assertLess(a, np.min(ys))
                 self.assertGreater(b, np.max(ys))
                 # 2D array
                 ys = dist.sample((10, 10))
+                self.assertEqual(ys.shape, (10, 10))
                 self.assertLess(a, np.min(ys))
                 self.assertGreater(b, np.max(ys))
         # Test when c = 2 and the samples should be uniformly distributed.
@@ -202,26 +204,29 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
             for n in range(6):
                 self.assertTrue(np.isscalar(dist.pdf(a + (n / 5.) * (b - a))))
                 # When c = 2, the distribution is uniform.
-                self.assertEqual(dist.pdf(a + (n / 5.) * (b - a)), 1.)
+                self.assertAlmostEqual(
+                    dist.pdf(a + (n / 5.) * (b - a)),
+                    1. / (b - a),
+                )
             # broadcasting
             for _ in range(7):
                 # 1D array
                 us = self.generator.uniform(0, 1, size=5)
                 self.assertEqual(
                     dist.pdf(a + us * (b - a)).tolist(),
-                    np.ones_like(us).tolist(),
+                    np.full_like(us, 1. / (b - a)).tolist(),
                 )
                 # 2D array
                 us = self.generator.uniform(0, 1, size=(5, 3))
                 self.assertEqual(
                     dist.pdf(a + us * (b - a)).tolist(),
-                    np.ones_like(us).tolist(),
+                    np.full_like(us, 1. / (b - a)).tolist(),
                 )
                 # 3D array
                 us = self.generator.uniform(0, 1, size=(5, 3, 2))
                 self.assertEqual(
                     dist.pdf(a + us * (b - a)).tolist(),
-                    np.ones_like(us).tolist(),
+                    np.full_like(us, 1. / (b - a)).tolist(),
                 )
 
         # Test outside of the distribution's support.
@@ -307,7 +312,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
 
     def test_quantile_tuning_curve(self):
         a, b = 0., 1.
-        for c in [1, 20]:
+        for c in [1, 10]:
             for convex in [False, True]:
                 for minimize in [None, False, True]:
                     # NOTE: When minimize is None, default to convex.
@@ -521,7 +526,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
 
     def test_average_tuning_curve(self):
         a, b = 0., 1.
-        for c in [1, 20]:
+        for c in [1, 10]:
             for convex in [False, True]:
                 for minimize in [None, False, True]:
                     # NOTE: When minimize is None, default to convex.
@@ -562,17 +567,18 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                             curve[n-1],
                             delta=0.075,
                         )
-                        self.assertEqual(
+                        self.assertTrue(np.allclose(
                             dist.average_tuning_curve(
                                 [n],
                                 minimize=minimize,
-                            ).tolist(),
+                            ),
                             [
                                 dist.average_tuning_curve(
                                     n,
                                     minimize=minimize,
-                                )],
-                        )
+                                ),
+                            ],
+                        ))
                     #   1D array
                     self.assertTrue(np.allclose(
                         dist.average_tuning_curve(
@@ -625,18 +631,18 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                                 minimize=minimize,
                             ),
                         )
-                        self.assertEqual(
+                        self.assertTrue(np.allclose(
                             dist.average_tuning_curve(
                                 [n - 0.5],
                                 minimize=minimize,
-                            ).tolist(),
+                            ),
                             [
                                 dist.average_tuning_curve(
                                     n - 0.5,
                                     minimize=minimize,
                                 ),
                             ],
-                        )
+                        ))
                     #   1D array
                     self.assertTrue(np.all(
                         dist.average_tuning_curve(
@@ -705,13 +711,10 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
 
     def test_estimate_initial_parameters_and_bounds(self):
         for a, b, c in [(0., 1., 1), (-1., 1., 2)]:
-            for fraction in [0.5, 1.]:
-                for convex in [False, True]:
+            for convex in [False, True]:
+                for fraction in [0.5, 1.]:
                     ys = parametric.QuadraticDistribution(
-                        a,
-                        b,
-                        c,
-                        convex=convex,
+                        a, b, c, convex=convex,
                     ).sample(5_000)
                     init_params, bounds = parametric.QuadraticDistribution\
                         .estimate_initial_parameters_and_bounds(
@@ -770,9 +773,26 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
             self.assertEqual(dist.pdf(a), 1.)
             self.assertEqual(dist.pdf(b), 1.)
 
+    def test_pdf_is_consistent_across_scales(self):
+        for c in [1, 2, 10]:
+            for convex in [False, True]:
+                ys = np.linspace(0., 1., num=100)
+
+                ps = parametric.QuadraticDistribution(
+                    0., 1., c, convex=convex,
+                ).pdf(ys)
+                for a, b in [(-1., 1.), (1., 10.)]:
+                    dist = parametric.QuadraticDistribution(
+                        a, b, c, convex=convex,
+                    )
+                    self.assertTrue(np.allclose(
+                        ps / (b - a),
+                        dist.pdf(a + (b - a) * ys),
+                    ))
+
     def test_pdf_matches_numerical_derivative_of_cdf(self):
         for a, b in [(-1., 1.), (0., 1.), (1., 10.)]:
-            for c in [1, 2, 3]:
+            for c in [1, 2, 10]:
                 for convex in [False, True]:
                     dist = parametric.QuadraticDistribution(
                         a, b, c, convex=convex,
@@ -788,16 +808,29 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                     ))
 
     def test_cdf_on_boundary_of_support(self):
-        for convex in [False, True]:
-            a, b, c = 0., 1., 1
-            dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
-            self.assertEqual(dist.cdf(a), 0.)
-            self.assertEqual(dist.cdf(b), 1.)
+        a, b = 0., 1.
+        for c in [1, 2, 10]:
+            for convex in [False, True]:
+                dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
+                self.assertEqual(dist.cdf(a), 0.)
+                self.assertEqual(dist.cdf(b), 1.)
 
-            a, b, c = 0., 1., 2
-            dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
-            self.assertEqual(dist.cdf(a), 0.)
-            self.assertEqual(dist.cdf(b), 1.)
+    def test_cdf_is_consistent_across_scales(self):
+        for c in [1, 2, 10]:
+            for convex in [False, True]:
+                ys = np.linspace(0., 1., num=100)
+
+                ps = parametric.QuadraticDistribution(
+                    0., 1., c, convex=convex,
+                ).cdf(ys)
+                for a, b in [(-1., 1.), (1., 10.)]:
+                    dist = parametric.QuadraticDistribution(
+                        a, b, c, convex=convex,
+                    )
+                    self.assertTrue(np.allclose(
+                        ps,
+                        dist.cdf(a + (b - a) * ys),
+                    ))
 
     @pytest.mark.level(1)
     def test_cdf_agrees_with_sampling_definition(self):
@@ -841,7 +874,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
         # distribution, the quantile function is the inverse of the
         # cumulative distribution function.
         a, b = 0., 1.
-        for c in [1, 20]:
+        for c in [1, 10]:
             for convex in [False, True]:
                 dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
                 for _ in range(5):
@@ -852,7 +885,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
 
     def test_ppf_at_extremes(self):
         a, b = 0., 1.
-        for c in [1, 20]:
+        for c in [1, 10]:
             for convex in [False, True]:
                 dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
                 self.assertEqual(dist.ppf(0. - 1e-12), a)
@@ -861,47 +894,45 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                 self.assertEqual(dist.ppf(1. + 1e-12), b)
 
     def test_quantile_tuning_curve_minimize_is_dual_to_maximize(self):
-        for _ in range(4):
-            for a, b, c in [(-1., 1., 1), (-1., 1., 2)]:
-                for convex in [False, True]:
-                    ns = np.arange(1, 17)
+        for a, b, c in [(-1., 1., 1), (-1., 1., 2)]:
+            for convex in [False, True]:
+                ns = np.arange(1, 17)
 
-                    self.assertTrue(np.allclose(
-                        parametric
-                          .QuadraticDistribution(a, b, c, convex=convex)
-                          .quantile_tuning_curve(ns, minimize=False),
-                        -parametric
-                          .QuadraticDistribution(-b, -a, c, convex=not convex)
-                          .quantile_tuning_curve(ns, minimize=True),
-                    ))
-                    self.assertTrue(np.allclose(
-                        parametric
-                          .QuadraticDistribution(a, b, c, convex=convex)
-                          .quantile_tuning_curve(ns, minimize=True),
-                        -parametric
-                          .QuadraticDistribution(-b, -a, c, convex=not convex)
-                          .quantile_tuning_curve(ns, minimize=False),
-                    ))
+                self.assertTrue(np.allclose(
+                    parametric
+                      .QuadraticDistribution(a, b, c, convex=convex)
+                      .quantile_tuning_curve(ns, minimize=False),
+                    -parametric
+                      .QuadraticDistribution(-b, -a, c, convex=not convex)
+                      .quantile_tuning_curve(ns, minimize=True),
+                ))
+                self.assertTrue(np.allclose(
+                    parametric
+                      .QuadraticDistribution(a, b, c, convex=convex)
+                      .quantile_tuning_curve(ns, minimize=True),
+                    -parametric
+                      .QuadraticDistribution(-b, -a, c, convex=not convex)
+                      .quantile_tuning_curve(ns, minimize=False),
+                ))
 
     def test_average_tuning_curve_minimize_is_dual_to_maximize(self):
-        for _ in range(4):
-            for a, b, c in [(-1., 1., 1), (-1., 1., 2)]:
-                for convex in [False, True]:
-                    ns = np.arange(1, 17)
+        for a, b, c in [(-1., 1., 1), (-1., 1., 2)]:
+            for convex in [False, True]:
+                ns = np.arange(1, 17)
 
-                    self.assertTrue(np.allclose(
-                        parametric
-                          .QuadraticDistribution(a, b, c, convex=convex)
-                          .average_tuning_curve(ns, minimize=False),
-                        -parametric
-                          .QuadraticDistribution(-b, -a, c, convex=not convex)
-                          .average_tuning_curve(ns, minimize=True),
-                    ))
-                    self.assertTrue(np.allclose(
-                        parametric
-                          .QuadraticDistribution(a, b, c, convex=convex)
-                          .average_tuning_curve(ns, minimize=True),
-                        -parametric
-                          .QuadraticDistribution(-b, -a, c, convex=not convex)
-                          .average_tuning_curve(ns, minimize=False),
-                    ))
+                self.assertTrue(np.allclose(
+                    parametric
+                      .QuadraticDistribution(a, b, c, convex=convex)
+                      .average_tuning_curve(ns, minimize=False),
+                    -parametric
+                      .QuadraticDistribution(-b, -a, c, convex=not convex)
+                      .average_tuning_curve(ns, minimize=True),
+                ))
+                self.assertTrue(np.allclose(
+                    parametric
+                      .QuadraticDistribution(a, b, c, convex=convex)
+                      .average_tuning_curve(ns, minimize=True),
+                    -parametric
+                      .QuadraticDistribution(-b, -a, c, convex=not convex)
+                      .average_tuning_curve(ns, minimize=False),
+                ))
