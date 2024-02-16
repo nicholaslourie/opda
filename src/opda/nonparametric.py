@@ -172,6 +172,13 @@ class EmpiricalDistribution:
     b : float, optional (default=np.inf)
         The maximum of the support of the underlying distribution.
 
+    Attributes
+    ----------
+    mean : float
+        The distribution's mean.
+    variance : float
+        The distribution's variance.
+
     Notes
     -----
     :py:class:`EmpiricalDistribution` provides confidence bands for the
@@ -246,11 +253,24 @@ class EmpiricalDistribution:
                 f"b ({b}) cannot be less than the max of ys ({np.max(ys)}).",
             )
 
-        # Bind arguments to attributes.
+        # Bind arguments to the instance as attributes.
         self.ys = ys
         self.ws = ws
         self.a = a
         self.b = b
+
+        # Bind other attributes to the instance.
+        with np.errstate(invalid="ignore"):
+            self.mean = (
+                np.mean(ys)
+                if ws is None else
+                np.sum(ws * ys, where=ws > 0.)
+            )
+            self.variance = (
+                np.var(ys)
+                if ws is None else
+                np.sum(ws * (ys - self.mean)**2, where=ws > 0.)
+            )
 
         # Handle duplicate values in ys and default value for ws.
         _ys, locations, counts = np.unique(
@@ -296,7 +316,7 @@ class EmpiricalDistribution:
             np.concatenate([[0.] * len(prepend), _ws, [0.] * len(postpend)]),
         )
 
-        # Initialize useful attributes.
+        # Initialize useful private attributes.
         self._ws_cumsum = _normalize_cdf(np.cumsum(self._ws))
         self._ws_cumsum_prev = np.concatenate([[0.], self._ws_cumsum[:-1]])
 

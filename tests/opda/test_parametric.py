@@ -13,6 +13,28 @@ from tests import testcases
 class QuadraticDistributionTestCase(testcases.RandomTestCase):
     """Test opda.parametric.QuadraticDistribution."""
 
+    @pytest.mark.level(1)
+    def test_attributes(self):
+        n_samples = 1_000_000
+
+        bounds = [(-10., -1.), (-1., 0.), (-1., 1.), (0., 1.), (1., 10.)]
+        cs = [1, 2, 20]
+        for a, b in bounds:
+            for c in cs:
+                for convex in [False, True]:
+                    dist = parametric.QuadraticDistribution(a, b, c, convex)
+                    ys = dist.sample(n_samples)
+                    self.assertAlmostEqual(
+                        dist.mean,
+                        np.mean(ys),
+                        delta=6 * np.std(ys) / n_samples**0.5,
+                    )
+                    self.assertAlmostEqual(
+                        dist.variance,
+                        np.mean((ys - dist.mean)**2),
+                        delta=6 * np.std((ys - dist.mean)**2) / n_samples**0.5,
+                    )
+
     def test___eq__(self):
         bounds = [(-10., -1.), (-1., 0.), (-1., 1.), (0., 1.), (1., 10.)]
         cs = [1, 2, 20]

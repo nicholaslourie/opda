@@ -21,6 +21,73 @@ numpy_version = tuple(map(int, importlib.metadata.version("numpy").split(".")))
 class EmpiricalDistributionTestCase(testcases.RandomTestCase):
     """Test opda.nonparametric.EmpiricalDistribution."""
 
+    @pytest.mark.level(1)
+    def test_attributes(self):
+        n_samples = 1_000_000
+
+        # Test the attributes.
+        #   when all ys are finite
+        yss = [[0.], [1.], [-1., 1.], [0., 1.], [-1., 0., 1.]]
+        bounds = [(-np.inf, np.inf), (-5, 5), (-10., 10.)]
+        for ys in yss:
+            wss = (
+                [None, self.generator.dirichlet(np.ones_like(ys))]
+                if len(ys) > 1 else
+                # If len(ys) == 1 then there is only one possible set of
+                # weights: ws == [1.] or, equivalently, ws == None.
+                [None]
+            )
+            for ws in wss:
+                for a, b in bounds:
+                    dist = nonparametric.EmpiricalDistribution(ys, ws, a, b)
+                    samples = dist.sample(n_samples)
+                    self.assertAlmostEqual(
+                        dist.mean,
+                        np.mean(samples),
+                        delta=6 * np.std(samples) / n_samples**0.5,
+                    )
+                    self.assertAlmostEqual(
+                        dist.variance,
+                        np.mean((samples - dist.mean)**2),
+                        delta=(
+                            6 * np.std((samples - dist.mean)**2)
+                            / n_samples**0.5
+                        ),
+                    )
+        #   when some ys are infinite
+        for ys, ws, (a, b), mean, variance in [
+                ([-np.inf], None, (-np.inf, np.inf), -np.inf, np.nan),
+                ([-np.inf], None, (-np.inf,     0.), -np.inf, np.nan),
+                ([ np.inf], None, (-np.inf, np.inf),  np.inf, np.nan),
+                ([ np.inf], None, (     0., np.inf),  np.inf, np.nan),
+                ([-np.inf, -1.], None, (-np.inf, np.inf), -np.inf, np.nan),
+                ([-np.inf, -1.], None, (-np.inf,     0.), -np.inf, np.nan),
+                ([ np.inf,  1.], None, (-np.inf, np.inf),  np.inf, np.nan),
+                ([ np.inf,  1.], None, (     0., np.inf),  np.inf, np.nan),
+                ([-np.inf, -1.], [0., 1.], (-np.inf, np.inf),     -1.,     0.),
+                ([-np.inf, -1.], [1., 0.], (-np.inf, np.inf), -np.inf, np.nan),
+                ([ np.inf,  1.], [0., 1.], (-np.inf, np.inf),      1.,     0.),
+                ([ np.inf,  1.], [1., 0.], (-np.inf, np.inf),  np.inf, np.nan),
+                ([-np.inf, -1.], [.2, .8], (-np.inf, np.inf), -np.inf, np.nan),
+                ([ np.inf,  1.], [.2, .8], (-np.inf, np.inf),  np.inf, np.nan),
+                ([-np.inf, np.inf], [1, 0], (-np.inf, np.inf), -np.inf, np.nan),
+                ([-np.inf, np.inf], [0, 1], (-np.inf, np.inf),  np.inf, np.nan),
+                ([-np.inf, np.inf],    None, (-np.inf, np.inf), np.nan, np.nan),
+                ([-np.inf, np.inf], [.2,.8], (-np.inf, np.inf), np.nan, np.nan),
+                ([-np.inf, np.inf], [.8,.2], (-np.inf, np.inf), np.nan, np.nan),
+        ]:
+            dist = nonparametric.EmpiricalDistribution(ys, ws, a, b)
+            self.assertTrue(np.allclose(
+                dist.mean,
+                mean,
+                equal_nan=True,
+            ))
+            self.assertTrue(np.allclose(
+                dist.variance,
+                variance,
+                equal_nan=True,
+            ))
+
     def test___eq__(self):
         yss = [[0.], [1.], [-1., 1.], [0., 1.], [-1., 0., 1.]]
         bounds = [(-np.inf, np.inf), (-5, 5), (-10., 10.)]

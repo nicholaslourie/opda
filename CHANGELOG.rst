@@ -62,6 +62,10 @@ The format is based on `Keep a Changelog
 * Add ``opda.exceptions.NumericalError``, an exception for numerical
   issues.
 * Add more tests for ``opda.parametric.QuadraticDistribution``.
+* Add ``mean`` and ``variance`` attributes to
+  ``opda.nonparametric.EmpiricalDistribution``.
+* Add ``mean`` and ``variance`` attributes to
+  ``opda.parametric.QuadraticDistribution``.
 
 .. rubric:: Changes
 
