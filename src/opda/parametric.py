@@ -162,11 +162,12 @@ class QuadraticDistribution:
                 ps = (c / (2*(b - a))) * ((ys - a) / (b - a))**(c/2 - 1)
             else:  # concave
                 ps = (c / (2*(b - a))) * ((b - ys) / (b - a))**(c/2 - 1)
+
         ps = np.where(
             (ys < a) | (ys > b),
             0.,
             ps,
-        )[()]  # If the result is a 0d array, convert to scalar.
+        )[()]
 
         return ps
 
@@ -212,7 +213,7 @@ class QuadraticDistribution:
 
         .. math::
 
-           Q(p) = \inf \{y\in\mathbb{R}\mid p\leq F(y)\}
+           Q(p) = \inf \{y\in[a, b]\mid p\leq F(y)\}
 
         where :math:`F` is the cumulative distribution function.
 
@@ -278,6 +279,7 @@ class QuadraticDistribution:
         if not isinstance(minimize, bool):
             raise TypeError("minimize must be a boolean.")
 
+        # Compute the quantile tuning curve.
         a, b, c = self.a, self.b, self.c
 
         if self.convex:
@@ -321,6 +323,7 @@ class QuadraticDistribution:
         if not isinstance(minimize, bool):
             raise TypeError("minimize must be a boolean.")
 
+        # Compute the average tuning curve.
         a, b, c = self.a, self.b, self.c
 
         if self.convex:
@@ -419,7 +422,7 @@ class QuadraticDistribution:
             b = a + (b - a) / fraction**(2/c)
             # Push b a little higher.
             b = b + 0.05 * (b - a)
-        else:
+        else:  # concave
             # Push b a bit higher than max(ys).
             b = b + 0.05 * (b - a)
             # Set a so that P(y > ys_fraction[0]) = fraction.

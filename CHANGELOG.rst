@@ -84,6 +84,10 @@ The format is based on `Keep a Changelog
 * Improve the docstring for
   ``experiments.analytic.get_approximation_parameters``.
 * Use inline math markup in docstrings.
+* Fix the equation in the docstring for
+  ``opda.parametric.QuadraticDistribution.ppf``. The infimum that
+  defines the quantile function has as its domain the interval from
+  ``a`` to ``b``, not the entire real line.
 
 .. rubric:: Security
 
