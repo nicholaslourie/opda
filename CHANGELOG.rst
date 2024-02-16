@@ -75,6 +75,8 @@ The format is based on `Keep a Changelog
 * Enable ``"py"`` as the primary domain in the documentation.
 * Always use numpy's numeric types for scalar class attributes,
   instead of Python's native numeric types.
+* Improve tests for ``parametric.QuadraticDistribution``, making them
+  more thorough, robust, and avoiding re-running redundant test cases.
 
 .. rubric:: Deprecations
 .. rubric:: Removals
