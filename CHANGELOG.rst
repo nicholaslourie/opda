@@ -73,6 +73,8 @@ The format is based on `Keep a Changelog
   effective number of hyperparameters instead of half the number.
 * Completely disable the eradicate (``ERA``) lint rules.
 * Enable ``"py"`` as the primary domain in the documentation.
+* Always use numpy's numeric types for scalar class attributes,
+  instead of Python's native numeric types.
 
 .. rubric:: Deprecations
 .. rubric:: Removals

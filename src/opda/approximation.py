@@ -146,12 +146,15 @@ def remez(f, a, b, n, *, atol=None):
     if not callable(f):
         raise TypeError("f must be callable.")
 
+    a = np.array(a)[()]
     if not np.isscalar(a):
         raise ValueError("a must be a scalar.")
 
+    b = np.array(b)[()]
     if not np.isscalar(b):
         raise ValueError("b must be a scalar.")
 
+    n = np.array(n)[()]
     if not np.isscalar(n):
         raise ValueError("n must be a scalar.")
     if n % 1 != 0:
@@ -417,12 +420,15 @@ def minimax_polynomial_approximation(f, a, b, n, *, atol=None):
     if not callable(f):
         raise TypeError("f must be callable.")
 
+    a = np.array(a)[()]
     if not np.isscalar(a):
         raise ValueError("a must be a scalar.")
 
+    b = np.array(b)[()]
     if not np.isscalar(b):
         raise ValueError("b must be a scalar.")
 
+    n = np.array(n)[()]
     if not np.isscalar(n):
         raise ValueError("n must be a scalar.")
     if n % 1 != 0:
@@ -535,12 +541,15 @@ def minimax_polynomial_coefficients(
     if not callable(f):
         raise TypeError("f must be callable.")
 
+    a = np.array(a)[()]
     if not np.isscalar(a):
         raise ValueError("a must be a scalar.")
 
+    b = np.array(b)[()]
     if not np.isscalar(b):
         raise ValueError("b must be a scalar.")
 
+    n = np.array(n)[()]
     if not np.isscalar(n):
         raise ValueError("n must be a scalar.")
     if n % 1 != 0:
@@ -713,9 +722,11 @@ def piecewise_polynomial_knots(f, a, b, ns, *, atol=None):
     if not callable(f):
         raise TypeError("f must be callable.")
 
+    a = np.array(a)[()]
     if not np.isscalar(a):
         raise ValueError("a must be a scalar.")
 
+    b = np.array(b)[()]
     if not np.isscalar(b):
         raise ValueError("b must be a scalar.")
 
