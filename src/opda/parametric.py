@@ -627,6 +627,58 @@ class NoisyQuadraticDistribution:
 
         return ys
 
+    def _get_approximation_coefficients(self, loc, scale, k):
+        # NOTE: This function returns the knots and coefficients for an
+        # appropriate piecewise polynomial approximation to x^k. The
+        # knots and coefficients can then be used to compute partial
+        # fractional normal moments. Depending on k and scale, different
+        # approximations work best.
+
+        scale_abs = abs(scale)
+
+        # Check for a piecewise minimax polynomial approximation.
+        for approximation in _APPROXIMATIONS.get(k, []):
+            if scale_abs < approximation["min_scale"]:
+                continue
+
+            return (approximation["knots"], approximation["coefficients"])
+
+        # Since there's no piecewise minimax polynomial approximation,
+        # compute a Chebyshev approximation.
+        #
+        # NOTE: Take the Chebyshev approximation over loc - 6 scale to
+        # loc + 6 scale intersected with the interval from 0 to 1,
+        # because we want to approximate x^k on 0 to 1 where most of the
+        # normal's probability mass is. If these intervals don't overlap
+        # (e.g., loc is much smaller than 0 or much greater than 1),
+        # then pick a small interval near the closest endpoint of [0, 1]
+        # in order to ensure the interval is not empty or a single
+        # point, as that would produce nonsensical coefficients.
+        lo = np.clip(loc - 6 * scale_abs, 0., 1. - scale_abs)
+        hi = np.clip(loc + 6 * scale_abs, scale_abs, 1.)
+        # NOTE: Set the midpoint closer to the lower endpoint (0), as
+        # x^k (e.g., x^0.5) is harder to approximate near 0 than 1.
+        md = (3 * lo + hi) / 4
+        n_l, n_r = next(
+            (n_l, n_r)
+            for min_scale, n_l, n_r in [
+                (1e-2, 5, 5),
+                (3e-3, 4, 4),
+                (6e-4, 3, 3),
+                (3e-4, 2, 3),
+                (  0., 2, 2),
+            ]
+            if scale_abs >= min_scale
+        )
+
+        return (
+            [lo, md, hi],
+            [
+                self._chebyshev_coefficients(lo, md, k, n_l),
+                self._chebyshev_coefficients(md, hi, k, n_r),
+            ],
+        )
+
     def _chebyshev_coefficients(self, lo, hi, k, n):
         # NOTE: This function returns the coefficients of the nth degree
         # Chebyshev approximation to x^k from lo to hi. The Chebyshev
