@@ -157,6 +157,9 @@ class QuadraticDistribution:
 
         a, b, c = self.a, self.b, self.c
 
+        if a == b:
+            return np.where(ys == a, np.inf, 0.)[()]
+
         with np.errstate(divide="ignore", invalid="ignore"):
             if self.convex:
                 ps = (c / (2*(b - a))) * ((ys - a) / (b - a))**(c/2 - 1)
@@ -194,6 +197,9 @@ class QuadraticDistribution:
         ys = np.array(ys)
 
         a, b, c = self.a, self.b, self.c
+
+        if a == b:
+            return np.where(ys < a, 0., 1.)[()]
 
         # Handle values of y outside the support by clipping to a and b
         # since the CDF is 0 when y is below a and 1 when y is above b.
@@ -407,6 +413,12 @@ class QuadraticDistribution:
 
         a = ys_fraction[0]
         b = ys_fraction[-1]
+        if a == b:
+            return (
+                np.array([a, b, np.nan]),
+                np.array([(-np.inf, a), (b, np.inf), (0, np.inf)]),
+            )
+
         # Initialize c with its MLE assuming a and b are known.
         c = 2 * (
             1. / np.mean(np.log((b - a) / (ys_fraction[1:-1] - a)))

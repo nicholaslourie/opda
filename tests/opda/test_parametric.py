@@ -17,7 +17,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
     def test_attributes(self):
         n_samples = 1_000_000
 
-        bounds = [(-10., -1.), (-1., 0.), (-1., 1.), (0., 1.), (1., 10.)]
+        bounds = [(-10., -1.), (-1., 0.), (0., 0.), (0., 1.), (1., 10.)]
         cs = [1, 2, 10]
         for a, b in bounds:
             for c in cs:
@@ -36,7 +36,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                     )
 
     def test___eq__(self):
-        bounds = [(-10., -1.), (-1., 0.), (-1., 1.), (0., 1.), (1., 10.)]
+        bounds = [(-10., -1.), (-1., 0.), (0., 0.), (0., 1.), (1., 10.)]
         cs = [1, 2, 10]
         for a, b in bounds:
             for c in cs:
@@ -164,8 +164,28 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
         )
 
     def test_sample(self):
+        # Test when a = b.
+        a, b = 0., 0.
+        for c in [1, 10]:
+            for convex in [False, True]:
+                dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
+                # without expicit value for size
+                y = dist.sample()
+                self.assertTrue(np.isscalar(y))
+                self.assertEqual(y, 0.)
+                # scalar
+                y = dist.sample(None)
+                self.assertTrue(np.isscalar(y))
+                self.assertEqual(y, 0.)
+                # 1D array
+                ys = dist.sample(100)
+                self.assertTrue(np.array_equal(ys, np.zeros(100)))
+                # 2D array
+                ys = dist.sample((10, 10))
+                self.assertTrue(np.array_equal(ys, np.zeros((10, 10))))
+
+        # Test when a != b.
         a, b = 0., 1.
-        # Test sample for various values of a, b, and c.
         for c in [1, 10]:
             for convex in [False, True]:
                 dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
@@ -197,6 +217,37 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
         self.assertLess(abs(np.mean(ys < 0.5) - 0.5), 0.05)
 
     def test_pdf(self):
+        # Test when a = b.
+
+        # When a = b, the distribution is a point mass.
+        a, b, c = 0., 0., 2
+        for convex in [False, True]:
+            dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
+            # scalar
+            self.assertTrue(np.isscalar(dist.pdf(a)))
+            self.assertEqual(dist.pdf(a - 1.), 0.)
+            self.assertEqual(dist.pdf(a), np.inf)
+            self.assertEqual(dist.pdf(a + 1.), 0.)
+            # broadcasting
+            #   1D array
+            self.assertEqual(
+                dist.pdf([a - 1., a, a + 1.]).tolist(),
+                [0., np.inf, 0.],
+            )
+            # 2D array
+            self.assertEqual(
+                dist.pdf([[a - 1.], [a], [a + 1.]]).tolist(),
+                [[0.], [np.inf], [0.]],
+            )
+            # 3D array
+            self.assertEqual(
+                dist.pdf([[[a - 1.]], [[a]], [[a + 1.]]]).tolist(),
+                [[[0.]], [[np.inf]], [[0.]]],
+            )
+
+        # Test when a != b.
+
+        # Test inside of the distribution's support.
         a, b, c = 0., 1., 2
         for convex in [False, True]:
             dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
@@ -239,6 +290,37 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                 self.assertEqual(dist.pdf(b + 10), 0.)
 
     def test_cdf(self):
+        # Test when a = b.
+
+        # When a = b, the distribution is a point mass.
+        a, b, c = 0., 0., 2
+        for convex in [False, True]:
+            dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
+            # scalar
+            self.assertTrue(np.isscalar(dist.cdf(a)))
+            self.assertEqual(dist.cdf(a - 1.), 0.)
+            self.assertEqual(dist.cdf(a), 1.)
+            self.assertEqual(dist.cdf(a + 1.), 1.)
+            # broadcasting
+            #   1D array
+            self.assertEqual(
+                dist.cdf([a - 1., a, a + 1.]).tolist(),
+                [0., 1., 1.],
+            )
+            # 2D array
+            self.assertEqual(
+                dist.cdf([[a - 1.], [a], [a + 1.]]).tolist(),
+                [[0.], [1.], [1.]],
+            )
+            # 3D array
+            self.assertEqual(
+                dist.cdf([[[a - 1.]], [[a]], [[a + 1.]]]).tolist(),
+                [[[0.]], [[1.]], [[1.]]],
+            )
+
+        # Test when a != b.
+
+        # Test inside of the distribution's support.
         a, b, c = 0., 1., 2
         for convex in [False, True]:
             dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
@@ -281,6 +363,30 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                 self.assertEqual(dist.cdf(b + 10), 1.)
 
     def test_ppf(self):
+        # Test when a = b.
+
+        # When a = b, the distribution is a point mass.
+        a, b, c = 0., 0., 2
+        for convex in [False, True]:
+            dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
+            # scalar
+            for n in range(6):
+                self.assertTrue(np.isscalar(dist.ppf(n / 5.)))
+                self.assertEqual(dist.ppf(n / 5.), a)
+            # broadcasting
+            for _ in range(7):
+                # 1D array
+                us = self.generator.uniform(0, 1, size=5)
+                self.assertEqual(dist.ppf(us).tolist(), [a] * 5)
+                # 2D array
+                us = self.generator.uniform(0, 1, size=(5, 3))
+                self.assertEqual(dist.ppf(us).tolist(), [[a] * 3] * 5)
+                # 3D array
+                us = self.generator.uniform(0, 1, size=(5, 3, 2))
+                self.assertEqual(dist.ppf(us).tolist(), [[[a] * 2] * 3] * 5)
+
+        # Test when a != b.
+
         a, b, c = 0., 1., 2
         for convex in [False, True]:
             dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
@@ -710,6 +816,31 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                         )
 
     def test_estimate_initial_parameters_and_bounds(self):
+        # Test when a = b.
+        a, b = 0., 0.
+        for c in [1, 10]:
+            for convex in [False, True]:
+                for fraction in [0.5, 1.]:
+                    ys = parametric.QuadraticDistribution(
+                        a, b, c, convex=convex,
+                    ).sample(5)
+                    init_params, bounds = parametric.QuadraticDistribution\
+                        .estimate_initial_parameters_and_bounds(
+                            ys,
+                            fraction=fraction,
+                            convex=convex,
+                        )
+                    self.assertEqual(init_params[0], a)
+                    self.assertEqual(init_params[1], b)
+                    self.assertTrue(np.isnan(init_params[2]))
+                    self.assertGreaterEqual(a, bounds[0, 0])
+                    self.assertLessEqual(a, bounds[0, 1])
+                    self.assertGreaterEqual(b, bounds[1, 0])
+                    self.assertLessEqual(b, bounds[1, 1])
+                    self.assertEqual(0, bounds[2, 0])
+                    self.assertEqual(np.inf, bounds[2, 1])
+
+        # Test when a != b.
         for a, b, c in [(0., 1., 1), (-1., 1., 2)]:
             for convex in [False, True]:
                 for fraction in [0.5, 1.]:
@@ -870,28 +1001,40 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                     self.assertGreater(p_value, 1e-6)
 
     def test_ppf_is_inverse_of_cdf(self):
-        # NOTE: For continuous distributions like the quadratic
-        # distribution, the quantile function is the inverse of the
-        # cumulative distribution function.
-        a, b = 0., 1.
-        for c in [1, 10]:
-            for convex in [False, True]:
-                dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
-                for _ in range(5):
+        # NOTE: The quantile function is always an almost sure left
+        # inverse of the CDF. For continuous distributions like the
+        # quadratic distribution, the quantile function is also the
+        # right inverse of the cumulative distribution function.
+        for a, b in [(0., 0.), (0., 1.)]:
+            for c in [1, 10]:
+                for convex in [False, True]:
+                    dist = parametric.QuadraticDistribution(
+                        a, b, c, convex=convex,
+                    )
+
                     ys = dist.sample(100)
                     self.assertTrue(np.allclose(dist.ppf(dist.cdf(ys)), ys))
+
+                    if a == b:
+                        # When a = b, the distribution is discrete and
+                        # the quantile function is not a right inverse
+                        # of the CDF.
+                        continue
+
                     us = self.generator.uniform(0, 1, size=100)
                     self.assertTrue(np.allclose(dist.cdf(dist.ppf(us)), us))
 
     def test_ppf_at_extremes(self):
-        a, b = 0., 1.
-        for c in [1, 10]:
-            for convex in [False, True]:
-                dist = parametric.QuadraticDistribution(a, b, c, convex=convex)
-                self.assertEqual(dist.ppf(0. - 1e-12), a)
-                self.assertEqual(dist.ppf(0.), a)
-                self.assertEqual(dist.ppf(1.), b)
-                self.assertEqual(dist.ppf(1. + 1e-12), b)
+        for a, b in [(0., 0.), (0., 1.)]:
+            for c in [1, 10]:
+                for convex in [False, True]:
+                    dist = parametric.QuadraticDistribution(
+                        a, b, c, convex=convex,
+                    )
+                    self.assertEqual(dist.ppf(0. - 1e-12), a)
+                    self.assertEqual(dist.ppf(0.), a)
+                    self.assertEqual(dist.ppf(1.), b)
+                    self.assertEqual(dist.ppf(1. + 1e-12), b)
 
     def test_quantile_tuning_curve_minimize_is_dual_to_maximize(self):
         for a, b, c in [(-1., 1., 1), (-1., 1., 2)]:
