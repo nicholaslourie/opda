@@ -6,6 +6,7 @@ import json
 import numpy as np
 from scipy import special
 
+from opda import utils
 import opda.random
 
 # backwards compatibility (Python < 3.9)
@@ -626,6 +627,72 @@ class NoisyQuadraticDistribution:
         ys += generator.normal(0, o, size=size)
 
         return ys
+
+    def _partial_fractional_normal_moment(self, loc, scale, k):
+        # NOTE: This function returns the kth partial fractional moment
+        # from 0 to 1 for a normal distribution with mean ``loc`` and
+        # scale ``scale``. In other words, it computes:
+        # E_0^1[X^k | loc, scale]. k should be an odd natural number
+        # divided by two (e.g., 0.5, 1.5, etc).
+        #
+        # The moment is computed by approximating x^k with a polynomial
+        # to produce a weighted sum of partial integer normal moments:
+        #
+        #     E_0^1[X^k] ~ E_0^1[c_n X^n + ... + c_0 X^0]
+        #                = c_n E_0^1[X^n] + ... + c_0 E_0^1[X^0]
+        #
+        # The partial integer moments can be computed via a recursive
+        # formula (based on Equation 3.4 in [1]):
+        #
+        #     E_0^1[X^n] = E_{-\infty}^1[X^n] - E_{-\infty}^0[X^n]
+        #                = o^2 0^{n-1} f(0) - o^2 f(1)
+        #                  + u E_0^1[X^{n-1}]
+        #                  + (n-1) o^2 E_0^1[X^{n-2}]
+        #
+        # Where f is the PDF of the normal distribution with mean
+        # ``loc`` (u) and scale ``scale`` (o).
+        #
+        # Sufficiently accurate polynomial approximations are not always
+        # feasible, so we use piecewise polynomial approximations with
+        # the following identity (assuming a <= b <= c):
+        #
+        #     E_a^c[X^k] = E_a^b[X^k] + E_b^c[X^k]
+        #
+        # and we adapt the recursive formula above to work on these
+        # pieces.
+        #
+        # [1]: Robert L. Winkler, Gary M. Roodman, Robert R. Britney,
+        # (1972) The Determination of Partial Moments. Management
+        # Science 19(3):290-296.
+
+        knots, coefficients =\
+            self._get_approximation_coefficients(loc, scale, k)
+
+        fractional_moment = 0
+        var = scale**2
+        for a, b, cs in zip(knots[:-1], knots[1:], coefficients):
+            term0 = scale * utils.normal_pdf((a-loc)/scale)
+            term1 = -scale * utils.normal_pdf((b-loc)/scale)
+
+            moment_prev, moment_curr = 0, (
+                utils.normal_cdf((b-loc)/scale)
+                - utils.normal_cdf((a-loc)/scale)
+            )
+
+            fractional_moment += cs[0] * moment_curr
+            for i, c in enumerate(cs[1:]):
+                moment_prev, moment_curr = moment_curr, (
+                    loc * moment_curr
+                    + i * var * moment_prev
+                    + term0
+                    + term1
+                )
+                fractional_moment += c * moment_curr
+
+                term0 *= a
+                term1 *= b
+
+        return fractional_moment
 
     def _get_approximation_coefficients(self, loc, scale, k):
         # NOTE: This function returns the knots and coefficients for an
