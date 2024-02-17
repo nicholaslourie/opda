@@ -77,10 +77,18 @@ The format is based on `Keep a Changelog
   instead of Python's native numeric types.
 * Improve tests for ``parametric.QuadraticDistribution``, making them
   more thorough, robust, and avoiding re-running redundant test cases.
+* Update the tests for ``parametric.QuadraticDistribution`` to cover
+  the case when ``a == b``.
 
 .. rubric:: Deprecations
 .. rubric:: Removals
 .. rubric:: Fixes
+
+* Fix ``parametric.QuadraticDistribution`` (the ``.pdf``, ``.cdf``,
+  and ``.estimate_initial_parameters_and_bounds`` methods) for the
+  case when ``a == b``, in which case the distribution is an atom
+  (point mass).
+
 .. rubric:: Documentation
 
 * Improve the docstring for
