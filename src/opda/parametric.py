@@ -628,6 +628,55 @@ class NoisyQuadraticDistribution:
 
         return ys
 
+    def _base_partial_normal_moments(self, loc, scale, k):
+        if k % 1 == 0:
+            # When k is an integer, the base partial moments are the 0th
+            # and 1st partial moments.
+            moment_prev = (
+                utils.normal_cdf((1-loc)/scale) - utils.normal_cdf(-loc/scale)
+            )
+            if k == 0:
+                return (0, None, moment_prev)
+
+            moment_curr = loc * moment_prev + scale * (
+                utils.normal_pdf(-loc/scale) - utils.normal_pdf((1-loc)/scale)
+            )
+            if k == 1:
+                return (1, None, moment_curr)
+
+            return (1, moment_prev, moment_curr)
+        if k % 1 == 0.5:
+            # When k is not an integer, the best base partial moments
+            # depend on scale and k.
+            if k == -0.5 and abs(scale) < 5e-2:
+                # For small scales, compute the -0.5 partial moment
+                # directly (using the Chebyshev approximation).
+                return (
+                    -0.5,
+                    None,
+                    self._partial_fractional_normal_moment(loc, scale, -0.5),
+                )
+            if k == -0.5 and abs(scale) >= 5e-2:
+                # For large scales, step down to the -0.5 partial moment
+                # from the 0.5 and 1.5 partial moments.
+                return (
+                    1.5,
+                    self._partial_fractional_normal_moment(loc, scale, 0.5),
+                    self._partial_fractional_normal_moment(loc, scale, 1.5),
+                )
+
+            # When k > -0.5, compute the partial moment directly using
+            # its minimax piecewise polynomial approximation.
+            return (
+                k,
+                None,
+                self._partial_fractional_normal_moment(loc, scale, k),
+            )
+
+        raise ValueError(
+            f"No base case found for kth partial normal moment (k={k}).",
+        )
+
     def _partial_fractional_normal_moment(self, loc, scale, k):
         # NOTE: This function returns the kth partial fractional moment
         # from 0 to 1 for a normal distribution with mean ``loc`` and
