@@ -628,6 +628,79 @@ class NoisyQuadraticDistribution:
 
         return ys
 
+    @np.errstate(invalid="ignore")
+    def _partial_normal_moment(self, loc, scale, k):
+        # NOTE: This function returns the kth partial moment from 0 to 1
+        # for a normal distribution with mean ``loc`` and scale
+        # ``scale``: E_0^1[X^k | loc, scale]. It handles both integer
+        # and fractional partial moments. Use this private method
+        # whenever a partial normal moment is required by one of the
+        # other (public) methods.
+        #
+        # The partial moments are computed from base partial moments via
+        # a recursive formula (based on Equation 3.4 in [1]):
+        #
+        #     E_0^1[X^n] = E_{-\infty}^1[X^n] - E_{-\infty}^0[X^n]
+        #                = o^2 0^{n-1} f(0) - o^2 f(1)
+        #                  + u E_0^1[X^{n-1}]
+        #                  + (n-1) o^2 E_0^1[X^{n-2}]
+        #
+        # Where f is the PDF of the normal distribution with mean
+        # ``loc`` (u) and scale ``scale`` (o). While [1] provides a
+        # derivation only for integer moments, the formula is also valid
+        # for fractional moments. The recursive formula can be used to
+        # step up or down to the desired moment from a pair of base
+        # moments.
+        #
+        # [1]: Robert L. Winkler, Gary M. Roodman, Robert R. Britney,
+        # (1972) The Determination of Partial Moments. Management
+        # Science 19(3):290-296.
+
+        # Validate arguments.
+        if k < -0.5:
+            raise ValueError(f"k (k={k}) must be at least -0.5.")
+        if (2 * k) % 1 != 0:
+            raise ValueError(f"2k (k={k}) must be an integer.")
+
+        # base case
+        i, moment_prev, moment_curr = self._base_partial_normal_moments(
+            loc, scale, k,
+        )
+
+        # recursive case
+        var = scale**2
+        term = -scale * utils.normal_pdf((1-loc)/scale)
+        #   Step up to the desired moment if i < k.
+        if i < k:
+            for j in range(round(k - i)):
+                moment_prev, moment_curr = moment_curr, (
+                    loc * moment_curr
+                    + (i + j) * var * moment_prev
+                    + term
+                )
+        #   Step down to the desired moment if i > k.
+        if i > k:
+            # NOTE: The step down formula is not very numerically
+            # stable. As it iterates, it removes a number of digits of
+            # precision that depends on the scale parameter. Thus,
+            # only use the formula for a few iterations at most.
+            i, moment_prev, moment_curr = i-1, moment_curr, moment_prev
+            for j in range(round(i - k)):
+                moment_prev, moment_curr = moment_curr, (
+                    moment_prev
+                    - loc * moment_curr
+                    - term
+                ) / ((i - j) * var)
+
+        # NOTE: The limit of the partial moment from 0 to 1 as loc
+        # goes to infinity is 0.
+        if np.isscalar(moment_curr) and np.isinf(loc):
+            moment_curr = 0.
+        if not np.isscalar(moment_curr):
+            moment_curr[np.isinf(loc)] = 0.
+
+        return moment_curr
+
     def _base_partial_normal_moments(self, loc, scale, k):
         if k % 1 == 0:
             # When k is an integer, the base partial moments are the 0th
