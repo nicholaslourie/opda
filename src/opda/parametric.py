@@ -696,6 +696,76 @@ class NoisyQuadraticDistribution:
 
         return ps
 
+    def cdf(self, ys):
+        r"""Return the cumulative probability at ``ys``.
+
+        We define the cumulative distribution function, :math:`F`, using
+        less than or equal to:
+
+        .. math::
+
+           F(y) = \mathbb{P}(Y \leq y)
+
+        Parameters
+        ----------
+        ys : array of float, required
+            The points at which to evaluate the cumulative probability.
+
+        Returns
+        -------
+        array of floats
+            The cumulative probability at ``ys``.
+        """
+        ys = np.array(ys)
+
+        a, b, c, o = self.a, self.b, self.c, self.o
+
+        # Use approximations if appropriate.
+
+        if a == b and o == 0.:
+            return np.where(ys < a, 0., 1.)[()]
+
+        if self._approximate_with == "noiseless":
+            # Handle values of y outside the support by clipping to a and b
+            # since the CDF is 0 when y is below a and 1 when y is above b.
+            ys = np.clip(ys, a, b)
+
+            if self.convex:
+                qs = ((ys - a) / (b - a))**(c/2)
+            else:  # concave
+                qs = 1 - ((b - ys) / (b - a))**(c/2)
+
+            return qs
+
+        if self._approximate_with == "normal":
+            return utils.normal_cdf(
+                (ys - self.mean) / self.variance**0.5,
+            )
+
+        # Compute the CDF.
+
+        if self.convex:
+            point = (ys - b) / o
+            loc = (ys - a) / (b - a)
+            scale = -o / (b - a)
+        else:  # concave
+            point = (ys - a) / o
+            loc = (b - ys) / (b - a)
+            scale = o / (b - a)
+
+        qs = (
+            utils.normal_cdf(point)
+            - self._partial_normal_moment(
+                loc=loc,
+                scale=scale,
+                k=c/2,
+            )
+        )
+
+        qs = np.clip(qs, 0., 1.)
+
+        return qs
+
     @np.errstate(invalid="ignore")
     def _partial_normal_moment(self, loc, scale, k):
         # NOTE: This function returns the kth partial moment from 0 to 1

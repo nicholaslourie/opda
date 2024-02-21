@@ -1587,3 +1587,197 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                         self.assertTrue(np.all(
                             dist.pdf(a - 6*o + us * 12*o) >= 0.,
                         ))
+
+    def test_cdf(self):
+        # Test when a = b and o = 0.
+
+        # When a = b and o = 0, the distribution is a point mass.
+        a, b, c, o = 0., 0., 2, 0.
+        for convex in [False, True]:
+            dist = parametric.NoisyQuadraticDistribution(
+                a, b, c, o, convex=convex,
+            )
+            # scalar
+            self.assertTrue(np.isscalar(dist.cdf(a)))
+            self.assertEqual(dist.cdf(a - 1.), 0.)
+            self.assertEqual(dist.cdf(a), 1.)
+            self.assertEqual(dist.cdf(a + 1.), 1.)
+            # broadcasting
+            #   1D array
+            self.assertEqual(
+                dist.cdf([a - 1., a, a + 1.]).tolist(),
+                [0., 1., 1.],
+            )
+            # 2D array
+            self.assertEqual(
+                dist.cdf([[a - 1.], [a], [a + 1.]]).tolist(),
+                [[0.], [1.], [1.]],
+            )
+            # 3D array
+            self.assertEqual(
+                dist.cdf([[[a - 1.]], [[a]], [[a + 1.]]]).tolist(),
+                [[[0.]], [[1.]], [[1.]]],
+            )
+
+        # Test when a = b and o > 0.
+
+        a, b, c, o = 0., 0., 2, 1.
+        for convex in [False, True]:
+            dist = parametric.NoisyQuadraticDistribution(
+                a, b, c, o, convex=convex,
+            )
+            # scalar
+            for n in range(6):
+                self.assertTrue(np.isscalar(
+                    dist.cdf(
+                        (n / 5.) * (a - 6*o)
+                        + ((5. - n) / 5.) * (b + 6*o),
+                    ),
+                ))
+                # When a = b, the distribution is normal.
+                self.assertEqual(
+                    dist.cdf(
+                        (n / 5.) * (a - 6*o)
+                        + ((5. - n) / 5.) * (b + 6*o),
+                    ),
+                    utils.normal_cdf(
+                        (n / 5.) * (a - 6*o)
+                        + ((5. - n) / 5.) * (b + 6*o),
+                    ),
+                )
+            # broadcasting
+            for _ in range(7):
+                # 1D array
+                us = self.generator.uniform(0, 1, size=5)
+                self.assertEqual(
+                    dist.cdf(a - 6*o + us * 12*o).tolist(),
+                    utils.normal_cdf(a - 6*o + us * 12*o).tolist(),
+                )
+                # 2D array
+                us = self.generator.uniform(0, 1, size=(5, 3))
+                self.assertEqual(
+                    dist.cdf(a - 6*o + us * 12*o).tolist(),
+                    utils.normal_cdf(a - 6*o + us * 12*o).tolist(),
+                )
+                # 3D array
+                us = self.generator.uniform(0, 1, size=(5, 3, 2))
+                self.assertEqual(
+                    dist.cdf(a - 6*o + us * 12*o).tolist(),
+                    utils.normal_cdf(a - 6*o + us * 12*o).tolist(),
+                )
+
+        # Test when a != b and o = 0.
+
+        # Test inside of the distribution's support.
+        a, b, c, o = 0., 1., 2, 0.
+        for convex in [False, True]:
+            dist = parametric.NoisyQuadraticDistribution(
+                a, b, c, o, convex=convex,
+            )
+            # scalar
+            for n in range(6):
+                self.assertTrue(np.isscalar(dist.cdf(a + (n / 5.) * (b - a))))
+                # When c = 2 and o = 0, the distribution is uniform.
+                self.assertAlmostEqual(
+                    dist.cdf(a + (n / 5.) * (b - a)),
+                    n / 5.,
+                )
+            # broadcasting
+            for _ in range(7):
+                # 1D array
+                us = self.generator.uniform(0, 1, size=5)
+                self.assertEqual(
+                    dist.cdf(a + us * (b - a)).tolist(),
+                    us.tolist(),
+                )
+                # 2D array
+                us = self.generator.uniform(0, 1, size=(5, 3))
+                self.assertEqual(
+                    dist.cdf(a + us * (b - a)).tolist(),
+                    us.tolist(),
+                )
+                # 3D array
+                us = self.generator.uniform(0, 1, size=(5, 3, 2))
+                self.assertEqual(
+                    dist.cdf(a + us * (b - a)).tolist(),
+                    us.tolist(),
+                )
+
+        # Test outside of the distribution's support.
+        for a, b, c, o in [(0., 1., 1, 0.), (0., 1., 2, 0.)]:
+            for convex in [False, True]:
+                dist = parametric.NoisyQuadraticDistribution(
+                    a, b, c, o, convex=convex,
+                )
+                self.assertEqual(dist.cdf(a - 1e-10), 0.)
+                self.assertEqual(dist.cdf(a - 10), 0.)
+                self.assertEqual(dist.cdf(b + 1e-10), 1.)
+                self.assertEqual(dist.cdf(b + 10), 1.)
+
+        # Test when a != b and o > 0.
+
+        a, b = 0., 1.
+        for c in [1, 2, 10]:
+            for o in [1e-6, 1e-3, 1e0, 1e3]:
+                for convex in [False, True]:
+                    dist = parametric.NoisyQuadraticDistribution(
+                        a, b, c, o, convex=convex,
+                    )
+                    # scalar
+                    for n in range(6):
+                        self.assertTrue(np.isscalar(
+                            dist.cdf(
+                                (n / 5.) * (a - 6*o)
+                                + ((5. - n) / 5.) * (b + 6*o),
+                            ),
+                        ))
+                        self.assertTrue(np.all(
+                            dist.cdf(
+                                (n / 5.) * (a - 6*o)
+                                + ((5. - n) / 5.) * (b + 6*o),
+                            ) >= 0.,
+                        ))
+                        self.assertTrue(np.all(
+                            dist.cdf(
+                                (n / 5.) * (a - 6*o)
+                                + ((5. - n) / 5.) * (b + 6*o),
+                            ) <= 1.,
+                        ))
+                    # broadcasting
+                    for _ in range(7):
+                        # 1D array
+                        us = self.generator.uniform(0, 1, size=5)
+                        self.assertEqual(
+                            dist.cdf(a - 6*o + us * 12*o).shape,
+                            us.shape,
+                        )
+                        self.assertTrue(np.all(
+                            dist.cdf(a - 6*o + us * 12*o) >= 0.,
+                        ))
+                        self.assertTrue(np.all(
+                            dist.cdf(a - 6*o + us * 12*o) <= 1.,
+                        ))
+                        # 2D array
+                        us = self.generator.uniform(0, 1, size=(5, 3))
+                        self.assertEqual(
+                            dist.cdf(a - 6*o + us * 12*o).shape,
+                            us.shape,
+                        )
+                        self.assertTrue(np.all(
+                            dist.cdf(a - 6*o + us * 12*o) >= 0.,
+                        ))
+                        self.assertTrue(np.all(
+                            dist.cdf(a - 6*o + us * 12*o) <= 1.,
+                        ))
+                        # 3D array
+                        us = self.generator.uniform(0, 1, size=(5, 3, 2))
+                        self.assertEqual(
+                            dist.cdf(a - 6*o + us * 12*o).shape,
+                            us.shape,
+                        )
+                        self.assertTrue(np.all(
+                            dist.cdf(a - 6*o + us * 12*o) >= 0.,
+                        ))
+                        self.assertTrue(np.all(
+                            dist.cdf(a - 6*o + us * 12*o) <= 1.,
+                        ))
