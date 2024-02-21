@@ -557,6 +557,13 @@ class NoisyQuadraticDistribution:
         )
         self.variance = o**2 + (b - a)**2 * 4 * c / ((c + 2)**2 * (c + 4))
 
+        # Initialize useful private attributes.
+        self._approximate_with = (
+            "noiseless" if o < 1e-6 * (b - a) else
+            "nothing"   if o < 1e+1 * (b - a) else
+            "normal"
+        )
+
     def __eq__(self, other):
         if isinstance(other, self.__class__):
             return (
