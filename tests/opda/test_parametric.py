@@ -1408,3 +1408,182 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
         self.assertLess(a-7*o, np.min(ys))
         self.assertGreater(b+7*o, np.max(ys))
         self.assertLess(abs(np.mean(utils.normal_cdf(ys) < 0.5) - 0.5), 0.05)
+
+    def test_pdf(self):
+        # Test when a = b and o = 0.
+
+        # When a = b and o = 0, the distribution is a point mass.
+        a, b, c, o = 0., 0., 2, 0.
+        for convex in [False, True]:
+            dist = parametric.NoisyQuadraticDistribution(
+                a, b, c, o, convex=convex,
+            )
+            # scalar
+            self.assertTrue(np.isscalar(dist.pdf(a)))
+            self.assertEqual(dist.pdf(a - 1.), 0.)
+            self.assertEqual(dist.pdf(a), np.inf)
+            self.assertEqual(dist.pdf(a + 1.), 0.)
+            # broadcasting
+            #   1D array
+            self.assertEqual(
+                dist.pdf([a - 1., a, a + 1.]).tolist(),
+                [0., np.inf, 0.],
+            )
+            # 2D array
+            self.assertEqual(
+                dist.pdf([[a - 1.], [a], [a + 1.]]).tolist(),
+                [[0.], [np.inf], [0.]],
+            )
+            # 3D array
+            self.assertEqual(
+                dist.pdf([[[a - 1.]], [[a]], [[a + 1.]]]).tolist(),
+                [[[0.]], [[np.inf]], [[0.]]],
+            )
+
+        # Test when a = b and o > 0.
+
+        a, b, c, o = 0., 0., 2, 1.
+        for convex in [False, True]:
+            dist = parametric.NoisyQuadraticDistribution(
+                a, b, c, o, convex=convex,
+            )
+            # scalar
+            for n in range(6):
+                self.assertTrue(np.isscalar(
+                    dist.pdf(
+                        (n / 5.) * (a - 6*o)
+                        + ((5. - n) / 5.) * (b + 6*o),
+                    ),
+                ))
+                # When a = b and o > 0, the distribution is normal.
+                self.assertEqual(
+                    dist.pdf(
+                        (n / 5.) * (a - 6*o)
+                        + ((5. - n) / 5.) * (b + 6*o),
+                    ),
+                    utils.normal_pdf(
+                        (n / 5.) * (a - 6*o)
+                        + ((5. - n) / 5.) * (b + 6*o),
+                    ),
+                )
+            # broadcasting
+            for _ in range(7):
+                # 1D array
+                us = self.generator.uniform(0, 1, size=5)
+                self.assertEqual(
+                    dist.pdf(a - 6*o + us * 12*o).tolist(),
+                    utils.normal_pdf(a - 6*o + us * 12*o).tolist(),
+                )
+                # 2D array
+                us = self.generator.uniform(0, 1, size=(5, 3))
+                self.assertEqual(
+                    dist.pdf(a - 6*o + us * 12*o).tolist(),
+                    utils.normal_pdf(a - 6*o + us * 12*o).tolist(),
+                )
+                # 3D array
+                us = self.generator.uniform(0, 1, size=(5, 3, 2))
+                self.assertEqual(
+                    dist.pdf(a - 6*o + us * 12*o).tolist(),
+                    utils.normal_pdf(a - 6*o + us * 12*o).tolist(),
+                )
+
+        # Test when a != b and o = 0.
+
+        # Test inside of the distribution's support.
+        a, b, c, o = 0., 1., 2, 0.
+        for convex in [False, True]:
+            dist = parametric.NoisyQuadraticDistribution(
+                a, b, c, o, convex=convex,
+            )
+            # scalar
+            for n in range(6):
+                self.assertTrue(np.isscalar(dist.pdf(a + (n / 5.) * (b - a))))
+                # When c = 2 and o = 0, the distribution is uniform.
+                self.assertAlmostEqual(
+                    dist.pdf(a + (n / 5.) * (b - a)),
+                    1. / (b - a),
+                )
+            # broadcasting
+            for _ in range(7):
+                # 1D array
+                us = self.generator.uniform(0, 1, size=5)
+                self.assertEqual(
+                    dist.pdf(a + us * (b - a)).tolist(),
+                    np.full_like(us, 1. / (b - a)).tolist(),
+                )
+                # 2D array
+                us = self.generator.uniform(0, 1, size=(5, 3))
+                self.assertEqual(
+                    dist.pdf(a + us * (b - a)).tolist(),
+                    np.full_like(us, 1. / (b - a)).tolist(),
+                )
+                # 3D array
+                us = self.generator.uniform(0, 1, size=(5, 3, 2))
+                self.assertEqual(
+                    dist.pdf(a + us * (b - a)).tolist(),
+                    np.full_like(us, 1. / (b - a)).tolist(),
+                )
+
+        # Test outside of the distribution's support.
+        for a, b, c, o in [(0., 1., 1, 0.), (0., 1., 2, 0.)]:
+            for convex in [False, True]:
+                dist = parametric.NoisyQuadraticDistribution(
+                    a, b, c, o, convex=convex,
+                )
+                self.assertEqual(dist.pdf(a - 1e-10), 0.)
+                self.assertEqual(dist.pdf(a - 10), 0.)
+                self.assertEqual(dist.pdf(b + 1e-10), 0.)
+                self.assertEqual(dist.pdf(b + 10), 0.)
+
+        # Test when a != b and o > 0.
+
+        a, b = 0., 1.
+        for c in [1, 2, 10]:
+            for o in [1e-6, 1e-3, 1e0, 1e3]:
+                for convex in [False, True]:
+                    dist = parametric.NoisyQuadraticDistribution(
+                        a, b, c, o, convex=convex,
+                    )
+                    # scalar
+                    for n in range(6):
+                        self.assertTrue(np.isscalar(
+                            dist.pdf(
+                                (n / 5.) * (a - 6*o)
+                                + ((5. - n) / 5.) * (b + 6*o),
+                            ),
+                        ))
+                        self.assertTrue(np.all(
+                            dist.pdf(
+                                (n / 5.) * (a - 6*o)
+                                + ((5. - n) / 5.) * (b + 6*o),
+                            ) >= 0.,
+                        ))
+                    # broadcasting
+                    for _ in range(7):
+                        # 1D array
+                        us = self.generator.uniform(0, 1, size=5)
+                        self.assertEqual(
+                            dist.pdf(a - 6*o + us * 12*o).shape,
+                            us.shape,
+                        )
+                        self.assertTrue(np.all(
+                            dist.pdf(a - 6*o + us * 12*o) >= 0.,
+                        ))
+                        # 2D array
+                        us = self.generator.uniform(0, 1, size=(5, 3))
+                        self.assertEqual(
+                            dist.pdf(a - 6*o + us * 12*o).shape,
+                            us.shape,
+                        )
+                        self.assertTrue(np.all(
+                            dist.pdf(a - 6*o + us * 12*o) >= 0.,
+                        ))
+                        # 3D array
+                        us = self.generator.uniform(0, 1, size=(5, 3, 2))
+                        self.assertEqual(
+                            dist.pdf(a - 6*o + us * 12*o).shape,
+                            us.shape,
+                        )
+                        self.assertTrue(np.all(
+                            dist.pdf(a - 6*o + us * 12*o) >= 0.,
+                        ))

@@ -635,6 +635,67 @@ class NoisyQuadraticDistribution:
 
         return ys
 
+    def pdf(self, ys):
+        """Return the probability density at ``ys``.
+
+        Parameters
+        ----------
+        ys : array of floats, required
+            The points at which to evaluate the probability density.
+
+        Returns
+        -------
+        array of floats
+            The probability density at ``ys``.
+        """
+        ys = np.array(ys)
+
+        a, b, c, o = self.a, self.b, self.c, self.o
+
+        # Use approximations if appropriate.
+
+        if a == b and o == 0.:
+            return np.where(ys == a, np.inf, 0.)[()]
+
+        if self._approximate_with == "noiseless":
+            with np.errstate(divide="ignore", invalid="ignore"):
+                if self.convex:
+                    ps = (c / (2*(b - a))) * ((ys - a) / (b - a))**(c/2 - 1)
+                else:  # concave
+                    ps = (c / (2*(b - a))) * ((b - ys) / (b - a))**(c/2 - 1)
+
+            ps = np.where(
+                (ys < a) | (ys > b),
+                0.,
+                ps,
+            )[()]
+
+            return ps
+
+        if self._approximate_with == "normal":
+            return utils.normal_pdf(
+                (ys - self.mean) / self.variance**0.5,
+            ) / self.variance**0.5
+
+        # Compute the PDF.
+
+        if self.convex:
+            loc = (ys - a) / (b - a)
+            scale = -o / (b - a)
+        else:  # concave
+            loc = (b - ys) / (b - a)
+            scale = o / (b - a)
+
+        ps = (scale / o) * (0.5 * c) * self._partial_normal_moment(
+            loc=loc,
+            scale=scale,
+            k=(c-2)/2,
+        )
+
+        ps = np.clip(ps, 0., None)
+
+        return ps
+
     @np.errstate(invalid="ignore")
     def _partial_normal_moment(self, loc, scale, k):
         # NOTE: This function returns the kth partial moment from 0 to 1
