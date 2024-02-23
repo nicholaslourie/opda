@@ -766,6 +766,57 @@ class NoisyQuadraticDistribution:
 
         return qs
 
+    def ppf(self, qs):
+        r"""Return the quantile at ``qs``.
+
+        We define the quantile function, :math:`Q`, as:
+
+        .. math::
+
+           Q(p) = \inf \{y\in\mathbb{R}\mid p\leq F(y)\}
+
+        where :math:`F` is the cumulative distribution function.
+
+        Parameters
+        ----------
+        qs : array of floats, required
+            The points at which to evaluate the quantiles.
+
+        Returns
+        -------
+        array of floats
+            The quantiles at ``qs``.
+        """
+        # Validate the arguments.
+        qs = np.array(qs)
+        if np.any((qs < 0. - 1e-10) | (qs > 1. + 1e-10)):
+            raise ValueError("qs must be between 0 and 1, inclusive.")
+        qs = np.clip(qs, 0., 1.)
+
+        # Compute the quantiles.
+
+        a, b, o = self.a, self.b, self.o
+
+        # Numerically invert the CDF with the bisection method.
+        ys_lo = np.full_like(qs, a - 6 * o)
+        ys_hi = np.full_like(qs, b + 6 * o)
+        ys = (ys_lo + ys_hi) / 2
+        for _ in range(30):
+            y_is_lo = self.cdf(ys) < qs
+
+            ys_lo[y_is_lo] = ys[y_is_lo]
+            ys_hi[~y_is_lo] = ys[~y_is_lo]
+
+            ys = (ys_lo + ys_hi) / 2
+
+        ys = np.array(ys)  # Make scalars 0d arrays.
+        ys[qs == 0.] = -np.inf
+        ys[qs == 1.] = np.inf
+        if o == 0.:
+            ys = np.clip(ys, a, b)
+
+        return ys[()]
+
     @np.errstate(invalid="ignore")
     def _partial_normal_moment(self, loc, scale, k):
         # NOTE: This function returns the kth partial moment from 0 to 1
