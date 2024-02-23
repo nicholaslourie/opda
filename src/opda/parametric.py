@@ -817,6 +817,50 @@ class NoisyQuadraticDistribution:
 
         return ys[()]
 
+    def quantile_tuning_curve(self, ns, q=0.5, minimize=None):
+        """Return the quantile tuning curve evaluated at ``ns``.
+
+        Parameters
+        ----------
+        ns : array of positive floats, required
+            The points at which to evaluate the tuning curve.
+        q : float between 0 and 1, optional (default=0.5)
+            The quantile at which to evaluate the tuning curve.
+        minimize : bool or None, optional (default=None)
+            Whether or not to compute the tuning curve for minimizing a
+            metric as opposed to maximizing it. Defaults to
+            ``None``, in which case it is taken to be the same as
+            ``self.convex``, so convex noisy quadratic distributions
+            will minimize and concave ones will maximize.
+
+        Returns
+        -------
+        array of floats
+            The quantile tuning curve evaluated at ``ns``.
+        """
+        # Validate the arguments.
+        ns = np.array(ns)
+        if np.any(ns <= 0):
+            raise ValueError("ns must be positive.")
+
+        q = np.array(q)[()]
+        if not np.isscalar(q):
+            raise ValueError("q must be a scalar.")
+        if q < 0. or q > 1.:
+            raise ValueError("q must be between 0 and 1, inclusive.")
+
+        minimize = minimize if minimize is not None else self.convex
+        if not isinstance(minimize, bool):
+            raise TypeError("minimize must be a boolean.")
+
+        # Compute the quantile tuning curve.
+        if minimize:
+            ys = self.ppf(1 - q**(1/ns))
+        else:  # maximize
+            ys = self.ppf(q**(1/ns))
+
+        return ys
+
     @np.errstate(invalid="ignore")
     def _partial_normal_moment(self, loc, scale, k):
         # NOTE: This function returns the kth partial moment from 0 to 1

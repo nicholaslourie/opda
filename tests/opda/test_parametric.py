@@ -1910,3 +1910,226 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                         us = self.generator.uniform(0, 1, size=(5, 3, 2))
                         self.assertEqual(dist.ppf(us).shape, us.shape)
                         self.assertTrue(np.all(~np.isnan(dist.ppf(us))))
+
+    @pytest.mark.level(3)
+    def test_quantile_tuning_curve(self):
+        a, b = 0., 1.
+        for c in [1, 10]:
+            for o in [1e-6, 1e-3, 1e0, 1e3]:
+                for convex in [False, True]:
+                    for minimize in [None, False, True]:
+                        # NOTE: When minimize is None, default to convex.
+                        expect_minimize = (
+                            minimize
+                            if minimize is not None else
+                            convex
+                        )
+
+                        dist = parametric.NoisyQuadraticDistribution(
+                            a,
+                            b,
+                            c,
+                            o,
+                            convex=convex,
+                        )
+                        yss = dist.sample((2_000, 5))
+                        curve_lo, curve, curve_hi = np.sort(
+                            np.minimum.accumulate(yss, axis=1)
+                            if expect_minimize else
+                            np.maximum.accumulate(yss, axis=1),
+                            axis=0,
+                        )[(  # Use the binomial confidence interval for
+                             # the median.
+                             891,  # lower 1 - 1e-6 confidence bound
+                            1000,  # point estimate
+                            1109,  # upper 1 - 1e-6 confidence bound
+                        ), :]
+                        atol = np.max(curve_hi - curve_lo) / 2
+
+                        # Test when n is integral.
+                        #   scalar
+                        for n in range(1, 6):
+                            self.assertTrue(np.isscalar(
+                                dist.quantile_tuning_curve(
+                                    n,
+                                    q=0.5,
+                                    minimize=minimize,
+                                ),
+                            ))
+                            self.assertAlmostEqual(
+                                dist.quantile_tuning_curve(
+                                    n,
+                                    q=0.5,
+                                    minimize=minimize,
+                                ),
+                                curve[n-1],
+                                delta=atol,
+                            )
+                            self.assertTrue(np.allclose(
+                                dist.quantile_tuning_curve(
+                                    [n],
+                                    q=0.5,
+                                    minimize=minimize,
+                                ),
+                                [
+                                    dist.quantile_tuning_curve(
+                                        n,
+                                        q=0.5,
+                                        minimize=minimize,
+                                    ),
+                                ],
+                            ))
+                        #   1D array
+                        self.assertTrue(np.allclose(
+                            dist.quantile_tuning_curve(
+                                [1, 2, 3, 4, 5],
+                                q=0.5,
+                                minimize=minimize,
+                            ),
+                            curve,
+                            atol=atol,
+                        ))
+                        self.assertTrue(np.allclose(
+                            dist.quantile_tuning_curve(
+                                [3, 1, 5],
+                                q=0.5,
+                                minimize=minimize,
+                            ),
+                            [curve[2], curve[0], curve[4]],
+                            atol=atol,
+                        ))
+                        #   2D array
+                        self.assertTrue(np.allclose(
+                            dist.quantile_tuning_curve(
+                                [
+                                    [1, 2, 3],
+                                    [3, 1, 5],
+                                ],
+                                q=0.5,
+                                minimize=minimize,
+                            ),
+                            [
+                                [curve[0], curve[1], curve[2]],
+                                [curve[2], curve[0], curve[4]],
+                            ],
+                            atol=atol,
+                        ))
+
+                        # Test when n is non-integral.
+                        #   scalar
+                        for n in range(1, 6):
+                            self.assertTrue(np.isscalar(
+                                dist.quantile_tuning_curve(
+                                    n/10.,
+                                    q=0.5**(1/10),
+                                    minimize=minimize,
+                                ),
+                            ))
+                            self.assertAlmostEqual(
+                                dist.quantile_tuning_curve(
+                                    n/10.,
+                                    q=0.5**(1/10),
+                                    minimize=minimize,
+                                ),
+                                curve[n-1],
+                                delta=atol,
+                            )
+                            self.assertTrue(np.allclose(
+                                dist.quantile_tuning_curve(
+                                    [n/10.],
+                                    q=0.5**(1/10),
+                                    minimize=minimize,
+                                ),
+                                [
+                                    dist.quantile_tuning_curve(
+                                        n/10.,
+                                        q=0.5**(1/10),
+                                        minimize=minimize,
+                                    ),
+                                ],
+                            ))
+                        #   1D array
+                        self.assertTrue(np.allclose(
+                            dist.quantile_tuning_curve(
+                                [0.1, 0.2, 0.3, 0.4, 0.5],
+                                q=0.5**(1/10),
+                                minimize=minimize,
+                            ),
+                            curve,
+                            atol=atol,
+                        ))
+                        self.assertTrue(np.allclose(
+                            dist.quantile_tuning_curve(
+                                [0.3, 0.1, 0.5],
+                                q=0.5**(1/10),
+                                minimize=minimize,
+                            ),
+                            [curve[2], curve[0], curve[4]],
+                            atol=atol,
+                        ))
+                        #   2D array
+                        self.assertTrue(np.allclose(
+                            dist.quantile_tuning_curve(
+                                [
+                                    [0.1, 0.2, 0.3],
+                                    [0.3, 0.1, 0.5],
+                                ],
+                                q=0.5**(1/10),
+                                minimize=minimize,
+                            ),
+                            [
+                                [curve[0], curve[1], curve[2]],
+                                [curve[2], curve[0], curve[4]],
+                            ],
+                            atol=atol,
+                        ))
+
+                        # Test ns <= 0.
+                        with self.assertRaises(ValueError):
+                            dist.quantile_tuning_curve(
+                                0,
+                                q=0.5,
+                                minimize=minimize,
+                            )
+                        with self.assertRaises(ValueError):
+                            dist.quantile_tuning_curve(
+                                -1,
+                                q=0.5,
+                                minimize=minimize,
+                            )
+                        with self.assertRaises(ValueError):
+                            dist.quantile_tuning_curve(
+                                [0],
+                                q=0.5,
+                                minimize=minimize,
+                            )
+                        with self.assertRaises(ValueError):
+                            dist.quantile_tuning_curve(
+                                [-2],
+                                q=0.5,
+                                minimize=minimize,
+                            )
+                        with self.assertRaises(ValueError):
+                            dist.quantile_tuning_curve(
+                                [0, 1],
+                                q=0.5,
+                                minimize=minimize,
+                            )
+                        with self.assertRaises(ValueError):
+                            dist.quantile_tuning_curve(
+                                [-2, 1],
+                                q=0.5,
+                                minimize=minimize,
+                            )
+                        with self.assertRaises(ValueError):
+                            dist.quantile_tuning_curve(
+                                [[0], [1]],
+                                q=0.5,
+                                minimize=minimize,
+                            )
+                        with self.assertRaises(ValueError):
+                            dist.quantile_tuning_curve(
+                                [[-2], [1]],
+                                q=0.5,
+                                minimize=minimize,
+                            )
