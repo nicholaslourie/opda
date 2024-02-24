@@ -2561,3 +2561,47 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                             dist.cdf(a + (b - a) * ys),
                             atol=1e-5,
                         ))
+
+    @pytest.mark.level(2)
+    def test_cdf_agrees_with_sampling_definition(self):
+        for a, b in [(-1., 1.), (0., 1.), (1., 10.)]:
+            # NOTE: Keep c low because the rejection sampling below
+            # will reject too many samples for large c.
+            for c in [1, 2, 3]:
+                for o in [1e-6, 1e-3, 1e0, 1e3]:
+                    for convex in [False, True]:
+                        dist = parametric.NoisyQuadraticDistribution(
+                            a, b, c, o, convex=convex,
+                        )
+
+                        # Sample from the noisy quadratic distribution
+                        # according to its derivation: uniform random
+                        # variates passed through a quadratic function
+                        # with additive normal noise.
+                        ys = np.sum(
+                            self.generator.uniform(
+                                -1., 1.,
+                                size=(150_000, c),
+                            )**2,
+                            axis=-1,
+                        )
+                        # Filter for points in the sphere of radius 1, to
+                        # avoid distortions from the hypercube's boundary.
+                        ys = ys[ys <= 1]
+                        # Adjust the data for the distribution's parameters.
+                        ys = (
+                            a + (b - a) * ys
+                            if convex else
+                            b - (b - a) * ys
+                        )
+                        # Add normal noise.
+                        ys += self.generator.normal(0, o, size=ys.shape)
+
+                        # Check the sample comes from the distribution
+                        # using the KS test.
+                        p_value = stats.kstest(
+                            ys,
+                            dist.cdf,
+                            alternative="two-sided",
+                        ).pvalue
+                        self.assertGreater(p_value, 1e-6)
