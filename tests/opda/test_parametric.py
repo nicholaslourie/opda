@@ -2542,3 +2542,22 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                     )
                     self.assertEqual(dist.cdf(-np.inf), 0.)
                     self.assertEqual(dist.cdf(np.inf), 1.)
+
+    def test_cdf_is_consistent_across_scales(self):
+        for c in [1, 2, 10]:
+            for o in [1e-6, 1e-3, 1e0, 1e3]:
+                for convex in [False, True]:
+                    ys = np.linspace(0. - 6 * o, 1. + 6 * o, num=100)
+
+                    ps = parametric.NoisyQuadraticDistribution(
+                        0., 1., c, o, convex=convex,
+                    ).cdf(ys)
+                    for a, b in [(-1., 1.), (1., 10.)]:
+                        dist = parametric.NoisyQuadraticDistribution(
+                            a, b, c, o * (b - a), convex=convex,
+                        )
+                        self.assertTrue(np.allclose(
+                            ps,
+                            dist.cdf(a + (b - a) * ys),
+                            atol=1e-5,
+                        ))
