@@ -6,7 +6,7 @@ import json
 import numpy as np
 from scipy import special
 
-from opda import utils
+from opda import exceptions, utils
 import opda.random
 
 # backwards compatibility (Python < 3.9)
@@ -860,6 +860,124 @@ class NoisyQuadraticDistribution:
             ys = self.ppf(q**(1/ns))
 
         return ys
+
+    def average_tuning_curve(self, ns, minimize=None, *, atol=None):
+        """Return the average tuning curve evaluated at ``ns``.
+
+        Parameters
+        ----------
+        ns : array of positive floats, required
+            The points at which to evaluate the tuning curve.
+        minimize : bool or None, optional (default=None)
+            Whether or not to compute the tuning curve for minimizing a
+            metric as opposed to maximizing it. Defaults to
+            ``None``, in which case it is taken to be the same as
+            ``self.convex``, so convex noisy quadratic distributions
+            will minimize and concave ones will maximize.
+        atol : non-negative float or None, optional (default=None)
+            The absolute tolerance to use for stopping the computation.
+            The average tuning curve is computed via numerical
+            integration. The computation stops when the error estimate
+            is less than ``atol``. If ``None``, then ``atol`` is set
+            automatically based on the distribution's parameters.
+
+        Returns
+        -------
+        array of floats
+            The average tuning curve evaluated at ``ns``.
+        """
+        # Validate the arguments.
+        ns = np.array(ns)
+        if np.any(ns <= 0):
+            raise ValueError("ns must be positive.")
+
+        minimize = minimize if minimize is not None else self.convex
+        if not isinstance(minimize, bool):
+            raise TypeError("minimize must be a boolean.")
+
+        if atol is not None and atol < 0:
+            raise ValueError("atol must be non-negative.")
+
+        # Compute the average tuning curve.
+        a, b, o = self.a, self.b, self.o
+
+        # NOTE: We compute the average tuning curve via numerical
+        # integration. Let T_n be the max of the first n samples. If the
+        # CDF for one sample is F and the PDF is f, then the CDF for the
+        # max of n samples is F(y)^n and the PDF is n F(y)^(n-1) f(y).
+        #
+        # We could evaluate the expected value directly using its
+        # definition:
+        #
+        #   E[T_n] = \int_{-\infty}^{\infty} y n F(y)^(n-1) f(y) dy
+        #
+        # but, in general, the expected value can also be expressed in
+        # terms of the CDF:
+        #
+        #   E[Y] = \int_0^{\infty} (1 - F(y)^n) dy - \int_{-\infty}^0 F(y)^n dy
+        #        = \int_{-\infty}^{\infty} 1[y > 0] - F(y)^n dy
+        #
+        # This alternative expression has the advantage that we only
+        # need evaluate the CDF rather than the CDF and PDF for each
+        # point. Using this expression, we can compute the integral via
+        # the composite trapezoidal rule [1]. Since the CDF is
+        # essentially 0 below a - 6o and 1 above b + 6o, the interesting
+        # part of the integral is within that range. Instead of
+        # integrating from negative to positive infinity, we integrate
+        # from a - 6o to b + 6o, then we add back the omitted parts of
+        # the integral. In particular, if a - 6o > 0 then from 0 to a -
+        # 6o the integrand, 1[y > 0] - F(y)^n, is essentially 1, and if
+        # b + 6o < 0 then from b + 6o to 0 the integrand, 1[y > 0] -
+        # F(y)^n, is essentially -1. Thus, the omitted parts of the
+        # integral evaluate to max(0, a - 6o) and min(0, b + 6o).
+        #
+        # Romberg's method runs in essentially the same time as the
+        # composite trapezoidal rule and often converges faster;
+        # however, we found empirically that it does not converge any
+        # faster for the integrals of interest. Thus, we use the simpler
+        # composite trapezoidal rule.
+        #
+        # [1]: https://en.wikipedia.org/wiki/Trapezoidal_rule
+        lo, hi = a - 6 * o, b + 6 * o
+        atol = atol if atol is not None else 1e-6 * (hi - lo)
+        h = hi - lo
+        xs = np.array([lo, hi])
+        ys = 0.5 * h * np.sum(
+            (xs > 0) - (1 - (1 - self.cdf(xs))**ns[..., None])
+            if minimize else
+            (xs > 0) - self.cdf(xs)**ns[..., None],
+            axis=-1,
+        )
+        for i in range(1, 31):
+            h *= 0.5
+            xs = lo + np.arange(1, 2**i, 2) * h
+            ys_prev, ys = ys, (
+                0.5 * ys + h * np.sum(
+                    (xs > 0) - (1 - (1 - self.cdf(xs))**ns[..., None])
+                    if minimize else
+                    (xs > 0) - self.cdf(xs)**ns[..., None],
+                    axis=-1,
+                )
+            )
+
+            # As the composite trapezoid rule has error O(N^{-2}),
+            # doubling the number of points reduces the error by about a
+            # factor of 4. Thus, if "I" is the integral's value and "e"
+            # is the error, we have approximately:
+            #
+            #   ys - ys_prev = (I - e) - (I - 4e) = 3e
+            #
+            # So, the current error is about (ys - ys_prev) / 3.
+            ##
+            err = np.max(np.abs(ys - ys_prev)) / 3
+            if i > 3 and err < atol:
+                break
+        else:
+            raise exceptions.IntegrationError(
+                "Convergence failed in the allocated number of iterations.",
+            )
+
+        return max(0., lo) + min(0., hi) + ys
 
     @np.errstate(invalid="ignore")
     def _partial_normal_moment(self, loc, scale, k):
