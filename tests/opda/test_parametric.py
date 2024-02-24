@@ -2605,3 +2605,58 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                             alternative="two-sided",
                         ).pvalue
                         self.assertGreater(p_value, 1e-6)
+
+    @pytest.mark.level(2)
+    def test_cdf_agrees_with_cdf_computed_via_numerical_integration(self):
+        a, b = 0., 1.
+        for c in [1, 2, 10]:
+            for o in [1e-6, 1e-3, 1e0, 1e3]:
+                for convex in [False, True]:
+                    dist = parametric.NoisyQuadraticDistribution(
+                        a, b, c, o, convex=convex,
+                    )
+
+                    # Mathematically, the CDF of the noisy quadratic
+                    # distribution is: E[F(y - E)], where F is the
+                    # quadratic distribution's CDF and E is normally
+                    # distributed noise with mean 0 and variance o.
+                    def cdf_numerical_integration(
+                            ys, a=a, b=b, c=c, o=o, convex=convex,
+                    ):
+                        # Compute the CDF using the composite
+                        # trapezoid rule for numerical integration.
+                        noiseless_cdf = parametric.QuadraticDistribution(
+                            a, b, c, convex=convex,
+                        ).cdf
+
+                        atol = 1e-6
+                        lo, hi =  -6 * o, 6 * o
+                        h = hi - lo
+                        xs = np.array([lo, hi])
+                        ps = 0.5 * h * np.sum(
+                            utils.normal_pdf(xs / o) / o
+                            * noiseless_cdf(ys[..., None] - xs),
+                            axis=-1,
+                        )
+                        for i in range(1, 21):
+                            h *= 0.5
+                            xs = lo + np.arange(1, 2**i, 2) * h
+                            ps_prev, ps = ps, (
+                                0.5 * ps + h * np.sum(
+                                    utils.normal_pdf(xs / o) / o
+                                    * noiseless_cdf(ys[..., None] - xs),
+                                    axis=-1,
+                                )
+                            )
+                            err = np.max(np.abs(ps - ps_prev)) / 3
+                            if err < atol:
+                                break
+
+                        return ps
+
+                    ys = np.linspace(a - 9 * o, b + 9 * o, num=100)
+                    self.assertTrue(np.allclose(
+                        dist.cdf(ys),
+                        cdf_numerical_integration(ys),
+                        atol=1e-5,
+                    ))
