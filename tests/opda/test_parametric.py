@@ -2509,3 +2509,36 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                         # The Monte Carlo integration has limited
                         # precision, becoming less precise as o shrinks.
                     ))
+
+    def test_cdf_on_boundary_of_support(self):
+        # Test when a = b and o > 0.
+        a, b = 0., 0.
+        for c in [1, 2, 10]:
+            for o in [1e-6, 1e-3, 1e0, 1e3]:
+                for convex in [False, True]:
+                    dist = parametric.NoisyQuadraticDistribution(
+                        a, b, c, o, convex=convex,
+                    )
+                    self.assertEqual(dist.cdf(-np.inf), 0.)
+                    self.assertEqual(dist.cdf(np.inf), 1.)
+
+        # Test when a != b and o = 0.
+        a, b, o = 0., 1., 0.
+        for c in [1, 2, 10]:
+            for convex in [False, True]:
+                dist = parametric.NoisyQuadraticDistribution(
+                    a, b, c, o, convex=convex,
+                )
+                self.assertEqual(dist.cdf(a), 0.)
+                self.assertEqual(dist.cdf(b), 1.)
+
+        # Test when a != b and o > 0.
+        a, b = 0., 1.
+        for c in [1, 2, 10]:
+            for o in [1e-6, 1e-3, 1e0, 1e3]:
+                for convex in [False, True]:
+                    dist = parametric.NoisyQuadraticDistribution(
+                        a, b, c, o, convex=convex,
+                    )
+                    self.assertEqual(dist.cdf(-np.inf), 0.)
+                    self.assertEqual(dist.cdf(np.inf), 1.)
