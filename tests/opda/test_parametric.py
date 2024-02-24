@@ -2468,3 +2468,44 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                             (dist.cdf(ys + dy) - dist.cdf(ys - dy)) / (2 * dy),
                             atol=5e-3,
                         ))
+
+    @pytest.mark.level(2)
+    def test_pdf_agrees_with_pdf_computed_via_monte_carlo_integration(self):
+        # NOTE: Use Monte Carlo integration instead of numerical
+        # integration because Monte Carlo integration is unbiased while
+        # numerical integration has a large bias near peaks in the PDF.
+        a, b = 0., 1.
+        for c in [1, 2, 10]:
+            for o in [1e-6, 1e-3, 1e0, 1e3]:
+                for convex in [False, True]:
+                    dist = parametric.NoisyQuadraticDistribution(
+                        a, b, c, o, convex=convex,
+                    )
+
+                    # Mathematically, the PDF of the noisy quadratic
+                    # distribution is: E[f(y - Z)], where f is the
+                    # normal distribution's PDF and Z is a random
+                    # variable with the quadratic distribution.
+                    def pdf_monte_carlo_integration(
+                            ys, a=a, b=b, c=c, o=o, convex=convex,
+                    ):
+                        # Compute the PDF via Monte Carlo integration.
+                        n_samples = 100_000
+
+                        zs = parametric.QuadraticDistribution(
+                            a, b, c, convex=convex,
+                        ).sample(n_samples)
+
+                        return np.mean(
+                            utils.normal_pdf((ys[..., None] - zs) / o) / o,
+                            axis=-1,
+                        )
+
+                    ys = np.linspace(a - 9 * o, b + 9 * o, num=100)
+                    self.assertTrue(np.allclose(
+                        dist.pdf(ys),
+                        pdf_monte_carlo_integration(ys),
+                        atol=1e-3 / o,
+                        # The Monte Carlo integration has limited
+                        # precision, becoming less precise as o shrinks.
+                    ))
