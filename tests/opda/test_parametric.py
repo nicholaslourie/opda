@@ -2409,3 +2409,62 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                             dist.pdf(a + (b - a) * ys),
                             atol=1e-5,
                         ))
+
+    def test_pdf_matches_numerical_derivative_of_cdf(self):
+        # Test when a = b and o > 0.
+        a, b = 0, 0
+        for c in [1, 2, 10]:
+            for o in [1e-6, 1e-3, 1e0, 1e3]:
+                for convex in [False, True]:
+                    dist = parametric.NoisyQuadraticDistribution(
+                        a, b, c, o, convex=convex,
+                    )
+
+                    ys = np.linspace(a - 3 * o, b + 3 * o, num=100)
+                    dy = 1e-9
+                    self.assertTrue(np.allclose(
+                        dist.pdf(ys),
+                        (dist.cdf(ys + dy) - dist.cdf(ys - dy)) / (2 * dy),
+                        atol=1e-7,
+                    ))
+
+        # Test when a != b and o = 0.
+        for a, b in [(-1., 1.), (0., 1.), (1., 10.)]:
+            for c in [1, 2, 10]:
+                for convex in [False, True]:
+                    dist = parametric.NoisyQuadraticDistribution(
+                        a, b, c, 0., convex=convex,
+                    )
+
+                    # Omit a and b from the numerical derivatives since
+                    # they're on the boundary.
+                    ys = np.linspace(a, b, num=102)[1:-1]
+                    dy = 1e-7
+                    self.assertTrue(np.allclose(
+                        dist.pdf(ys),
+                        (dist.cdf(ys + dy) - dist.cdf(ys - dy)) / (2 * dy),
+                    ))
+
+        # Test when a != b and o > 0.
+        for a, b in [(-1., 1.), (0., 1.), (1., 10.)]:
+            for c in [1, 2, 10]:
+                for o in [1e-6, 1e-3, 1e0, 1e3]:
+                    for convex in [False, True]:
+                        dist = parametric.NoisyQuadraticDistribution(
+                            a, b, c, o, convex=convex,
+                        )
+
+                        ys = np.linspace(a - 3 * o, b + 3 * o, num=100)
+                        ys = ys[
+                            (np.abs(ys - a) > 5e-2)
+                            & (np.abs(ys - b) > 5e-2)
+                        ]
+                        # NOTE: Numerical derivatives have high bias near
+                        # spikes in the PDF that can occur at a and b.
+
+                        dy = 3e-4 * (b - a)
+                        self.assertTrue(np.allclose(
+                            dist.pdf(ys),
+                            (dist.cdf(ys + dy) - dist.cdf(ys - dy)) / (2 * dy),
+                            atol=5e-3,
+                        ))
