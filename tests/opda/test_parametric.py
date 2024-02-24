@@ -2351,3 +2351,42 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
             dist.sample(16, generator=np.random.default_rng(0)).tolist(),
             dist.sample(16, generator=np.random.default_rng(0)).tolist(),
         )
+
+    def test_pdf_on_boundary_of_support(self):
+        # Test when a = b and o > 0.
+        a, b = 0., 0.
+        for c in [1, 2, 10]:
+            for o in [1e-6, 1e-3, 1e0, 1e3]:
+                for convex in [False, True]:
+                    dist = parametric.NoisyQuadraticDistribution(
+                        a, b, c, o, convex=convex,
+                    )
+                    self.assertEqual(dist.pdf(-np.inf), 0.)
+                    self.assertEqual(dist.pdf(np.inf), 0.)
+
+        # Test when a != b and o = 0.
+        for convex in [False, True]:
+            a, b, c, o = 0., 1., 1, 0.
+            dist = parametric.NoisyQuadraticDistribution(
+                a, b, c, o, convex=convex,
+            )
+            self.assertEqual(dist.pdf(a), np.inf if convex else 0.5)
+            self.assertEqual(dist.pdf(b), 0.5 if convex else np.inf)
+
+            a, b, c, o = 0., 1., 2, 0.
+            dist = parametric.NoisyQuadraticDistribution(
+                a, b, c, o, convex=convex,
+            )
+            self.assertEqual(dist.pdf(a), 1.)
+            self.assertEqual(dist.pdf(b), 1.)
+
+        # Test when a != b and o > 0.
+        a, b = 0., 1.
+        for c in [1, 2, 10]:
+            for o in [1e-6, 1e-3, 1e0, 1e3]:
+                for convex in [False, True]:
+                    dist = parametric.NoisyQuadraticDistribution(
+                        a, b, c, o, convex=convex,
+                    )
+                    self.assertEqual(dist.pdf(-np.inf), 0.)
+                    self.assertEqual(dist.pdf(np.inf), 0.)
