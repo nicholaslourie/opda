@@ -1037,7 +1037,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                     self.assertEqual(dist.ppf(1. + 1e-12), b)
 
     def test_quantile_tuning_curve_minimize_is_dual_to_maximize(self):
-        for a, b, c in [(-1., 1., 1), (-1., 1., 2)]:
+        for a, b, c in [(0., 1., 1), (-1., 10., 2)]:
             for convex in [False, True]:
                 ns = np.arange(1, 17)
 
@@ -1059,7 +1059,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                 ))
 
     def test_average_tuning_curve_minimize_is_dual_to_maximize(self):
-        for a, b, c in [(-1., 1., 1), (-1., 1., 2)]:
+        for a, b, c in [(0., 1., 1), (-1., 10., 2)]:
             for convex in [False, True]:
                 ns = np.arange(1, 17)
 
@@ -2723,7 +2723,7 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
 
     @pytest.mark.level(3)
     def test_quantile_tuning_curve_minimize_is_dual_to_maximize(self):
-        for a, b, c in [(-1., 1., 1), (-1., 1., 2)]:
+        for a, b, c in [(0., 1., 1), (-1., 10., 2)]:
             for o in [1e-6, 1e-3, 1e0, 1e3]:
                 for convex in [False, True]:
                     ns = np.arange(1, 17)
@@ -2753,7 +2753,7 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
 
     @pytest.mark.level(3)
     def test_average_tuning_curve_minimize_is_dual_to_maximize(self):
-        for a, b, c in [(-1., 1., 1), (-1., 1., 2)]:
+        for a, b, c in [(0., 1., 1), (-1., 10., 2)]:
             for o in [1e-6, 1e-3, 1e0, 1e3]:
                 for convex in [False, True]:
                     ns = np.arange(1, 17)
