@@ -2720,3 +2720,33 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                         self.assertEqual(dist.ppf(0.), lo)
                         self.assertEqual(dist.ppf(1.), hi)
                         self.assertEqual(dist.ppf(1. + 1e-12), hi)
+
+    @pytest.mark.level(3)
+    def test_quantile_tuning_curve_minimize_is_dual_to_maximize(self):
+        for a, b, c in [(-1., 1., 1), (-1., 1., 2)]:
+            for o in [1e-6, 1e-3, 1e0, 1e3]:
+                for convex in [False, True]:
+                    ns = np.arange(1, 17)
+
+                    self.assertTrue(np.allclose(
+                        parametric
+                          .NoisyQuadraticDistribution(
+                              a, b, c, o, convex=convex,
+                          ).quantile_tuning_curve(ns, minimize=False),
+                        -parametric
+                          .NoisyQuadraticDistribution(
+                              -b, -a, c, o, convex=not convex,
+                          ).quantile_tuning_curve(ns, minimize=True),
+                        atol=1e-4,
+                    ))
+                    self.assertTrue(np.allclose(
+                        parametric
+                          .NoisyQuadraticDistribution(
+                              a, b, c, o, convex=convex,
+                          ).quantile_tuning_curve(ns, minimize=True),
+                        -parametric
+                          .NoisyQuadraticDistribution(
+                              -b, -a, c, o, convex=not convex,
+                          ).quantile_tuning_curve(ns, minimize=False),
+                        atol=1e-4,
+                    ))
