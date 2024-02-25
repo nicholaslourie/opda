@@ -2750,3 +2750,33 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                           ).quantile_tuning_curve(ns, minimize=False),
                         atol=1e-4,
                     ))
+
+    @pytest.mark.level(3)
+    def test_average_tuning_curve_minimize_is_dual_to_maximize(self):
+        for a, b, c in [(-1., 1., 1), (-1., 1., 2)]:
+            for o in [1e-6, 1e-3, 1e0, 1e3]:
+                for convex in [False, True]:
+                    ns = np.arange(1, 17)
+
+                    self.assertTrue(np.allclose(
+                        parametric
+                          .NoisyQuadraticDistribution(
+                              a, b, c, o, convex=convex,
+                          ).average_tuning_curve(ns, minimize=False),
+                        -parametric
+                          .NoisyQuadraticDistribution(
+                              -b, -a, c, o, convex=not convex,
+                          ).average_tuning_curve(ns, minimize=True),
+                        atol=1e-4 * max(o, 1),
+                    ))
+                    self.assertTrue(np.allclose(
+                        parametric
+                          .NoisyQuadraticDistribution(
+                              a, b, c, o, convex=convex,
+                          ).average_tuning_curve(ns, minimize=True),
+                        -parametric
+                          .NoisyQuadraticDistribution(
+                              -b, -a, c, o, convex=not convex,
+                          ).average_tuning_curve(ns, minimize=False),
+                        atol=1e-4 * max(o, 1),
+                    ))
