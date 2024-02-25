@@ -2134,11 +2134,16 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                                 minimize=minimize,
                             )
 
-    @pytest.mark.level(4)
+    @pytest.mark.level(3)
     def test_average_tuning_curve(self):
+        # NOTE: The average tuning curve is very expensive to
+        # compute. Thus, to keep this test reasonably fast, only try c
+        # in [2] and o in [1e-3]. For more thorough coverage, you can
+        # change these to c in [1, 10] and o in [1e-6, 1e-3, 1e0, 1e3]
+        # as in other similar tests.
         a, b = 0., 1.
-        for c in [1, 10]:
-            for o in [1e-6, 1e-3, 1e0, 1e3]:
+        for c in [2]:
+            for o in [1e-3]:
                 for convex in [False, True]:
                     for minimize in [None, False, True]:
                         # NOTE: When minimize is None, default to convex.
