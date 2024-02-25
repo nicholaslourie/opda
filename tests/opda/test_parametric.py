@@ -2704,3 +2704,19 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                             us,
                             atol=1e-5,
                         ))
+
+    @pytest.mark.level(1)
+    def test_ppf_at_extremes(self):
+        for a, b in [(0., 0.), (0., 1.)]:
+            for c in [1, 10]:
+                for o in [0., 1e-6, 1e-3, 1e0, 1e3]:
+                    for convex in [False, True]:
+                        dist = parametric.NoisyQuadraticDistribution(
+                            a, b, c, o, convex=convex,
+                        )
+                        lo = a if o == 0 else -np.inf
+                        hi = b if o == 0 else np.inf
+                        self.assertEqual(dist.ppf(0. - 1e-12), lo)
+                        self.assertEqual(dist.ppf(0.), lo)
+                        self.assertEqual(dist.ppf(1.), hi)
+                        self.assertEqual(dist.ppf(1. + 1e-12), hi)
