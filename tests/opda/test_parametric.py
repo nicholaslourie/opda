@@ -2660,3 +2660,47 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                         cdf_numerical_integration(ys),
                         atol=1e-5,
                     ))
+
+    @pytest.mark.level(1)
+    def test_ppf_is_inverse_of_cdf(self):
+        # NOTE: The quantile function is always an almost sure left
+        # inverse of the CDF. For continuous distributions like the
+        # noisy quadratic distribution, the quantile function is also
+        # the right inverse of the cumulative distribution function.
+        for a, b in [(0., 0.), (0., 1.)]:
+            for c in [1, 10]:
+                for o in [0., 1e-6, 1e-3, 1e0, 1e3]:
+                    for convex in [False, True]:
+                        dist = parametric.NoisyQuadraticDistribution(
+                            a, b, c, o, convex=convex,
+                        )
+
+                        ys = dist.sample(100)
+
+                        ys_center = ys[(ys >= a) & (ys <= b)]
+                        self.assertTrue(np.allclose(
+                            dist.ppf(dist.cdf(ys_center)),
+                            ys_center,
+                            atol=1e-5,
+                        ))
+                        # NOTE: Precision of the ppf is more difficult
+                        # in the tails because the CDF is nearly flat.
+                        ys_tails = ys[(ys < a) | (ys > b)]
+                        self.assertTrue(np.allclose(
+                            dist.ppf(dist.cdf(ys_tails)),
+                            ys_tails,
+                            atol=1e-2,
+                        ))
+
+                        if a == b and o == 0.:
+                            # When a = b and o = 0, the distribution
+                            # is discrete and the quantile function
+                            # is not a right inverse of the CDF.
+                            continue
+
+                        us = self.generator.uniform(0, 1, size=100)
+                        self.assertTrue(np.allclose(
+                            dist.cdf(dist.ppf(us)),
+                            us,
+                            atol=1e-5,
+                        ))
