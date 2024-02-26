@@ -17,7 +17,7 @@ import sys  # ruff: isort: skip
 
 
 class QuadraticDistribution:
-    """The Quadratic distribution.
+    r"""The Quadratic distribution.
 
     When using random search to optimize a deterministic smooth
     function, the best score asymptotically approaches a quadratic
@@ -46,6 +46,34 @@ class QuadraticDistribution:
         The distribution's mean.
     variance : float
         The distribution's variance.
+
+    Notes
+    -----
+    The quadratic distribution, :math:`\mathcal{Q}(\alpha, \beta,
+    \gamma)`, has a dual relationship to itself:
+
+    .. math::
+
+       Y \sim \mathcal{Q}_{\max}(\alpha, \beta, \gamma)
+       \iff
+       -Y \sim \mathcal{Q}_{\min}(-\beta, -\alpha, \gamma)
+
+    Where :math:`\mathcal{Q}_{\max}` and :math:`\mathcal{Q}_{\min}` are
+    the concave and convex quadratic distributions, respectively.
+
+    The :math:`\alpha` and :math:`\beta` parameters can also be seen as
+    defining a location-scale family:
+
+    .. math::
+
+       Y \sim \mathcal{Q}(0, 1, \gamma)
+       \iff
+       \alpha + (\beta - \alpha) Y \sim \mathcal{Q}(
+         \alpha, \beta, \gamma
+       )
+
+    In other words, :math:`\alpha` and :math:`\beta` act on the
+    distribution by linearly changing its support.
     """
 
     def __init__(
