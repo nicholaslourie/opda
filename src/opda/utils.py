@@ -1,7 +1,7 @@
 """Utilities."""
 
 import numpy as np
-from scipy import stats
+from scipy import special, stats
 
 
 def sort_by_first(*args):
@@ -476,3 +476,50 @@ def binomial_confidence_interval(n_successes, n_total, confidence):
     )
 
     return lo, hi
+
+
+def normal_pdf(xs):
+    """Evaluate the PDF of the standard normal distribution.
+
+    Parameters
+    ----------
+    xs : array of floats, required
+        The points at which to evaluate the standard normal
+        distribution's probability density function.
+
+    Returns
+    -------
+    array of floats
+        The standard normal distribution's probability density function
+        evaluated at ``xs``.
+    """
+    # NOTE: In a quick benchmark, this implementation was more than
+    # 10-80x faster than scipy.stats.norm.pdf, depending on input size.
+    xs = np.array(xs)
+
+    return (
+        0.3989422804014327  # 1 / (2 * pi)**0.5 (pre-computed for speed)
+        * np.exp(-0.5 * xs**2)
+    )
+
+
+def normal_cdf(xs):
+    """Evaluate the CDF of the standard normal distribution.
+
+    Parameters
+    ----------
+    xs : array of floats, required
+        The points at which to evaluate the standard normal
+        distribution's cumulative distribution function.
+
+    Returns
+    -------
+    array of floats
+        The standard normal distribution's cumulative distribution
+        function evaluated at ``xs``.
+    """
+    # NOTE: In a quick benchmark, this implementation was more than
+    # 5-95x faster than scipy.stats.norm.cdf, depending on input size.
+    xs = np.array(xs)
+
+    return 0.5 * (1. + special.erf(1 / 2**0.5 * xs))
