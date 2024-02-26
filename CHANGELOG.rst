@@ -66,6 +66,15 @@ The format is based on `Keep a Changelog
   ``opda.nonparametric.EmpiricalDistribution``.
 * Add ``mean`` and ``variance`` attributes to
   ``opda.parametric.QuadraticDistribution``.
+* Add ``opda.utils.normal_pdf``, a fast function for computing the
+  standard normal's PDF.
+* Add ``opda.utils.normal_cdf``, a fast function for computing the
+  standard normal's CDF.
+* Add ``opda.exceptions.IntegrationError``, an exception for
+  integration issues.
+* Add ``opda.parametric.NoisyQuadraticDistribution``, a probability
+  distribution representing a quadratic random variable plus normal
+  noise.
 
 .. rubric:: Changes
 
@@ -98,6 +107,10 @@ The format is based on `Keep a Changelog
   ``opda.parametric.QuadraticDistribution.ppf``. The infimum that
   defines the quantile function has as its domain the interval from
   ``a`` to ``b``, not the entire real line.
+* Add "See Also" and "Notes" sections to the docstring for
+  ``opda.parametric.QuadraticDistribution``, matching the newly added
+  docstring for ``opda.parametric.NoisyQuadraticDistribution`` which
+  has similar sections.
 
 .. rubric:: Security
 
