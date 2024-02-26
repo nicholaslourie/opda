@@ -47,6 +47,11 @@ class QuadraticDistribution:
     variance : float
         The distribution's variance.
 
+    See Also
+    --------
+    NoisyQuadraticDistribution :
+        The quadratic distribution with additive normal noise.
+
     Notes
     -----
     The quadratic distribution, :math:`\mathcal{Q}(\alpha, \beta,
