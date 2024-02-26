@@ -13,7 +13,7 @@ from tests import testcases
 class QuadraticDistributionTestCase(testcases.RandomTestCase):
     """Test opda.parametric.QuadraticDistribution."""
 
-    @pytest.mark.level(1)
+    @pytest.mark.level(2)
     def test_attributes(self):
         n_samples = 1_000_000
 
