@@ -491,7 +491,7 @@ class QuadraticDistribution:
 
 
 class NoisyQuadraticDistribution:
-    """The Noisy Quadratic distribution.
+    r"""The Noisy Quadratic distribution.
 
     When using random search to optimize a smooth function with additive
     normal noise, the best score asymptotically approaches a noisy
@@ -527,6 +527,35 @@ class NoisyQuadraticDistribution:
         The distribution's mean.
     variance : float
         The distribution's variance.
+
+    Notes
+    -----
+    The noisy quadratic distribution, :math:`\mathcal{Q}(\alpha, \beta,
+    \gamma, \sigma)`, has a dual relationship to itself:
+
+    .. math::
+
+       Y \sim \mathcal{Q}_{\max}(\alpha, \beta, \gamma, \sigma)
+       \iff
+       -Y \sim \mathcal{Q}_{\min}(-\beta, -\alpha, \gamma, \sigma)
+
+    Where :math:`\mathcal{Q}_{\max}` and :math:`\mathcal{Q}_{\min}` are
+    the concave and convex noisy quadratic distributions, respectively.
+
+    The :math:`\alpha` and :math:`\beta` parameters can also be seen as
+    defining a location-scale family:
+
+    .. math::
+
+       Y \sim \mathcal{Q}(0, 1, \gamma, \sigma)
+       \iff
+       \alpha + (\beta - \alpha) Y \sim \mathcal{Q}(
+         \alpha, \beta, \gamma, (\beta - \alpha)\sigma
+       )
+
+    In other words, :math:`\alpha` and :math:`\beta` act on the
+    distribution by linearly changing its support and residual standard
+    deviation, :math:`\sigma`.
     """
 
     def __init__(
