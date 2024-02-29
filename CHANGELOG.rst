@@ -88,6 +88,12 @@ The format is based on `Keep a Changelog
   more thorough, robust, and avoiding re-running redundant test cases.
 * Update the tests for ``parametric.QuadraticDistribution`` to cover
   the case when ``a == b``.
+* Move the source repository from ``github.com/nalourie/opda`` to
+  ``github.com/nicholaslourie/opda``, and move the docs from
+  ``nalourie.github.io/opda`` to
+  ``nicholaslourie.github.io/opda``. Update the project URLs in
+  ``pyproject.toml`` and all the links throughout the repository to
+  reflect these changes.
 
 .. rubric:: Deprecations
 .. rubric:: Removals
@@ -111,6 +117,9 @@ The format is based on `Keep a Changelog
   ``opda.parametric.QuadraticDistribution``, matching the newly added
   docstring for ``opda.parametric.NoisyQuadraticDistribution`` which
   has similar sections.
+* Update all links to use ``github.com/nicholaslourie`` and
+  ``nicholaslourie.github.io/opda`` in place of
+  ``github.com/nalourie`` and ``nalourie.github.io/opda``.
 
 .. rubric:: Security
 
