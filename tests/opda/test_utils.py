@@ -107,6 +107,19 @@ class DkwEpsilonTestCase(unittest.TestCase):
     """Test opda.utils.dkw_epsilon."""
 
     def test_dkw_epsilon(self):
+        # Test when confidence = 0.
+        self.assertEqual(utils.dkw_epsilon(1, 0.), np.sqrt(np.log(2) / 2))
+        self.assertEqual(utils.dkw_epsilon(2, 0.), np.sqrt(np.log(2) / 4))
+        self.assertEqual(utils.dkw_epsilon(4, 0.), np.sqrt(np.log(2) / 8))
+        self.assertEqual(utils.dkw_epsilon(8, 0.), np.sqrt(np.log(2) / 16))
+
+        # Test when confidence = 1.
+        self.assertEqual(utils.dkw_epsilon(1, 1.), np.inf)
+        self.assertEqual(utils.dkw_epsilon(2, 1.), np.inf)
+        self.assertEqual(utils.dkw_epsilon(4, 1.), np.inf)
+        self.assertEqual(utils.dkw_epsilon(8, 1.), np.inf)
+
+        # Test when 0 < confidence < 1.
         self.assertAlmostEqual(utils.dkw_epsilon(2, 1. - 2./np.e), 0.5)
         self.assertAlmostEqual(utils.dkw_epsilon(8, 1. - 2./np.e), 0.25)
         self.assertAlmostEqual(utils.dkw_epsilon(1, 1. - 2./np.e**2), 1.)
