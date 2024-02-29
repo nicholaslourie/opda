@@ -68,6 +68,8 @@ def get_approximation_parameters(func, bounds):
             f" {bounds.shape}. Each pair, (lo, hi), must bound the"
             f" corresponding coordinate of the input to func.",
         )
+    if np.any(~np.isfinite(bounds)):
+        raise ValueError("bounds must contain only finite floats.")
 
     n_dims, _ = bounds.shape
 

@@ -36,10 +36,14 @@ def lagrange_interpolate(xs, ys):
     xs = np.array(xs)
     if len(xs) == 0:
         raise ValueError("xs must be non-empty.")
+    if np.any(~np.isfinite(xs)):
+        raise ValueError("xs must contain only finite floats.")
 
     ys = np.array(ys)
     if len(ys) == 0:
         raise ValueError("ys must be non-empty.")
+    if np.any(~np.isfinite(ys)):
+        raise ValueError("ys must contain only finite floats.")
 
     if len(xs) != len(ys):
         raise ValueError("xs and ys must have the same length.")
@@ -149,10 +153,14 @@ def remez(f, a, b, n, *, atol=None):
     a = np.array(a)[()]
     if not np.isscalar(a):
         raise ValueError("a must be a scalar.")
+    if not np.isfinite(a):
+        raise ValueError("a must be finite.")
 
     b = np.array(b)[()]
     if not np.isscalar(b):
         raise ValueError("b must be a scalar.")
+    if not np.isfinite(b):
+        raise ValueError("b must be finite.")
 
     n = np.array(n)[()]
     if not np.isscalar(n):
@@ -423,10 +431,14 @@ def minimax_polynomial_approximation(f, a, b, n, *, atol=None):
     a = np.array(a)[()]
     if not np.isscalar(a):
         raise ValueError("a must be a scalar.")
+    if not np.isfinite(a):
+        raise ValueError("a must be finite.")
 
     b = np.array(b)[()]
     if not np.isscalar(b):
         raise ValueError("b must be a scalar.")
+    if not np.isfinite(b):
+        raise ValueError("b must be finite.")
 
     n = np.array(n)[()]
     if not np.isscalar(n):
@@ -544,10 +556,14 @@ def minimax_polynomial_coefficients(
     a = np.array(a)[()]
     if not np.isscalar(a):
         raise ValueError("a must be a scalar.")
+    if not np.isfinite(a):
+        raise ValueError("a must be finite.")
 
     b = np.array(b)[()]
     if not np.isscalar(b):
         raise ValueError("b must be a scalar.")
+    if not np.isfinite(b):
+        raise ValueError("b must be finite.")
 
     n = np.array(n)[()]
     if not np.isscalar(n):
@@ -562,6 +578,8 @@ def minimax_polynomial_coefficients(
             "transform must have exactly two elements: a lower bound"
             " and an upper bound.",
         )
+    if np.any(~np.isfinite(transform)):
+        raise ValueError("transform must contain only finite floats.")
     if transform[0] >= transform[1]:
         raise ValueError(
             "transform's first element (lower bound) must be strictly"
@@ -725,10 +743,14 @@ def piecewise_polynomial_knots(f, a, b, ns, *, atol=None):
     a = np.array(a)[()]
     if not np.isscalar(a):
         raise ValueError("a must be a scalar.")
+    if not np.isfinite(a):
+        raise ValueError("a must be finite.")
 
     b = np.array(b)[()]
     if not np.isscalar(b):
         raise ValueError("b must be a scalar.")
+    if not np.isfinite(b):
+        raise ValueError("b must be finite.")
 
     ns = np.array(ns)
     if len(ns.shape) != 1:

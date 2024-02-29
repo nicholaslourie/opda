@@ -183,6 +183,8 @@ class Simulation:
                 f"bounds should have shape {(n_dims, 2)}, not {bounds.shape}."
                 f" Each dimension must have a lower and upper bound.",
             )
+        if np.any(~np.isfinite(bounds)):
+            raise ValueError("bounds must contain only finite floats.")
 
         generator = (
             generator

@@ -111,10 +111,14 @@ def beta_equal_tailed_interval(a, b, coverage):
     a = np.array(a)
     if np.any(a <= 0):
         raise ValueError("a must be positive.")
+    if np.any(~np.isfinite(a)):
+        raise ValueError("a must be finite.")
 
     b = np.array(b)
     if np.any(b <= 0):
         raise ValueError("b must be positive.")
+    if np.any(~np.isfinite(b)):
+        raise ValueError("b must be finite.")
 
     coverage = np.array(coverage)
     if np.any((coverage < 0.) | (coverage > 1.)):
@@ -175,10 +179,14 @@ def beta_highest_density_interval(a, b, coverage, *, atol=1e-10):
     a = np.array(a)
     if np.any(a <= 0):
         raise ValueError("a must be positive.")
+    if np.any(~np.isfinite(a)):
+        raise ValueError("a must be finite.")
 
     b = np.array(b)
     if np.any(b <= 0):
         raise ValueError("b must be positive.")
+    if np.any(~np.isfinite(b)):
+        raise ValueError("b must be finite.")
 
     coverage = np.array(coverage)
     if np.any((coverage < 0.) | (coverage > 1.)):
@@ -272,10 +280,14 @@ def beta_equal_tailed_coverage(a, b, x):
     a = np.array(a)
     if np.any(a <= 0):
         raise ValueError("a must be positive.")
+    if np.any(~np.isfinite(a)):
+        raise ValueError("a must be finite.")
 
     b = np.array(b)
     if np.any(b <= 0):
         raise ValueError("b must be positive.")
+    if np.any(~np.isfinite(b)):
+        raise ValueError("b must be finite.")
 
     x = np.array(x)
     if np.any((x < 0.) | (x > 1.)):
@@ -322,10 +334,14 @@ def beta_highest_density_coverage(a, b, x, *, atol=1e-10):
     a = np.array(a)
     if np.any(a <= 0):
         raise ValueError("a must be positive.")
+    if np.any(~np.isfinite(a)):
+        raise ValueError("a must be finite.")
 
     b = np.array(b)
     if np.any(b <= 0):
         raise ValueError("b must be positive.")
+    if np.any(~np.isfinite(b)):
+        raise ValueError("b must be finite.")
 
     x = np.array(x)
     if np.any((x < 0.) | (x > 1.)):
