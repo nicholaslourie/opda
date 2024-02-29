@@ -414,7 +414,7 @@ class QuadraticDistribution:
         ys : 1D array of floats, required
             The sample from which to estimate the initial parameters and
             bounds.
-        fraction : float (0. <= fraction <= 1.), optional (default=1.)
+        fraction : float (0. < fraction <= 1.), optional (default=1.)
             The fraction of the sample to use. If ``convex`` is
             ``False``, the greatest ``fraction`` numbers are
             retained. If ``convex`` is ``True``, the least ``fraction``
@@ -439,9 +439,9 @@ class QuadraticDistribution:
         fraction = np.array(fraction)[()]
         if not np.isscalar(fraction):
             raise ValueError("fraction must be a scalar.")
-        if fraction < 0. or fraction > 1.:
+        if fraction <= 0. or fraction > 1.:
             raise ValueError(
-                "fraction must be between 0 and 1, inclusive.",
+                "fraction must be between 0 and 1, inclusive of 1.",
             )
 
         if not isinstance(convex, bool):

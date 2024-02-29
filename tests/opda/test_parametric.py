@@ -863,6 +863,31 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                     self.assertGreaterEqual(c, bounds[2, 0])
                     self.assertLessEqual(c, bounds[2, 1])
 
+        # Test error conditions.
+        for convex in [False, True]:
+            # when fraction is not between 0 and 1, inclusive of 1
+            with self.assertRaises(ValueError):
+                parametric.QuadraticDistribution\
+                    .estimate_initial_parameters_and_bounds(
+                        [0, 1, 2, 3, 4, 5],
+                        fraction=-0.1,
+                        convex=convex,
+                    )
+            with self.assertRaises(ValueError):
+                parametric.QuadraticDistribution\
+                    .estimate_initial_parameters_and_bounds(
+                        [0, 1, 2, 3, 4, 5],
+                        fraction=0.,
+                        convex=convex,
+                    )
+            with self.assertRaises(ValueError):
+                parametric.QuadraticDistribution\
+                    .estimate_initial_parameters_and_bounds(
+                        [0, 1, 2, 3, 4, 5],
+                        fraction=1.1,
+                        convex=convex,
+                    )
+
     def test_sample_defaults_to_global_random_number_generator(self):
         # sample should be deterministic if global seed is set.
         dist = parametric.QuadraticDistribution(0., 1., 2)
