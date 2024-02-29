@@ -121,7 +121,7 @@ def remez(f, a, b, n, *, atol=None):
 
     Returns
     -------
-    1D array of floats
+    1D array of floats from a to b inclusive
         The reference, or x values where the minimax polynomial
         achieves equioscillating error.
     1D array of floats
@@ -711,7 +711,7 @@ def piecewise_polynomial_knots(f, a, b, ns, *, atol=None):
 
     Returns
     -------
-    1D array of floats
+    1D array of floats from a to b inclusive
         The ``len(ns) + 1`` knots defining the optimal pieces.
     non-negative float
         The worst case absolute error of the piecewise minimax
