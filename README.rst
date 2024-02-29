@@ -1,10 +1,10 @@
 =============================
 opda: optimal design analysis
 =============================
-`Docs <https://nalourie.github.io/opda>`_
-| `Source <https://github.com/nalourie/opda>`_
-| `Issues <https://github.com/nalourie/opda/issues>`_
-| `Changelog <https://nalourie.github.io/opda/changelog.html>`_
+`Docs <https://nicholaslourie.github.io/opda>`_
+| `Source <https://github.com/nicholaslourie/opda>`_
+| `Issues <https://github.com/nicholaslourie/opda/issues>`_
+| `Changelog <https://nicholaslourie.github.io/opda/changelog.html>`_
 
 ..
   The content below is included into the docs.
@@ -39,7 +39,8 @@ Install opda via ``pip``:
 
    $ pip install opda
 
-See the `Setup <https://nalourie.github.io/opda/tutorial/setup.html>`_
+See the `Setup
+<https://nicholaslourie.github.io/opda/tutorial/setup.html>`_
 documentation for information on optional dependencies and development
 setups.
 
@@ -134,12 +135,12 @@ bands, and compare it to a baseline:
    <matplotlib.legend.Legend object at ...>
    >>> # plt.show() or plt.savefig(...)
 
-.. image:: https://nalourie.github.io/opda/_static/readme_tuning-curve-comparison.png
+.. image:: https://nicholaslourie.github.io/opda/_static/readme_tuning-curve-comparison.png
    :alt: A simulated comparison of tuning curves with confidence bands.
 
-See the `Usage <https://nalourie.github.io/opda/tutorial/usage.html>`_,
-`Examples <https://nalourie.github.io/opda/tutorial/examples.html>`_, or
-`Reference <https://nalourie.github.io/opda/reference/opda.html>`_
+See the `Usage <https://nicholaslourie.github.io/opda/tutorial/usage.html>`_,
+`Examples <https://nicholaslourie.github.io/opda/tutorial/examples.html>`_, or
+`Reference <https://nicholaslourie.github.io/opda/reference/opda.html>`_
 documentation for a deeper dive into opda.
 
 
@@ -170,5 +171,5 @@ please cite:
 Contact
 =======
 For more information, see the code
-repository, `opda <https://github.com/nalourie/opda>`_. Questions and
-comments may be addressed to Nicholas Lourie.
+repository, `opda <https://github.com/nicholaslourie/opda>`_. Questions
+and comments may be addressed to Nicholas Lourie.

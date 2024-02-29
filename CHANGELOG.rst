@@ -38,7 +38,7 @@ The format is based on `Keep a Changelog
        of this document, and replace ${VERSION} in it with the most
        recent version:
 
-           .. _unreleased: https://github.com/nalourie/opda/compare/${VERSION}...HEAD
+           .. _unreleased: https://github.com/nicholaslourie/opda/compare/${VERSION}...HEAD
 
 
 `Unreleased`_
@@ -376,9 +376,9 @@ This version is the first uploaded to PyPI and available via ``pip``!
 ..
   Link Definitions
 
-.. _unreleased: https://github.com/nalourie/opda/compare/v0.5.0...HEAD
-.. _v0.5.0: https://github.com/nalourie/opda/compare/v0.4.0...v0.5.0
-.. _v0.4.0: https://github.com/nalourie/opda/compare/v0.3.0...v0.4.0
-.. _v0.3.0: https://github.com/nalourie/opda/compare/v0.2.0...v0.3.0
-.. _v0.2.0: https://github.com/nalourie/opda/compare/v0.1.0...v0.2.0
-.. _v0.1.0: https://github.com/nalourie/opda/releases/tag/v0.1.0
+.. _unreleased: https://github.com/nicholaslourie/opda/compare/v0.5.0...HEAD
+.. _v0.5.0: https://github.com/nicholaslourie/opda/compare/v0.4.0...v0.5.0
+.. _v0.4.0: https://github.com/nicholaslourie/opda/compare/v0.3.0...v0.4.0
+.. _v0.3.0: https://github.com/nicholaslourie/opda/compare/v0.2.0...v0.3.0
+.. _v0.2.0: https://github.com/nicholaslourie/opda/compare/v0.1.0...v0.2.0
+.. _v0.1.0: https://github.com/nicholaslourie/opda/releases/tag/v0.1.0
