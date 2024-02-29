@@ -954,6 +954,28 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                         fraction=0.5,
                         convex=[True],
                     )
+            # when fraction * len(ys) < 1
+            with self.assertRaises(ValueError):
+                parametric.QuadraticDistribution\
+                    .estimate_initial_parameters_and_bounds(
+                        [0],
+                        fraction=0.99,
+                        convex=convex,
+                    )
+            with self.assertRaises(ValueError):
+                parametric.QuadraticDistribution\
+                    .estimate_initial_parameters_and_bounds(
+                        [0, 1],
+                        fraction=0.49,
+                        convex=convex,
+                    )
+            with self.assertRaises(ValueError):
+                parametric.QuadraticDistribution\
+                    .estimate_initial_parameters_and_bounds(
+                        [0, 1, 2],
+                        fraction=0.32,
+                        convex=convex,
+                    )
 
     def test_sample_defaults_to_global_random_number_generator(self):
         # sample should be deterministic if global seed is set.

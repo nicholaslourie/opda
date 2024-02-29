@@ -448,10 +448,16 @@ class QuadraticDistribution:
             raise TypeError("convex must be a boolean.")
 
         # Compute the initial parameters and bounds.
+        n_fraction = int(fraction * len(ys))
+        if n_fraction == 0:
+            raise ValueError(
+                "Taking fraction from ys makes an empty list. Raise"
+                " fraction or use a larger sample for ys.",
+            )
         ys_fraction = (
-            np.sort(ys)[:int(fraction * len(ys))]
+            np.sort(ys)[:n_fraction]
             if convex else
-            np.sort(ys)[-int(fraction * len(ys)):]
+            np.sort(ys)[-n_fraction:]
         )
 
         a = ys_fraction[0]
