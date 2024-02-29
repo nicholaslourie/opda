@@ -31,7 +31,7 @@ Or, if you're interested in *development*, clone the repo and do an
 
 .. code-block:: console
 
-   $ git clone https://github.com/nalourie/opda.git
+   $ git clone https://github.com/nicholaslourie/opda.git
    $ cd opda
    $ pip install --editable .
 

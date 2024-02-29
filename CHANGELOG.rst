@@ -38,7 +38,7 @@ The format is based on `Keep a Changelog
        of this document, and replace ${VERSION} in it with the most
        recent version:
 
-           .. _unreleased: https://github.com/nalourie/opda/compare/${VERSION}...HEAD
+           .. _unreleased: https://github.com/nicholaslourie/opda/compare/${VERSION}...HEAD
 
 
 `Unreleased`_
@@ -88,6 +88,12 @@ The format is based on `Keep a Changelog
   more thorough, robust, and avoiding re-running redundant test cases.
 * Update the tests for ``parametric.QuadraticDistribution`` to cover
   the case when ``a == b``.
+* Move the source repository from ``github.com/nalourie/opda`` to
+  ``github.com/nicholaslourie/opda``, and move the docs from
+  ``nalourie.github.io/opda`` to
+  ``nicholaslourie.github.io/opda``. Update the project URLs in
+  ``pyproject.toml`` and all the links throughout the repository to
+  reflect these changes.
 
 .. rubric:: Deprecations
 .. rubric:: Removals
@@ -111,6 +117,9 @@ The format is based on `Keep a Changelog
   ``opda.parametric.QuadraticDistribution``, matching the newly added
   docstring for ``opda.parametric.NoisyQuadraticDistribution`` which
   has similar sections.
+* Update all links to use ``github.com/nicholaslourie`` and
+  ``nicholaslourie.github.io/opda`` in place of
+  ``github.com/nalourie`` and ``nalourie.github.io/opda``.
 
 .. rubric:: Security
 
@@ -376,9 +385,9 @@ This version is the first uploaded to PyPI and available via ``pip``!
 ..
   Link Definitions
 
-.. _unreleased: https://github.com/nalourie/opda/compare/v0.5.0...HEAD
-.. _v0.5.0: https://github.com/nalourie/opda/compare/v0.4.0...v0.5.0
-.. _v0.4.0: https://github.com/nalourie/opda/compare/v0.3.0...v0.4.0
-.. _v0.3.0: https://github.com/nalourie/opda/compare/v0.2.0...v0.3.0
-.. _v0.2.0: https://github.com/nalourie/opda/compare/v0.1.0...v0.2.0
-.. _v0.1.0: https://github.com/nalourie/opda/releases/tag/v0.1.0
+.. _unreleased: https://github.com/nicholaslourie/opda/compare/v0.5.0...HEAD
+.. _v0.5.0: https://github.com/nicholaslourie/opda/compare/v0.4.0...v0.5.0
+.. _v0.4.0: https://github.com/nicholaslourie/opda/compare/v0.3.0...v0.4.0
+.. _v0.3.0: https://github.com/nicholaslourie/opda/compare/v0.2.0...v0.3.0
+.. _v0.2.0: https://github.com/nicholaslourie/opda/compare/v0.1.0...v0.2.0
+.. _v0.1.0: https://github.com/nicholaslourie/opda/releases/tag/v0.1.0

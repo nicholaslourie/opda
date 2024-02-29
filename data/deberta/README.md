@@ -9,8 +9,8 @@ and [DeBERTaV3](https://arxiv.org/abs/2111.09543)
 for [MultiNLI](https://arxiv.org/abs/1704.05426) via random
 search. These results can be used to apply optimal design analysis to
 these problem. For more information, see the code
-repository, [`opda`](https://github.com/nalourie/opda), or the paper
-that introduced this data,
+repository, [`opda`](https://github.com/nicholaslourie/opda), or the
+paper that introduced this data,
 ["Show Your Work with Confidence: Confidence Bands for Tuning Curves"](https://arxiv.org/abs/2311.09480).
 
 To cite this data or other aspects of the paper, please use:
@@ -97,6 +97,7 @@ If you use the DeBERTa Hyperparameter Tuning Data, please cite:
 Contact
 -------
 For more information, see the code
-repository, [`opda`](https://github.com/nalourie/opda), or the paper:
+repository, [`opda`](https://github.com/nicholaslourie/opda), or the
+paper:
 ["Show Your Work with Confidence: Confidence Bands for Tuning Curves"](https://arxiv.org/abs/2311.09480). Questions
 and comments may be addressed to Nicholas Lourie.

@@ -77,10 +77,10 @@ ci = [
 ]
 
 [project.urls]
-Documentation = "https://nalourie.github.io/opda"
-Source = "https://github.com/nalourie/opda"
-Issues = "https://github.com/nalourie/opda/issues"
-Changelog = "https://nalourie.github.io/opda/changelog.html"
+Documentation = "https://nicholaslourie.github.io/opda"
+Source = "https://github.com/nicholaslourie/opda"
+Issues = "https://github.com/nicholaslourie/opda/issues"
+Changelog = "https://nicholaslourie.github.io/opda/changelog.html"
 
 
 [tool.setuptools]
