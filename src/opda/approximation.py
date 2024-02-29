@@ -126,7 +126,7 @@ def remez(f, a, b, n, *, atol=None):
         achieves equioscillating error.
     1D array of floats
         The y values of ``f`` evaluated on the reference.
-    float
+    non-negative float
         The worst case absolute error of the minimax polynomial
         approximation to ``f`` from ``a`` to ``b``.
 
@@ -405,7 +405,7 @@ def minimax_polynomial_approximation(f, a, b, n, *, atol=None):
     function
         A function that evaluates the minimax polynomial on arrays of
         floats, entrywise.
-    float
+    non-negative float
         The worst case absolute error of the minimax polynomial
         approximation to ``f`` from ``a`` to ``b``.
 
@@ -526,7 +526,7 @@ def minimax_polynomial_coefficients(
         The coefficients of the minimax polynomial approximation to
         ``f``, starting with the constant term followed by
         coefficients of increasing order.
-    float
+    non-negative float
         The worst case absolute error of the minimax polynomial
         approximation to ``f`` from ``a`` to ``b``.
 
@@ -713,7 +713,7 @@ def piecewise_polynomial_knots(f, a, b, ns, *, atol=None):
     -------
     1D array of floats
         The ``len(ns) + 1`` knots defining the optimal pieces.
-    float
+    non-negative float
         The worst case absolute error of the piecewise minimax
         polynomial approximation to ``f`` from ``a`` to ``b`` using the
         returned knots.

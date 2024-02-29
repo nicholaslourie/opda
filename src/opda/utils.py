@@ -55,7 +55,7 @@ def dkw_epsilon(n, confidence):
 
     Returns
     -------
-    float
+    non-negative float
         The epsilon for the Dvoretzky-Kiefer-Wolfowitz inequality.
     """
     # Validate the arguments.
@@ -496,7 +496,7 @@ def normal_pdf(xs):
 
     Returns
     -------
-    array of floats
+    non-negative float or array of floats
         The standard normal distribution's probability density function
         evaluated at ``xs``.
     """

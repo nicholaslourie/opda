@@ -50,7 +50,7 @@ def get_approximation_parameters(func, bounds):
 
     Returns
     -------
-    float, float, float
+    float, float, positive int
         Parameters for :py:class:`opda.parametric.QuadraticDistribution`
         (``a``, ``b``, and ``c``) that asymptotically approximate the
         tail of the score distribution from random search.

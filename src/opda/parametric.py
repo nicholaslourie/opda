@@ -193,7 +193,7 @@ class QuadraticDistribution:
 
         Returns
         -------
-        array of floats
+        array of non-negative floats
             The probability density at ``ys``.
         """
         ys = np.array(ys)
@@ -718,7 +718,7 @@ class NoisyQuadraticDistribution:
 
         Returns
         -------
-        array of floats
+        array of non-negative floats
             The probability density at ``ys``.
         """
         ys = np.array(ys)

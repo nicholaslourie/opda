@@ -162,7 +162,7 @@ class EmpiricalDistribution:
     ----------
     ys : 1D array of floats, required
         The sample for which to create an empirical distribution.
-    ws : 1D array of floats or None, optional (default=None)
+    ws : 1D array of non-negative floats or None, optional (default=None)
         Weights, or the probability masses, to assign to each value in
         the sample, ``ys``. Weights must be non-negative and sum to 1.
         ``ws`` should have the same shape as ``ys``. If ``None``, then
@@ -405,7 +405,7 @@ class EmpiricalDistribution:
 
         Returns
         -------
-        array of floats
+        array of non-negative floats
             The probability mass at ``ys``.
         """
         indices = np.searchsorted(self._ys, ys, side="left")
