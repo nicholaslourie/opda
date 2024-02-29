@@ -74,6 +74,9 @@ def dkw_epsilon(n, confidence):
         )
 
     # Compute the DKW epsilon.
+    if confidence == 1.:
+        return np.inf
+
     return np.sqrt(
         np.log(2. / (1. - confidence))
         / (2. * n),
