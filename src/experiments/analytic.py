@@ -43,14 +43,14 @@ def get_approximation_parameters(func, bounds):
     ----------
     func : function, required
         The function used in the random search.
-    bounds : d x 2 array of floats, required
+    bounds : d x 2 array of finite floats, required
         An array of d pairs of floats, where d is the dimension of
         ``func``'s domain. Each pair, ``(lo, hi)`` defines a lower and
         upper bound for the random search on that respective coordinate.
 
     Returns
     -------
-    float, float, positive int
+    finite float, finite float, positive int
         Parameters for :py:class:`opda.parametric.QuadraticDistribution`
         (``a``, ``b``, and ``c``) that asymptotically approximate the
         tail of the score distribution from random search.

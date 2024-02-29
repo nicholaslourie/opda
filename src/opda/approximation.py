@@ -21,9 +21,9 @@ def lagrange_interpolate(xs, ys):
 
     Parameters
     ----------
-    xs : 1D array of floats, required
+    xs : 1D array of finite floats, required
         The x values (asbscissas) to interpolate.
-    ys : 1D array of floats, required
+    ys : 1D array of finite floats, required
         The y values (ordinates) to interpolate.
 
     Returns
@@ -100,10 +100,10 @@ def remez(f, a, b, n, *, atol=None):
     f : function, required
         The function to approximate. The function should map floats to
         floats.
-    a : float, required
+    a : finite float, required
         The lower end point of the interval over which to approximate
         ``f``.
-    b : float, required
+    b : finite float, required
         The upper end point of the interval over which to approximate
         ``f``.
     n : non-negative int, required
@@ -379,10 +379,10 @@ def minimax_polynomial_approximation(f, a, b, n, *, atol=None):
     f : function, required
         The function to approximate. The function should map floats to
         floats.
-    a : float, required
+    a : finite float, required
         The lower end point of the interval over which to approximate
         ``f``.
-    b : float, required
+    b : finite float, required
         The upper end point of the interval over which to approximate
         ``f``.
     n : non-negative int, required
@@ -492,15 +492,15 @@ def minimax_polynomial_coefficients(
     f : function, required
         The function to approximate. The function should map floats to
         floats.
-    a : float, required
+    a : finite float, required
         The lower end point of the interval over which to approximate
         ``f``.
-    b : float, required
+    b : finite float, required
         The upper end point of the interval over which to approximate
         ``f``.
     n : non-negative int, required
         The degree of the polynomial approximation.
-    transform : pair of floats or None, optional (default=(-1., 1.))
+    transform : pair of finite floats or None, optional (default=(-1., 1.))
         For numerical stability, it can be helpful to map the inputs
         to some other range, e.g. -1 to 1, compute the minimax
         polynomial's coefficients in this space, and then transform
@@ -522,7 +522,7 @@ def minimax_polynomial_coefficients(
 
     Returns
     -------
-    1D array of floats
+    1D array of finite floats
         The coefficients of the minimax polynomial approximation to
         ``f``, starting with the constant term followed by
         coefficients of increasing order.
@@ -687,10 +687,10 @@ def piecewise_polynomial_knots(f, a, b, ns, *, atol=None):
     f : function, required
         The function to approximate. The function should map floats to
         floats.
-    a : float, required
+    a : finite float, required
         The lower end point of the interval over which to approximate
         ``f``.
-    b : float, required
+    b : finite float, required
         The upper end point of the interval over which to approximate
         ``f``.
     ns : 1D array of non-negative ints, required

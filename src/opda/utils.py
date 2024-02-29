@@ -92,9 +92,9 @@ def beta_equal_tailed_interval(a, b, coverage):
 
     Parameters
     ----------
-    a : positive float or array of floats, required
+    a : finite positive float or array of floats, required
         The alpha parameter for the beta distribution.
-    b : positive float or array of floats, required
+    b : finite positive float or array of floats, required
         The beta parameter for the beta distribution.
     coverage : float or array of floats from 0 to 1 inclusive, required
         The desired coverage for the returned intervals.
@@ -141,9 +141,9 @@ def beta_highest_density_interval(a, b, coverage, *, atol=1e-10):
 
     Parameters
     ----------
-    a : positive float or array of floats, required
+    a : finite positive float or array of floats, required
         The alpha parameter for the beta distribution.
-    b : positive float or array of floats, required
+    b : finite positive float or array of floats, required
         The beta parameter for the beta distribution.
     coverage : float or array of floats from 0 to 1 inclusive, required
         The desired coverage for the returned intervals.
@@ -252,9 +252,9 @@ def beta_equal_tailed_coverage(a, b, x):
 
     Parameters
     ----------
-    a : positive float or array of floats, required
+    a : finite positive float or array of floats, required
         The alpha parameter for the beta distribution.
-    b : positive float or array of floats, required
+    b : finite positive float or array of floats, required
         The beta parameter for the beta distribution.
     x : float or array of floats from 0 to 1 inclusive, required
         The points defining the minimal equal-tailed intervals whose
@@ -300,9 +300,9 @@ def beta_highest_density_coverage(a, b, x, *, atol=1e-10):
 
     Parameters
     ----------
-    a : positive float or array of floats, required
+    a : finite positive float or array of floats, required
         The alpha parameter for the beta distribution.
-    b : positive float or array of floats, required
+    b : finite positive float or array of floats, required
         The beta parameter for the beta distribution.
     x : float or array of floats from 0 to 1 inclusive, required
         The points defining the minimal intervals whose coverage to

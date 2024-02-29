@@ -28,9 +28,9 @@ class QuadraticDistribution:
 
     Parameters
     ----------
-    a : float, required
+    a : finite float, required
         The minimum value that the distribution can take.
-    b : float, required
+    b : finite float, required
         The maximum value that the distribution can take.
     c : positive int, required
         The *effective* number of hyperparameters.
@@ -515,16 +515,16 @@ class NoisyQuadraticDistribution:
 
     Parameters
     ----------
-    a : float, required
+    a : finite float, required
         The minimum value that the distribution can take, without
         accounting for the additive noise.
-    b : float, required
+    b : finite float, required
         The maximum value that the distribution can take, without
         accounting for the additive noise.
     c : positive int, required
         The *effective* number of hyperparameters. Values of ``c``
         greater than 10 are not supported.
-    o : non-negative float, required
+    o : finite non-negative float, required
         The standard deviation of the additive noise.
     convex : bool, optional (default=False)
         Whether or not to use the convex form of the noisy quadratic
