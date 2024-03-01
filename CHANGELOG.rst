@@ -94,6 +94,11 @@ The format is based on `Keep a Changelog
   ``nicholaslourie.github.io/opda``. Update the project URLs in
   ``pyproject.toml`` and all the links throughout the repository to
   reflect these changes.
+* Require ``fraction`` is greater than 0 in
+  ``opda.parametric.QuadraticDistribution.estimate_initial_parameters_and_bounds``.
+* Throw an error if ``fraction`` is too small and thus causes
+  ``opda.parametric.QuadraticDistribution.estimate_initial_parameters_and_bounds`` to
+  try and form an estimate from an empty list.
 
 .. rubric:: Deprecations
 .. rubric:: Removals
@@ -103,6 +108,12 @@ The format is based on `Keep a Changelog
   and ``.estimate_initial_parameters_and_bounds`` methods) for the
   case when ``a == b``, in which case the distribution is an atom
   (point mass).
+* Fix
+  ``opda.parametric.QuadraticDistribution.estimate_initial_parameters_and_bounds``
+  when ``convex`` is ``False`` and ``fraction`` is small enough so
+  that the estimate should be based on an empty list. In this case,
+  the method incorrectly uses all of ``ys``. Instead, throw an error
+  saying that fraction is too small (as it produces an empty list).
 
 .. rubric:: Documentation
 
