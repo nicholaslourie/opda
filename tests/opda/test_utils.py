@@ -112,6 +112,28 @@ class DkwEpsilonTestCase(unittest.TestCase):
         self.assertAlmostEqual(utils.dkw_epsilon(1, 1. - 2./np.e**2), 1.)
         self.assertAlmostEqual(utils.dkw_epsilon(4, 1. - 2./np.e**2), 0.5)
 
+        # Test error conditions.
+        #   when n is not a scalar
+        with self.assertRaises(ValueError):
+            utils.dkw_epsilon([1], 0.5)
+        with self.assertRaises(ValueError):
+            utils.dkw_epsilon([[1]], 0.5)
+        #   when n is not positive
+        with self.assertRaises(ValueError):
+            utils.dkw_epsilon(0, 0.5)
+        with self.assertRaises(ValueError):
+            utils.dkw_epsilon(-1, 0.5)
+        #   when confidence is not a scalar
+        with self.assertRaises(ValueError):
+            utils.dkw_epsilon(10, [0.5])
+        with self.assertRaises(ValueError):
+            utils.dkw_epsilon(10, [[0.5]])
+        #   when confidence is not between 0 and 1, inclusive
+        with self.assertRaises(ValueError):
+            utils.dkw_epsilon(10, -0.1)
+        with self.assertRaises(ValueError):
+            utils.dkw_epsilon(10, 1.1)
+
 
 class BetaEqualTailedIntervalTestCase(testcases.RandomTestCase):
     """Test opda.utils.beta_equal_tailed_interval."""
