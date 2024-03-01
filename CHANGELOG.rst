@@ -75,6 +75,8 @@ The format is based on `Keep a Changelog
 * Add ``opda.parametric.NoisyQuadraticDistribution``, a probability
   distribution representing a quadratic random variable plus normal
   noise.
+* Increase argument validation in ``opda.utils.dkw_epsilon``.
+* Add more test cases for ``opda.utils.dkw_epsilon``.
 
 .. rubric:: Changes
 
@@ -114,6 +116,8 @@ The format is based on `Keep a Changelog
   that the estimate should be based on an empty list. In this case,
   the method incorrectly uses all of ``ys``. Instead, throw an error
   saying that fraction is too small (as it produces an empty list).
+* Avoid throwing an unnecessary warning in ``opda.utils.dkw_epsilon``
+  when ``confidence`` is 1.
 
 .. rubric:: Documentation
 
