@@ -142,6 +142,10 @@ The format is based on `Keep a Changelog
   finiteness) for function and method inputs and outputs.
 * Document range constraints for inputs and outputs more precisely and
   consistently (e.g., ``q`` is a float from 0 to 1 inclusive)
+* Improve the docstring for ``experiments.analytic.ellipse_volume``.
+* Fix docstrings across the code base in order to consistently
+  document when a value can take on either scalar (e.g., float) or
+  array (e.g., array of floats) values.
 
 .. rubric:: Security
 
