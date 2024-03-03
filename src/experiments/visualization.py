@@ -361,7 +361,15 @@ def color_with_lightness(c, lightness):
     tuple of floats from 0 to 1 inclusive
         A tuple of the RGB channel values on a scale from 0 to 1.
     """
+    # Validate the arguments.
+    if lightness < 0. or lightness > 1.:
+        raise ValueError(
+            "lightness must be between 0 and 1, inclusive.",
+        )
+
+    # Compute the color with the new lightness.
     hue, _, saturation = colorsys.rgb_to_hls(
         *colors.to_rgb(c),
     )
+
     return colorsys.hls_to_rgb(hue, lightness, saturation)
