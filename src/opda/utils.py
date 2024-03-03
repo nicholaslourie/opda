@@ -506,7 +506,7 @@ def normal_pdf(xs):
 
     Parameters
     ----------
-    xs : array of floats, required
+    xs : float or array of floats, required
         The points at which to evaluate the standard normal
         distribution's probability density function.
 
@@ -531,7 +531,7 @@ def normal_cdf(xs):
 
     Parameters
     ----------
-    xs : array of floats, required
+    xs : float or array of floats, required
         The points at which to evaluate the standard normal
         distribution's cumulative distribution function.
 

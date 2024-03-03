@@ -378,7 +378,7 @@ class EmpiricalDistribution:
 
         Returns
         -------
-        array of floats
+        float or array of floats
             The sample from the distribution.
         """
         # Validate arguments.
@@ -400,12 +400,12 @@ class EmpiricalDistribution:
 
         Parameters
         ----------
-        ys : array of floats, required
+        ys : float or array of floats, required
             The points at which to evaluate the probability mass.
 
         Returns
         -------
-        array of floats from 0 to 1 inclusive
+        float or array of floats from 0 to 1 inclusive
             The probability mass at ``ys``.
         """
         indices = np.searchsorted(self._ys, ys, side="left")
@@ -427,12 +427,12 @@ class EmpiricalDistribution:
 
         Parameters
         ----------
-        ys : array of float, required
+        ys : float or array of floats, required
             The points at which to evaluate the cumulative probability.
 
         Returns
         -------
-        array of floats from 0 to 1 inclusive
+        float or array of floats from 0 to 1 inclusive
             The cumulative probability at ``ys``.
         """
         indices = np.searchsorted(self._ys, ys, side="right") - 1
@@ -460,12 +460,12 @@ class EmpiricalDistribution:
 
         Parameters
         ----------
-        qs : array of floats from 0 to 1 inclusive, required
+        qs : float or array of floats from 0 to 1 inclusive, required
             The points at which to evaluate the quantiles.
 
         Returns
         -------
-        array of floats
+        float or array of floats
             The quantiles at ``qs``.
         """
         # Validate the arguments.
@@ -489,7 +489,7 @@ class EmpiricalDistribution:
 
         Parameters
         ----------
-        ns : array of positive floats, required
+        ns : positive float or array of floats, required
             The points at which to evaluate the tuning curve.
         q : float from 0 to 1 inclusive, optional (default=0.5)
             The quantile at which to evaluate the tuning curve.
@@ -499,7 +499,7 @@ class EmpiricalDistribution:
 
         Returns
         -------
-        array of floats
+        float or array of floats
             The quantile tuning curve evaluated at ``ns``.
         """
         # Validate the arguments.
@@ -525,7 +525,7 @@ class EmpiricalDistribution:
 
         Parameters
         ----------
-        ns : array of positive floats, required
+        ns : positive float or array of floats, required
             The points at which to evaluate the tuning curve.
         minimize : bool, optional (default=False)
             Whether or not to compute the tuning curve for minimizing a
@@ -533,7 +533,7 @@ class EmpiricalDistribution:
 
         Returns
         -------
-        array of floats
+        float or array of floats
             The average tuning curve evaluated at ``ns``.
         """
         # Validate the arguments.
@@ -571,7 +571,7 @@ class EmpiricalDistribution:
 
         Parameters
         ----------
-        ns : array of positive ints, required
+        ns : positive int or array of ints, required
             The values at which to evaluate the naive tuning curve
             estimate.
         minimize : bool, optional (default=False)
@@ -580,7 +580,7 @@ class EmpiricalDistribution:
 
         Returns
         -------
-        array of floats
+        float or array of floats
             The values of the naive tuning curve estimate.
         """
         # Validate the instance and arguments.
@@ -617,7 +617,7 @@ class EmpiricalDistribution:
 
         Parameters
         ----------
-        ns : array of positive ints, required
+        ns : positive int or array of ints, required
             The values at which to evaluate the v statistic tuning curve
             estimate.
         minimize : bool, optional (default=False)
@@ -626,7 +626,7 @@ class EmpiricalDistribution:
 
         Returns
         -------
-        array of floats
+        float or array of floats
             The values of the v statistic tuning curve estimate.
         """
         # Validate the instance and arguments.
@@ -669,7 +669,7 @@ class EmpiricalDistribution:
 
         Parameters
         ----------
-        ns : array of positive ints, required
+        ns : positive int or array of ints, required
             The values at which to evaluate the u statistic tuning curve
             estimate.
         minimize : bool, optional (default=False)
@@ -678,7 +678,7 @@ class EmpiricalDistribution:
 
         Returns
         -------
-        array of floats
+        float or array of floats
             The values of the u statistic tuning curve estimate.
         """
         # Validate the instance and arguments.
