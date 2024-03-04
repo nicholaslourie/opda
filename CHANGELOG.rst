@@ -41,8 +41,8 @@ The format is based on `Keep a Changelog
            .. _unreleased: https://github.com/nicholaslourie/opda/compare/${VERSION}...HEAD
 
 
-`Unreleased`_
-=============
+`v0.6.0`_ - 2024-03-04
+======================
 .. rubric:: Additions
 
 * Add ``opda.approximation``, a module for approximation-theoretic
@@ -105,8 +105,6 @@ The format is based on `Keep a Changelog
   ``opda.parametric.QuadraticDistribution.estimate_initial_parameters_and_bounds`` to
   try and form an estimate from an empty list.
 
-.. rubric:: Deprecations
-.. rubric:: Removals
 .. rubric:: Fixes
 
 * Fix ``parametric.QuadraticDistribution`` (the ``.pdf``, ``.cdf``,
@@ -133,21 +131,18 @@ The format is based on `Keep a Changelog
   ``a`` to ``b``, not the entire real line.
 * Add "See Also" and "Notes" sections to the docstring for
   ``opda.parametric.QuadraticDistribution``, matching the newly added
-  docstring for ``opda.parametric.NoisyQuadraticDistribution`` which
-  has similar sections.
+  docstring for ``opda.parametric.NoisyQuadraticDistribution``.
 * Update all links to use ``github.com/nicholaslourie`` and
   ``nicholaslourie.github.io/opda`` in place of
   ``github.com/nalourie`` and ``nalourie.github.io/opda``.
 * Document stricter dependent type constraints (e.g., non-negativity,
   finiteness) for function and method inputs and outputs.
 * Document range constraints for inputs and outputs more precisely and
-  consistently (e.g., ``q`` is a float from 0 to 1 inclusive)
+  consistently (e.g., ``q`` is a float from 0 to 1 inclusive).
 * Improve the docstring for ``experiments.analytic.ellipse_volume``.
 * Fix docstrings across the code base in order to consistently
   document when a value can take on either scalar (e.g., float) or
   array (e.g., array of floats) values.
-
-.. rubric:: Security
 
 
 `v0.5.0`_ - 2024-01-15
@@ -411,7 +406,7 @@ This version is the first uploaded to PyPI and available via ``pip``!
 ..
   Link Definitions
 
-.. _unreleased: https://github.com/nicholaslourie/opda/compare/v0.5.0...HEAD
+.. _v0.6.0: https://github.com/nicholaslourie/opda/compare/v0.5.0...v0.6.0
 .. _v0.5.0: https://github.com/nicholaslourie/opda/compare/v0.4.0...v0.5.0
 .. _v0.4.0: https://github.com/nicholaslourie/opda/compare/v0.3.0...v0.4.0
 .. _v0.3.0: https://github.com/nicholaslourie/opda/compare/v0.2.0...v0.3.0
