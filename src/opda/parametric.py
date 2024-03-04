@@ -174,7 +174,7 @@ class QuadraticDistribution:
 
         Returns
         -------
-        array of floats from a to b inclusive
+        float or array of floats from a to b inclusive
             The sample from the distribution.
         """
         # Validate arguments.
@@ -192,12 +192,12 @@ class QuadraticDistribution:
 
         Parameters
         ----------
-        ys : array of floats, required
+        ys : float or array of floats, required
             The points at which to evaluate the probability density.
 
         Returns
         -------
-        array of non-negative floats
+        non-negative float or array of floats
             The probability density at ``ys``.
         """
         ys = np.array(ys)
@@ -233,12 +233,12 @@ class QuadraticDistribution:
 
         Parameters
         ----------
-        ys : array of float, required
+        ys : float or array of floats, required
             The points at which to evaluate the cumulative probability.
 
         Returns
         -------
-        array of floats from 0 to 1 inclusive
+        float or array of floats from 0 to 1 inclusive
             The cumulative probability at ``ys``.
         """
         ys = np.array(ys)
@@ -272,12 +272,12 @@ class QuadraticDistribution:
 
         Parameters
         ----------
-        qs : array of floats from 0 to 1 inclusive, required
+        qs : float or array of floats from 0 to 1 inclusive, required
             The points at which to evaluate the quantiles.
 
         Returns
         -------
-        array of floats from a to b inclusive
+        float or array of floats from a to b inclusive
             The quantiles at ``qs``.
         """
         # Validate the arguments.
@@ -301,7 +301,7 @@ class QuadraticDistribution:
 
         Parameters
         ----------
-        ns : array of positive floats, required
+        ns : positive float or array of floats, required
             The points at which to evaluate the tuning curve.
         q : float from 0 to 1 inclusive, optional (default=0.5)
             The quantile at which to evaluate the tuning curve.
@@ -314,7 +314,7 @@ class QuadraticDistribution:
 
         Returns
         -------
-        array of floats from a to b inclusive
+        float or array of floats from a to b inclusive
             The quantile tuning curve evaluated at ``ns``.
         """
         # Validate the arguments.
@@ -353,7 +353,7 @@ class QuadraticDistribution:
 
         Parameters
         ----------
-        ns : array of positive floats, required
+        ns : positive float or array of floats, required
             The points at which to evaluate the tuning curve.
         minimize : bool or None, optional (default=None)
             Whether or not to compute the tuning curve for minimizing a
@@ -364,7 +364,7 @@ class QuadraticDistribution:
 
         Returns
         -------
-        array of floats from a to b inclusive
+        float or array of floats from a to b inclusive
             The average tuning curve evaluated at ``ns``.
         """
         # Validate the arguments.
@@ -695,7 +695,7 @@ class NoisyQuadraticDistribution:
 
         Returns
         -------
-        array of floats
+        float or array of floats
             The sample from the distribution.
         """
         # Validate arguments.
@@ -723,12 +723,12 @@ class NoisyQuadraticDistribution:
 
         Parameters
         ----------
-        ys : array of floats, required
+        ys : float or array of floats, required
             The points at which to evaluate the probability density.
 
         Returns
         -------
-        array of non-negative floats
+        non-negative float or array of floats
             The probability density at ``ys``.
         """
         ys = np.array(ys)
@@ -791,12 +791,12 @@ class NoisyQuadraticDistribution:
 
         Parameters
         ----------
-        ys : array of float, required
+        ys : float or array of floats, required
             The points at which to evaluate the cumulative probability.
 
         Returns
         -------
-        array of floats from 0 to 1 inclusive
+        float or array of floats from 0 to 1 inclusive
             The cumulative probability at ``ys``.
         """
         ys = np.array(ys)
@@ -862,12 +862,12 @@ class NoisyQuadraticDistribution:
 
         Parameters
         ----------
-        qs : array of floats from 0 to 1 inclusive, required
+        qs : float or array of floats from 0 to 1 inclusive, required
             The points at which to evaluate the quantiles.
 
         Returns
         -------
-        array of floats
+        float or array of floats
             The quantiles at ``qs``.
         """
         # Validate the arguments.
@@ -905,7 +905,7 @@ class NoisyQuadraticDistribution:
 
         Parameters
         ----------
-        ns : array of positive floats, required
+        ns : positive float or array of floats, required
             The points at which to evaluate the tuning curve.
         q : float from 0 to 1 inclusive, optional (default=0.5)
             The quantile at which to evaluate the tuning curve.
@@ -918,7 +918,7 @@ class NoisyQuadraticDistribution:
 
         Returns
         -------
-        array of floats
+        float or array of floats
             The quantile tuning curve evaluated at ``ns``.
         """
         # Validate the arguments.
@@ -949,7 +949,7 @@ class NoisyQuadraticDistribution:
 
         Parameters
         ----------
-        ns : array of positive floats, required
+        ns : positive float or array of floats, required
             The points at which to evaluate the tuning curve.
         minimize : bool or None, optional (default=None)
             Whether or not to compute the tuning curve for minimizing a
@@ -966,7 +966,7 @@ class NoisyQuadraticDistribution:
 
         Returns
         -------
-        array of floats
+        float or array of floats
             The average tuning curve evaluated at ``ns``.
         """
         # Validate the arguments.
