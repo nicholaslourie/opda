@@ -58,6 +58,8 @@ Then:
     b. Follow the instructions from the source code comment in
        :source-file:`CHANGELOG.rst` to finalize the "Unreleased"
        section for a new release.
+    c. Commit the changes with the message: ``"Finalize changelog for
+       release ${VERSION}"``.
 
 3.  Update the ``project.version`` key to ``${VERSION}`` in
     :source-file:`pyproject.toml`, and commit the change with the
