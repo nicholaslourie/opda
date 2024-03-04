@@ -50,12 +50,12 @@ def dkw_epsilon(n, confidence):
     ----------
     n : positive int, required
         The number of samples.
-    confidence : float between 0 and 1, required
+    confidence : float from 0 to 1 inclusive, required
         The desired confidence or coverage.
 
     Returns
     -------
-    float
+    non-negative float
         The epsilon for the Dvoretzky-Kiefer-Wolfowitz inequality.
     """
     # Validate the arguments.
@@ -92,16 +92,16 @@ def beta_equal_tailed_interval(a, b, coverage):
 
     Parameters
     ----------
-    a : positive float or array of floats, required
+    a : finite positive float or array of floats, required
         The alpha parameter for the beta distribution.
-    b : positive float or array of floats, required
+    b : finite positive float or array of floats, required
         The beta parameter for the beta distribution.
-    coverage : float or array of floats between 0 and 1, required
+    coverage : float or array of floats from 0 to 1 inclusive, required
         The desired coverage for the returned intervals.
 
     Returns
     -------
-    float or array of floats, float or array of floats
+    pair of floats or arrays of floats from 0 to 1 inclusive
         A pair of floats or arrays of floats with the shape determined
         by broadcasting ``a``, ``b``, and ``coverage`` together. The
         first returned value gives the lower bound and the second the
@@ -111,10 +111,14 @@ def beta_equal_tailed_interval(a, b, coverage):
     a = np.array(a)
     if np.any(a <= 0):
         raise ValueError("a must be positive.")
+    if np.any(~np.isfinite(a)):
+        raise ValueError("a must be finite.")
 
     b = np.array(b)
     if np.any(b <= 0):
         raise ValueError("b must be positive.")
+    if np.any(~np.isfinite(b)):
+        raise ValueError("b must be finite.")
 
     coverage = np.array(coverage)
     if np.any((coverage < 0.) | (coverage > 1.)):
@@ -141,18 +145,18 @@ def beta_highest_density_interval(a, b, coverage, *, atol=1e-10):
 
     Parameters
     ----------
-    a : positive float or array of floats, required
+    a : finite positive float or array of floats, required
         The alpha parameter for the beta distribution.
-    b : positive float or array of floats, required
+    b : finite positive float or array of floats, required
         The beta parameter for the beta distribution.
-    coverage : float or array of floats between 0 and 1, required
+    coverage : float or array of floats from 0 to 1 inclusive, required
         The desired coverage for the returned intervals.
     atol : non-negative float, optional (default=1e-10)
         The absolute tolerance to use for stopping the iteration.
 
     Returns
     -------
-    float or array of floats, float or array of floats
+    pair of floats or arrays of floats from 0 to 1 inclusive
         A pair of floats or arrays of floats with the shape determined
         by broadcasting ``a``, ``b``, and ``coverage`` together. The
         first returned value gives the lower bound and the second the
@@ -175,10 +179,14 @@ def beta_highest_density_interval(a, b, coverage, *, atol=1e-10):
     a = np.array(a)
     if np.any(a <= 0):
         raise ValueError("a must be positive.")
+    if np.any(~np.isfinite(a)):
+        raise ValueError("a must be finite.")
 
     b = np.array(b)
     if np.any(b <= 0):
         raise ValueError("b must be positive.")
+    if np.any(~np.isfinite(b)):
+        raise ValueError("b must be finite.")
 
     coverage = np.array(coverage)
     if np.any((coverage < 0.) | (coverage > 1.)):
@@ -252,17 +260,17 @@ def beta_equal_tailed_coverage(a, b, x):
 
     Parameters
     ----------
-    a : positive float or array of floats, required
+    a : finite positive float or array of floats, required
         The alpha parameter for the beta distribution.
-    b : positive float or array of floats, required
+    b : finite positive float or array of floats, required
         The beta parameter for the beta distribution.
-    x : float or array of floats between 0 and 1, required
+    x : float or array of floats from 0 to 1 inclusive, required
         The points defining the minimal equal-tailed intervals whose
         coverage to return.
 
     Returns
     -------
-    float or array of floats
+    pair of floats or arrays of floats from 0 to 1 inclusive
         A float or array of floats with shape determined by broadcasting
         ``a``, ``b``, and ``x`` together. The values represent the
         coverage of the minimal equal-tailed interval containing the
@@ -272,10 +280,14 @@ def beta_equal_tailed_coverage(a, b, x):
     a = np.array(a)
     if np.any(a <= 0):
         raise ValueError("a must be positive.")
+    if np.any(~np.isfinite(a)):
+        raise ValueError("a must be finite.")
 
     b = np.array(b)
     if np.any(b <= 0):
         raise ValueError("b must be positive.")
+    if np.any(~np.isfinite(b)):
+        raise ValueError("b must be finite.")
 
     x = np.array(x)
     if np.any((x < 0.) | (x > 1.)):
@@ -300,11 +312,11 @@ def beta_highest_density_coverage(a, b, x, *, atol=1e-10):
 
     Parameters
     ----------
-    a : positive float or array of floats, required
+    a : finite positive float or array of floats, required
         The alpha parameter for the beta distribution.
-    b : positive float or array of floats, required
+    b : finite positive float or array of floats, required
         The beta parameter for the beta distribution.
-    x : float or array of floats between 0 and 1, required
+    x : float or array of floats from 0 to 1 inclusive, required
         The points defining the minimal intervals whose coverage to
         return.
     atol : non-negative float, optional (default=1e-10)
@@ -312,7 +324,7 @@ def beta_highest_density_coverage(a, b, x, *, atol=1e-10):
 
     Returns
     -------
-    float or array of floats
+    pair of floats or arrays of floats from 0 to 1 inclusive
         A float or array of floats with shape determined by broadcasting
         ``a``, ``b``, and ``x`` together. The values represent the
         coverage of the minimal highest density interval containing the
@@ -322,10 +334,14 @@ def beta_highest_density_coverage(a, b, x, *, atol=1e-10):
     a = np.array(a)
     if np.any(a <= 0):
         raise ValueError("a must be positive.")
+    if np.any(~np.isfinite(a)):
+        raise ValueError("a must be finite.")
 
     b = np.array(b)
     if np.any(b <= 0):
         raise ValueError("b must be positive.")
+    if np.any(~np.isfinite(b)):
+        raise ValueError("b must be finite.")
 
     x = np.array(x)
     if np.any((x < 0.) | (x > 1.)):
@@ -407,14 +423,14 @@ def binomial_confidence_interval(n_successes, n_total, confidence):
         An int or array of ints with each entry denoting the total
         number of observations in a sample. Must be broadcastable with
         ``n_successes``.
-    confidence : float or array of floats between 0 and 1, required
+    confidence : float or array of floats from 0 to 1 inclusive, required
         A float or array of floats between zero and one denoting the
         desired confidence for each confidence interval. Must be
         broadcastable with ``n_successes`` broadcasted with ``n_total``.
 
     Returns
     -------
-    array of floats, array of floats
+    pair of floats or arrays of floats from 0 to 1 inclusive
         A possibly scalar array of floats representing the lower
         confidence bounds and a possibly scalar array of floats
         representing the upper confidence bounds.
@@ -496,7 +512,7 @@ def normal_pdf(xs):
 
     Returns
     -------
-    array of floats
+    non-negative float or array of floats
         The standard normal distribution's probability density function
         evaluated at ``xs``.
     """
@@ -521,7 +537,7 @@ def normal_cdf(xs):
 
     Returns
     -------
-    array of floats
+    float or array of floats from 0 to 1 inclusive
         The standard normal distribution's cumulative distribution
         function evaluated at ``xs``.
     """

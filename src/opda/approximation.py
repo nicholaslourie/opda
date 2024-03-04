@@ -21,9 +21,9 @@ def lagrange_interpolate(xs, ys):
 
     Parameters
     ----------
-    xs : 1D array of floats, required
+    xs : 1D array of finite floats, required
         The x values (asbscissas) to interpolate.
-    ys : 1D array of floats, required
+    ys : 1D array of finite floats, required
         The y values (ordinates) to interpolate.
 
     Returns
@@ -36,10 +36,14 @@ def lagrange_interpolate(xs, ys):
     xs = np.array(xs)
     if len(xs) == 0:
         raise ValueError("xs must be non-empty.")
+    if np.any(~np.isfinite(xs)):
+        raise ValueError("xs must contain only finite floats.")
 
     ys = np.array(ys)
     if len(ys) == 0:
         raise ValueError("ys must be non-empty.")
+    if np.any(~np.isfinite(ys)):
+        raise ValueError("ys must contain only finite floats.")
 
     if len(xs) != len(ys):
         raise ValueError("xs and ys must have the same length.")
@@ -100,10 +104,10 @@ def remez(f, a, b, n, *, atol=None):
     f : function, required
         The function to approximate. The function should map floats to
         floats.
-    a : float, required
+    a : finite float, required
         The lower end point of the interval over which to approximate
         ``f``.
-    b : float, required
+    b : finite float, required
         The upper end point of the interval over which to approximate
         ``f``.
     n : non-negative int, required
@@ -121,12 +125,12 @@ def remez(f, a, b, n, *, atol=None):
 
     Returns
     -------
-    1D array of floats
+    1D array of floats from a to b inclusive
         The reference, or x values where the minimax polynomial
         achieves equioscillating error.
     1D array of floats
         The y values of ``f`` evaluated on the reference.
-    float
+    non-negative float
         The worst case absolute error of the minimax polynomial
         approximation to ``f`` from ``a`` to ``b``.
 
@@ -149,10 +153,14 @@ def remez(f, a, b, n, *, atol=None):
     a = np.array(a)[()]
     if not np.isscalar(a):
         raise ValueError("a must be a scalar.")
+    if not np.isfinite(a):
+        raise ValueError("a must be finite.")
 
     b = np.array(b)[()]
     if not np.isscalar(b):
         raise ValueError("b must be a scalar.")
+    if not np.isfinite(b):
+        raise ValueError("b must be finite.")
 
     n = np.array(n)[()]
     if not np.isscalar(n):
@@ -379,10 +387,10 @@ def minimax_polynomial_approximation(f, a, b, n, *, atol=None):
     f : function, required
         The function to approximate. The function should map floats to
         floats.
-    a : float, required
+    a : finite float, required
         The lower end point of the interval over which to approximate
         ``f``.
-    b : float, required
+    b : finite float, required
         The upper end point of the interval over which to approximate
         ``f``.
     n : non-negative int, required
@@ -405,7 +413,7 @@ def minimax_polynomial_approximation(f, a, b, n, *, atol=None):
     function
         A function that evaluates the minimax polynomial on arrays of
         floats, entrywise.
-    float
+    non-negative float
         The worst case absolute error of the minimax polynomial
         approximation to ``f`` from ``a`` to ``b``.
 
@@ -423,10 +431,14 @@ def minimax_polynomial_approximation(f, a, b, n, *, atol=None):
     a = np.array(a)[()]
     if not np.isscalar(a):
         raise ValueError("a must be a scalar.")
+    if not np.isfinite(a):
+        raise ValueError("a must be finite.")
 
     b = np.array(b)[()]
     if not np.isscalar(b):
         raise ValueError("b must be a scalar.")
+    if not np.isfinite(b):
+        raise ValueError("b must be finite.")
 
     n = np.array(n)[()]
     if not np.isscalar(n):
@@ -492,15 +504,15 @@ def minimax_polynomial_coefficients(
     f : function, required
         The function to approximate. The function should map floats to
         floats.
-    a : float, required
+    a : finite float, required
         The lower end point of the interval over which to approximate
         ``f``.
-    b : float, required
+    b : finite float, required
         The upper end point of the interval over which to approximate
         ``f``.
     n : non-negative int, required
         The degree of the polynomial approximation.
-    transform : pair of floats or None, optional (default=(-1., 1.))
+    transform : pair of finite floats or None, optional (default=(-1., 1.))
         For numerical stability, it can be helpful to map the inputs
         to some other range, e.g. -1 to 1, compute the minimax
         polynomial's coefficients in this space, and then transform
@@ -522,11 +534,11 @@ def minimax_polynomial_coefficients(
 
     Returns
     -------
-    1D array of floats
+    1D array of finite floats
         The coefficients of the minimax polynomial approximation to
         ``f``, starting with the constant term followed by
         coefficients of increasing order.
-    float
+    non-negative float
         The worst case absolute error of the minimax polynomial
         approximation to ``f`` from ``a`` to ``b``.
 
@@ -544,10 +556,14 @@ def minimax_polynomial_coefficients(
     a = np.array(a)[()]
     if not np.isscalar(a):
         raise ValueError("a must be a scalar.")
+    if not np.isfinite(a):
+        raise ValueError("a must be finite.")
 
     b = np.array(b)[()]
     if not np.isscalar(b):
         raise ValueError("b must be a scalar.")
+    if not np.isfinite(b):
+        raise ValueError("b must be finite.")
 
     n = np.array(n)[()]
     if not np.isscalar(n):
@@ -562,6 +578,8 @@ def minimax_polynomial_coefficients(
             "transform must have exactly two elements: a lower bound"
             " and an upper bound.",
         )
+    if np.any(~np.isfinite(transform)):
+        raise ValueError("transform must contain only finite floats.")
     if transform[0] >= transform[1]:
         raise ValueError(
             "transform's first element (lower bound) must be strictly"
@@ -687,10 +705,10 @@ def piecewise_polynomial_knots(f, a, b, ns, *, atol=None):
     f : function, required
         The function to approximate. The function should map floats to
         floats.
-    a : float, required
+    a : finite float, required
         The lower end point of the interval over which to approximate
         ``f``.
-    b : float, required
+    b : finite float, required
         The upper end point of the interval over which to approximate
         ``f``.
     ns : 1D array of non-negative ints, required
@@ -711,9 +729,9 @@ def piecewise_polynomial_knots(f, a, b, ns, *, atol=None):
 
     Returns
     -------
-    1D array of floats
+    1D array of floats from a to b inclusive
         The ``len(ns) + 1`` knots defining the optimal pieces.
-    float
+    non-negative float
         The worst case absolute error of the piecewise minimax
         polynomial approximation to ``f`` from ``a`` to ``b`` using the
         returned knots.
@@ -725,10 +743,14 @@ def piecewise_polynomial_knots(f, a, b, ns, *, atol=None):
     a = np.array(a)[()]
     if not np.isscalar(a):
         raise ValueError("a must be a scalar.")
+    if not np.isfinite(a):
+        raise ValueError("a must be finite.")
 
     b = np.array(b)[()]
     if not np.isscalar(b):
         raise ValueError("b must be a scalar.")
+    if not np.isfinite(b):
+        raise ValueError("b must be finite.")
 
     ns = np.array(ns)
     if len(ns.shape) != 1:

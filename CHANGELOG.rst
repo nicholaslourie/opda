@@ -77,6 +77,9 @@ The format is based on `Keep a Changelog
   noise.
 * Increase argument validation in ``opda.utils.dkw_epsilon``.
 * Add more test cases for ``opda.utils.dkw_epsilon``.
+* Validate that ``lightness`` is between 0 and 1 (inclusive) in
+  ``experiments.visualization.color_with_lightness``.
+* Validate that arguments are *finite* floats where appropriate.
 
 .. rubric:: Changes
 
@@ -135,6 +138,10 @@ The format is based on `Keep a Changelog
 * Update all links to use ``github.com/nicholaslourie`` and
   ``nicholaslourie.github.io/opda`` in place of
   ``github.com/nalourie`` and ``nalourie.github.io/opda``.
+* Document stricter dependent type constraints (e.g., non-negativity,
+  finiteness) for function and method inputs and outputs.
+* Document range constraints for inputs and outputs more precisely and
+  consistently (e.g., ``q`` is a float from 0 to 1 inclusive)
 
 .. rubric:: Security
 

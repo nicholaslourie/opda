@@ -162,7 +162,7 @@ class EmpiricalDistribution:
     ----------
     ys : 1D array of floats, required
         The sample for which to create an empirical distribution.
-    ws : 1D array of floats or None, optional (default=None)
+    ws : 1D array of non-negative floats or None, optional (default=None)
         Weights, or the probability masses, to assign to each value in
         the sample, ``ys``. Weights must be non-negative and sum to 1.
         ``ws`` should have the same shape as ``ys``. If ``None``, then
@@ -405,7 +405,7 @@ class EmpiricalDistribution:
 
         Returns
         -------
-        array of floats
+        array of floats from 0 to 1 inclusive
             The probability mass at ``ys``.
         """
         indices = np.searchsorted(self._ys, ys, side="left")
@@ -432,7 +432,7 @@ class EmpiricalDistribution:
 
         Returns
         -------
-        array of floats
+        array of floats from 0 to 1 inclusive
             The cumulative probability at ``ys``.
         """
         indices = np.searchsorted(self._ys, ys, side="right") - 1
@@ -460,7 +460,7 @@ class EmpiricalDistribution:
 
         Parameters
         ----------
-        qs : array of floats, required
+        qs : array of floats from 0 to 1 inclusive, required
             The points at which to evaluate the quantiles.
 
         Returns
@@ -491,7 +491,7 @@ class EmpiricalDistribution:
         ----------
         ns : array of positive floats, required
             The points at which to evaluate the tuning curve.
-        q : float, optional (default=0.5)
+        q : float from 0 to 1 inclusive, optional (default=0.5)
             The quantile at which to evaluate the tuning curve.
         minimize : bool, optional (default=False)
             Whether or not to compute the tuning curve for minimizing a
@@ -739,7 +739,7 @@ class EmpiricalDistribution:
         ----------
         ys : 1D array of floats, required
             The sample from the distribution.
-        confidence : float between 0 and 1, required
+        confidence : float from 0 to 1 inclusive, required
             The coverage or confidence level for the bands.
         a : float, optional (default=-np.inf)
             The minimum of the support of the underlying distribution.

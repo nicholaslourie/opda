@@ -71,18 +71,18 @@ class Simulation:
 
     Parameters
     ----------
-    n_trials : int, required
+    n_trials : positive int, required
         The number of trials to simulate.
-    n_samples : int, required
+    n_samples : positive int, required
         The number of samples to take in the random search for each
         trial.
-    n_dims : int, required
+    n_dims : positive int, required
         The number of dimensions that ``func`` expects in each data
         point.
     func : function, required
         A broadcastable function mapping vectors of length ``n_dims`` to
         scalars.
-    bounds : n_dims x 2 array of floats, required
+    bounds : n_dims x 2 array of finite floats, required
         Bounds on each dimension for the random search's uniform
         sampling.
     y_argmin : n_dims array of floats, required
@@ -93,7 +93,7 @@ class Simulation:
         The minimum value that ``func`` takes in ``bounds``.
     y_max : float, required
         The maximum value that ``func`` takes in ``bounds``.
-    ns : 1D array of ints, required
+    ns : 1D array of positive ints, required
         The range from 1 to ``n_samples``, inclusive.
     xss : n_trials x n_samples x n_dims array of floats, required
         An array where the ij'th element is the random vector for sample
@@ -152,18 +152,18 @@ class Simulation:
 
         Parameters
         ----------
-        n_trials : int, required
+        n_trials : positive int, required
             The number of trials to simulate.
-        n_samples : int, required
+        n_samples : positive int, required
             The number of samples to take in the random search for each
             trial.
-        n_dims : int, required
+        n_dims : positive int, required
             The number of dimensions that ``func`` expects in each data
             point.
         func : function, required
             A broadcastable function mapping vectors of length
             ``n_dims`` to scalars.
-        bounds : n_dims x 2 array of floats, required
+        bounds : n_dims x 2 array of finite floats, required
             Bounds on each dimension for the random search's uniform
             sampling.
         generator : None or np.random.Generator, optional (default=None)
@@ -183,6 +183,8 @@ class Simulation:
                 f"bounds should have shape {(n_dims, 2)}, not {bounds.shape}."
                 f" Each dimension must have a lower and upper bound.",
             )
+        if np.any(~np.isfinite(bounds)):
+            raise ValueError("bounds must contain only finite floats.")
 
         generator = (
             generator

@@ -352,16 +352,24 @@ def color_with_lightness(c, lightness):
         color name, hex string, or tuple of floats. See the matplotlib
         documentation on `specifying colors
         <https://matplotlib.org/stable/tutorials/colors/colors.html>`_.
-    lightness : float, required
+    lightness : float from 0 to 1 inclusive, required
         A float between 0 and 1 specifying the lightness for the new
         color in the Hue-Saturation-Lightness color space.
 
     Returns
     -------
-    tuple of floats
+    tuple of floats from 0 to 1 inclusive
         A tuple of the RGB channel values on a scale from 0 to 1.
     """
+    # Validate the arguments.
+    if lightness < 0. or lightness > 1.:
+        raise ValueError(
+            "lightness must be between 0 and 1, inclusive.",
+        )
+
+    # Compute the color with the new lightness.
     hue, _, saturation = colorsys.rgb_to_hls(
         *colors.to_rgb(c),
     )
+
     return colorsys.hls_to_rgb(hue, lightness, saturation)
