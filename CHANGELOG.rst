@@ -41,6 +41,17 @@ The format is based on `Keep a Changelog
            .. _unreleased: https://github.com/nicholaslourie/opda/compare/${VERSION}...HEAD
 
 
+`Unreleased`_
+=============
+.. rubric:: Additions
+.. rubric:: Changes
+.. rubric:: Deprecations
+.. rubric:: Removals
+.. rubric:: Fixes
+.. rubric:: Documentation
+.. rubric:: Security
+
+
 `v0.6.0`_ - 2024-03-04
 ======================
 .. rubric:: Additions
@@ -406,6 +417,7 @@ This version is the first uploaded to PyPI and available via ``pip``!
 ..
   Link Definitions
 
+.. _unreleased: https://github.com/nicholaslourie/opda/compare/v0.6.0...HEAD
 .. _v0.6.0: https://github.com/nicholaslourie/opda/compare/v0.5.0...v0.6.0
 .. _v0.5.0: https://github.com/nicholaslourie/opda/compare/v0.4.0...v0.5.0
 .. _v0.4.0: https://github.com/nicholaslourie/opda/compare/v0.3.0...v0.4.0
