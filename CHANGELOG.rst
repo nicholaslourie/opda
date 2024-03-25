@@ -44,6 +44,9 @@ The format is based on `Keep a Changelog
 `Unreleased`_
 =============
 .. rubric:: Additions
+
+* Add support for ``numpy == 2.0`` and ``scipy == 1.13``.
+
 .. rubric:: Changes
 .. rubric:: Deprecations
 .. rubric:: Removals
