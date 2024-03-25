@@ -3,15 +3,16 @@
 import datetime
 import itertools
 import json
+import logging
 import os
 import pathlib
 import re
 import shutil
 import tempfile
-import urllib.request
 
 from lxml import etree
 import nox
+import requests
 
 # backwards compatibility (Python < 3.11)
 
@@ -34,8 +35,8 @@ SUPPORTED_PYTHON_VERSIONS = {"3.8", "3.9", "3.10", "3.11", "3.12"}
 """All Python versions currently supported by opda."""
 
 SUPPORTED_PACKAGE_VERSIONS = {
-    "numpy": {"1.21", "1.22", "1.23", "1.24", "1.25", "1.26"},
-    "scipy": {"1.8", "1.9", "1.10", "1.11", "1.12"},
+    "numpy": {"1.21", "1.22", "1.23", "1.24", "1.25", "1.26", "2.0"},
+    "scipy": {"1.8", "1.9", "1.10", "1.11", "1.12", "1.13"},
 }
 """All core package versions currently supported by opda."""
 
@@ -69,8 +70,8 @@ def fetch_supported_python_versions():
     versions that still receive security updates.
     """
     # Get currently supported python versions from the downloads page.
-    request = urllib.request.urlopen("https://www.python.org/downloads/")
-    root = etree.parse(request, parser=etree.HTMLParser())
+    response = requests.get("https://www.python.org/downloads/", timeout=30)
+    root = etree.fromstring(response.content, parser=etree.HTMLParser())
 
     supported_versions = set()
     for element in root.xpath(
@@ -92,10 +93,8 @@ def fetch_supported_package_versions(package):
     opda's support policy is to maintain compatibility with core
     packages' feature releases for 2 years.
     """
-    request = urllib.request.urlopen(  # noqa: S310
-        f"https://pypi.org/pypi/{package}/json",
-    )
-    version_to_release = json.load(request)["releases"]
+    response = requests.get(f"https://pypi.org/pypi/{package}/json", timeout=30)
+    version_to_release = json.loads(response.content)["releases"]
 
     supported_versions = set()
     for version, release in version_to_release.items():
@@ -138,6 +137,12 @@ def uninstall_all_packages(session):
         "--yes",
         *requirements.split("\n"),
     )
+
+
+# logging configuration
+
+logging.getLogger("requests").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 
 # nox configuration

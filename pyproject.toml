@@ -71,8 +71,9 @@ package = [
   "twine == 4.0.2",
 ]
 ci = [
-  "nox == 2023.4.22",
   "lxml == 5.1.0",
+  "nox == 2023.4.22",
+  "requests == 2.31.0",
   "tomli; python_version<'3.11'",  # backwards compatibility (Python < 3.11)
 ]
 
