@@ -67,7 +67,7 @@ iterations**:
 
 Breaking down this example, first we construct confidence bands for each
 model's CDF using
-:py:class:`~opda.nonparametric.EmpiricalDistribution.confidence_bands`:
+:py:meth:`~opda.nonparametric.EmpiricalDistribution.confidence_bands`:
 
 .. code-block:: python
 
