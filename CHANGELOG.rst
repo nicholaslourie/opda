@@ -48,10 +48,36 @@ The format is based on `Keep a Changelog
 * Add support for ``numpy == 2.0`` and ``scipy == 1.13``.
 
 .. rubric:: Changes
+
+* Disable lint rule ``PLR1714``: "Consider merging multiple
+  comparisons".
+
 .. rubric:: Deprecations
 .. rubric:: Removals
 .. rubric:: Fixes
 .. rubric:: Documentation
+
+* Split the jupyter notebook *Evaluating DeBERTaV3 with the
+  Nonparametric Analysis* into several smaller more focused notebooks:
+
+  * *Evaluating DeBERTaV3 with the Nonparametric Analysis*
+  * *Choosing a Sample Size for the Nonparametric Analysis*
+  * *Demonstrating the Exact Coverage of the Nonparametric Analysis*
+  * *Studying Ablations of the Nonparametric Analysis*
+
+* Add a section about how to analyze a hyperparameter (the number of
+  epochs) to *Evaluating DeBERTaV3 with the Nonparametric Analysis*.
+* In the *Examples* doc (``docs/tutorial/examples.rst``), improve the
+  code, wording, and title of the model comparison example (previously
+  titled *Compare Models' Tuning Curves*, now titled *Compare Models*).
+* In the *Examples* doc (``docs/tutorial/examples.rst``), expand the
+  *Compare Models* example with discussion on how to compare models with
+  different training costs.
+* Fix incorrect markup in the *Examples* doc
+  (``docs/tutorial/examples.rst``).
+* Add a new example showing how to analyze a hyperparameter in the
+  *Examples* doc (``docs/tutorial/examples.rst``).
+
 .. rubric:: Security
 
 
