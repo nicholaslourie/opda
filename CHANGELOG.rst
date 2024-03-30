@@ -77,6 +77,9 @@ The format is based on `Keep a Changelog
   (``docs/tutorial/examples.rst``).
 * Add a new example showing how to analyze a hyperparameter in the
   *Examples* doc (``docs/tutorial/examples.rst``).
+* Add plots of DeBERTa and DeBERTaV3's tuning curves with confidence
+  bands using large sample sizes (1,024) to *Evaluating DeBERTaV3 with
+  the Nonparametric Analysis*.
 
 .. rubric:: Security
 
