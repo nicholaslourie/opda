@@ -41,8 +41,8 @@ The format is based on `Keep a Changelog
            .. _unreleased: https://github.com/nicholaslourie/opda/compare/${VERSION}...HEAD
 
 
-`Unreleased`_
-=============
+`v0.6.1`_ - 2024-04-03
+======================
 .. rubric:: Additions
 
 * Add support for ``numpy == 2.0`` and ``scipy == 1.13``.
@@ -52,12 +52,9 @@ The format is based on `Keep a Changelog
 * Disable lint rule ``PLR1714``: "Consider merging multiple
   comparisons".
 
-.. rubric:: Deprecations
-.. rubric:: Removals
-.. rubric:: Fixes
 .. rubric:: Documentation
 
-* Split the jupyter notebook *Evaluating DeBERTaV3 with the
+* Split the Jupyter notebook *Evaluating DeBERTaV3 with the
   Nonparametric Analysis* into several smaller more focused notebooks:
 
   * *Evaluating DeBERTaV3 with the Nonparametric Analysis*
@@ -66,7 +63,8 @@ The format is based on `Keep a Changelog
   * *Studying Ablations of the Nonparametric Analysis*
 
 * Add a section about how to analyze a hyperparameter (the number of
-  epochs) to *Evaluating DeBERTaV3 with the Nonparametric Analysis*.
+  epochs) to the Jupyter notebook *Evaluating DeBERTaV3 with the
+  Nonparametric Analysis*.
 * In the *Examples* doc (``docs/tutorial/examples.rst``), improve the
   code, wording, and title of the model comparison example (previously
   titled *Compare Models' Tuning Curves*, now titled *Compare Models*).
@@ -78,10 +76,8 @@ The format is based on `Keep a Changelog
 * Add a new example showing how to analyze a hyperparameter in the
   *Examples* doc (``docs/tutorial/examples.rst``).
 * Add plots of DeBERTa and DeBERTaV3's tuning curves with confidence
-  bands using large sample sizes (1,024) to *Evaluating DeBERTaV3 with
-  the Nonparametric Analysis*.
-
-.. rubric:: Security
+  bands using large sample sizes (1,024) to the Jupyter notebook
+  *Evaluating DeBERTaV3 with the Nonparametric Analysis*.
 
 
 `v0.6.0`_ - 2024-03-04
@@ -449,7 +445,7 @@ This version is the first uploaded to PyPI and available via ``pip``!
 ..
   Link Definitions
 
-.. _unreleased: https://github.com/nicholaslourie/opda/compare/v0.6.0...HEAD
+.. _v0.6.1: https://github.com/nicholaslourie/opda/compare/v0.6.0...v0.6.1
 .. _v0.6.0: https://github.com/nicholaslourie/opda/compare/v0.5.0...v0.6.0
 .. _v0.5.0: https://github.com/nicholaslourie/opda/compare/v0.4.0...v0.5.0
 .. _v0.4.0: https://github.com/nicholaslourie/opda/compare/v0.3.0...v0.4.0
