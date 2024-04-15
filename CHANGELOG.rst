@@ -47,6 +47,9 @@ The format is based on `Keep a Changelog
 .. rubric:: Changes
 .. rubric:: Deprecations
 .. rubric:: Removals
+
+* Drop support for ``numpy == 1.21``.
+
 .. rubric:: Fixes
 .. rubric:: Documentation
 .. rubric:: Security
