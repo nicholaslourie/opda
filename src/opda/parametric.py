@@ -762,14 +762,14 @@ class NoisyQuadraticDistribution:
 
         # Compute the PDF.
 
-        if self.convex:
-            loc = (ys - a) / (b - a)
-            scale = -o / (b - a)
-        else:  # concave
-            loc = (b - ys) / (b - a)
-            scale = o / (b - a)
+        loc = (
+            (ys - a) / (b - a)
+            if self.convex else  # concave
+            (b - ys) / (b - a)
+        )
+        scale = o / (b - a)
 
-        ps = (scale / o) * (0.5 * c) * self._partial_normal_moment(
+        ps = c / (2 * (b - a)) * self._partial_normal_moment(
             loc=loc,
             scale=scale,
             k=(c-2)/2,
@@ -827,21 +827,25 @@ class NoisyQuadraticDistribution:
 
         # Compute the CDF.
 
-        if self.convex:
-            point = (ys - b) / o
-            loc = (ys - a) / (b - a)
-            scale = -o / (b - a)
-        else:  # concave
-            point = (ys - a) / o
-            loc = (b - ys) / (b - a)
-            scale = o / (b - a)
+        point = (
+            (ys - b) / o
+            if self.convex else  # concave
+            (ys - a) / o
+        )
+        loc = (
+            (ys - a) / (b - a)
+            if self.convex else  # concave
+            (b - ys) / (b - a)
+        )
+        scale = o / (b - a)
 
         qs = (
-            utils.normal_cdf(point)
-            - self._partial_normal_moment(
-                loc=loc,
-                scale=scale,
-                k=c/2,
+            utils.normal_cdf(point) + self._partial_normal_moment(
+                loc=loc, scale=scale, k=c/2,
+            )
+            if self.convex else  # concave
+            utils.normal_cdf(point) - self._partial_normal_moment(
+                loc=loc, scale=scale, k=c/2,
             )
         )
 
@@ -1080,17 +1084,19 @@ class NoisyQuadraticDistribution:
         #                  + (n-1) o^2 E_0^1[X^{n-2}]
         #
         # Where f is the PDF of the normal distribution with mean
-        # ``loc`` (u) and scale ``scale`` (o). While [1] provides a
-        # derivation only for integer moments, the formula is also valid
-        # for fractional moments. The recursive formula can be used to
-        # step up or down to the desired moment from a pair of base
-        # moments.
+        # ``loc`` (u) and standard deviation ``scale`` (o). While [1]
+        # provides a derivation only for integer moments, the formula is
+        # also valid for fractional moments. The recursive formula can
+        # be used to step up or down to the desired moment from a pair
+        # of base moments.
         #
         # [1]: Robert L. Winkler, Gary M. Roodman, Robert R. Britney,
         # (1972) The Determination of Partial Moments. Management
         # Science 19(3):290-296.
 
         # Validate arguments.
+        if scale < 0:
+            raise ValueError(f"scale (scale={scale}) must be greater than 0.")
         if k < -0.5:
             raise ValueError(f"k (k={k}) must be at least -0.5.")
         if (2 * k) % 1 != 0:
@@ -1155,7 +1161,7 @@ class NoisyQuadraticDistribution:
         if k % 1 == 0.5:
             # When k is not an integer, the best base partial moments
             # depend on scale and k.
-            if k == -0.5 and abs(scale) < 5e-2:
+            if k == -0.5 and scale < 5e-2:
                 # For small scales, compute the -0.5 partial moment
                 # directly (using the Chebyshev approximation).
                 return (
@@ -1163,7 +1169,7 @@ class NoisyQuadraticDistribution:
                     None,
                     self._partial_fractional_normal_moment(loc, scale, -0.5),
                 )
-            if k == -0.5 and abs(scale) >= 5e-2:
+            if k == -0.5 and scale >= 5e-2:
                 # For large scales, step down to the -0.5 partial moment
                 # from the 0.5 and 1.5 partial moments.
                 return (
@@ -1187,7 +1193,7 @@ class NoisyQuadraticDistribution:
     def _partial_fractional_normal_moment(self, loc, scale, k):
         # NOTE: This function returns the kth partial fractional moment
         # from 0 to 1 for a normal distribution with mean ``loc`` and
-        # scale ``scale``. In other words, it computes:
+        # standard deviation ``scale``. In other words, it computes:
         # E_0^1[X^k | loc, scale]. k should be an odd natural number
         # divided by two (e.g., 0.5, 1.5, etc).
         #
@@ -1206,7 +1212,7 @@ class NoisyQuadraticDistribution:
         #                  + (n-1) o^2 E_0^1[X^{n-2}]
         #
         # Where f is the PDF of the normal distribution with mean
-        # ``loc`` (u) and scale ``scale`` (o).
+        # ``loc`` (u) and standard deviation ``scale`` (o).
         #
         # Sufficiently accurate polynomial approximations are not always
         # feasible, so we use piecewise polynomial approximations with
@@ -1257,11 +1263,9 @@ class NoisyQuadraticDistribution:
         # fractional normal moments. Depending on k and scale, different
         # approximations work best.
 
-        scale_abs = abs(scale)
-
         # Check for a piecewise minimax polynomial approximation.
         for approximation in _APPROXIMATIONS.get(k, []):
-            if scale_abs < approximation["min_scale"]:
+            if scale < approximation["min_scale"]:
                 continue
 
             return (approximation["knots"], approximation["coefficients"])
@@ -1277,8 +1281,8 @@ class NoisyQuadraticDistribution:
         # then pick a small interval near the closest endpoint of [0, 1]
         # in order to ensure the interval is not empty or a single
         # point, as that would produce nonsensical coefficients.
-        lo = np.clip(loc - 6 * scale_abs, 0., 1. - scale_abs)
-        hi = np.clip(loc + 6 * scale_abs, scale_abs, 1.)
+        lo = np.clip(loc - 6 * scale, 0., 1. - scale)
+        hi = np.clip(loc + 6 * scale, scale, 1.)
         # NOTE: Set the midpoint closer to the lower endpoint (0), as
         # x^k (e.g., x^0.5) is harder to approximate near 0 than 1.
         md = (3 * lo + hi) / 4
@@ -1291,7 +1295,7 @@ class NoisyQuadraticDistribution:
                 (3e-4, 2, 3),
                 (  0., 2, 2),
             ]
-            if scale_abs >= min_scale
+            if scale >= min_scale
         )
 
         return (
@@ -1412,9 +1416,8 @@ of the form :math:`x^k` for various non-integer k. It has the following
 ``exponent``
   The exponent, k, being approximated.
 ``min_scale``
-  The minimum scale (multiplier for the standard normal, i.e. the
-  standard deviation with a positive or negative sign) for which to use
-  the approximation.
+  The minimum scale (i.e., the standard deviation) for which to use the
+  approximation.
 ``knots``
   The knots defining the polynomial pieces.
 ``coefficients``

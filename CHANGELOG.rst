@@ -45,6 +45,11 @@ The format is based on `Keep a Changelog
 =============
 .. rubric:: Additions
 .. rubric:: Changes
+
+* Simplify the implementation of
+  ``opda.parametric.NoisyQuadraticDistribution`` by making ``scale``
+  the standard deviation of the corresponding normal random variable.
+
 .. rubric:: Deprecations
 .. rubric:: Removals
 
