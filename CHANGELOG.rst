@@ -44,6 +44,14 @@ The format is based on `Keep a Changelog
 `Unreleased`_
 =============
 .. rubric:: Additions
+
+* Add the hyperparameter tuning scaling results from tuning ResNet18
+  for ImageNet via random search.
+
+  * Add the data itself: ``data/resnet/resnet18_scaling.results.jsonl``.
+  * Add a license for the data: ``data/resnet/LICENSE``.
+  * Add a README for the data: ``data/resnet/README.md``.
+
 .. rubric:: Changes
 
 * Simplify the implementation of
