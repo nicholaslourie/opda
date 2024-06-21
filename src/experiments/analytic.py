@@ -13,8 +13,8 @@ def ellipse_volume(cs):
     cs : 1D array of floats, required
         Floats providing the axes' lengths for the ellipse.
 
-    Return
-    ------
+    Returns
+    -------
     float
         The volume of the ellipse.
     """
