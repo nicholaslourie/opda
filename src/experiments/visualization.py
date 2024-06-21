@@ -34,7 +34,7 @@ def plot_random_search(
         An axes on which to make the plot, or ``None``. If ``None``,
         then a figure and axes for the plot will be automatically
         generated.
-    generator : None or np.random.Generator, optional (default=None)
+    generator : np.random.Generator or None, optional (default=None)
         The random number generator to use. If ``None``, then a new
         random number generator is created, seeded with entropy from
         the operating system.

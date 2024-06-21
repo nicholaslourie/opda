@@ -166,7 +166,7 @@ class Simulation:
         bounds : n_dims x 2 array of finite floats, required
             Bounds on each dimension for the random search's uniform
             sampling.
-        generator : None or np.random.Generator, optional (default=None)
+        generator : np.random.Generator or None, optional (default=None)
             The random number generator to use. If ``None``, then a new
             random number generator is created, seeded with entropy from
             the operating system.

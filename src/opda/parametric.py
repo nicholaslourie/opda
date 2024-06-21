@@ -167,7 +167,7 @@ class QuadraticDistribution:
         size : None, int, or tuple of ints, optional (default=None)
             The desired shape of the returned sample. If ``None``,
             then the sample is a scalar.
-        generator : None or np.random.Generator, optional (default=None)
+        generator : np.random.Generator or None, optional (default=None)
             The random number generator to use. If ``None``, then the
             global default random number generator is used. See
             :py:mod:`opda.random` for more information.
@@ -593,7 +593,7 @@ class NoisyQuadraticDistribution:
         size : None, int, or tuple of ints, optional (default=None)
             The desired shape of the returned sample. If ``None``,
             then the sample is a scalar.
-        generator : None or np.random.Generator, optional (default=None)
+        generator : np.random.Generator or None, optional (default=None)
             The random number generator to use. If ``None``, then the
             global default random number generator is used. See
             :py:mod:`opda.random` for more information.
