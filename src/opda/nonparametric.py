@@ -765,9 +765,12 @@ class EmpiricalDistribution:
 
         Returns
         -------
-        EmpiricalDistribution, EmpiricalDistribution, EmpiricalDistribution
-            A lower confidence band, point estimate, and upper
-            confidence band for the distribution's CDF.
+        EmpiricalDistribution
+            The lower confidence band for the distribution's CDF.
+        EmpiricalDistribution
+            The point estimate for the distribution's CDF.
+        EmpiricalDistribution
+            The upper confidence band for the distribution's CDF.
 
         Notes
         -----

@@ -41,9 +41,12 @@ def plot_random_search(
 
     Returns
     -------
-    plt.Figure, plt.Axes
-        The figure and axis on which the plot was made. If ``ax`` was
-        not ``None``, then the returned figure will be ``None``.
+    plt.Figure or None
+        The figure on which the plot was made. If ``ax`` was not
+        ``None``, then the returned figure will be ``None``.
+    plt.Axes
+        The axis on which the plot was made. If ``ax`` was not ``None``,
+        then the returned axis will be ``ax``.
     """
     # Validate arguments.
     if ax is None:
@@ -110,9 +113,12 @@ def plot_cdf(
 
     Returns
     -------
-    plt.Figure, plt.Axes
-        The figure and axis on which the plot was made. If ``ax`` was
-        not ``None``, then the returned figure will be ``None``.
+    plt.Figure or None
+        The figure on which the plot was made. If ``ax`` was not
+        ``None``, then the returned figure will be ``None``.
+    plt.Axes
+        The axis on which the plot was made. If ``ax`` was not ``None``,
+        then the returned axis will be ``ax``.
     """
     if ax is None:
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(6, 5))
@@ -150,9 +156,12 @@ def plot_pdf(
 
     Returns
     -------
-    plt.Figure, plt.Axes
-        The figure and axis on which the plot was made. If ``ax`` was
-        not ``None``, then the returned figure will be ``None``.
+    plt.Figure or None
+        The figure on which the plot was made. If ``ax`` was not
+        ``None``, then the returned figure will be ``None``.
+    plt.Axes
+        The axis on which the plot was made. If ``ax`` was not ``None``,
+        then the returned axis will be ``ax``.
     """
     if ax is None:
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(6, 5))
@@ -190,9 +199,12 @@ def plot_distribution(
 
     Returns
     -------
-    plt.Figure, plt.Axes
-        The figure and axes on which the plot was made. If ``axes`` was
-        not ``None``, then the returned figure will be ``None``.
+    plt.Figure or None
+        The figure on which the plot was made. If ``axes`` was not
+        ``None``, then the returned figure will be ``None``.
+    plt.Axes
+        The axes on which the plot was made. If ``axes`` was not
+        ``None``, then the returned axes will be ``axes``.
     """
     if axes is None:
         fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(11, 5), sharex=True)
@@ -233,9 +245,12 @@ def plot_distribution_approximation(
 
     Returns
     -------
-    plt.Figure, plt.Axes
-        The figure and axes on which the plot was made. If ``axes`` was
-        not ``None``, then the returned figure will be ``None``.
+    plt.Figure or None
+        The figure on which the plot was made. If ``axes`` was not
+        ``None``, then the returned figure will be ``None``.
+    plt.Axes
+        The axes on which the plot was made. If ``axes`` was not
+        ``None``, then the returned axes will be ``axes``.
     """
     fig, axes = plot_distribution(
         simulation.yss_cummax[:, n-1],
@@ -292,9 +307,12 @@ def plot_tuning_curve_approximation(
 
     Returns
     -------
-    plt.Figure, plt.Axes
-        The figure and axes on which the plot was made. If ``axes`` was
-        not ``None``, then the returned figure will be ``None``.
+    plt.Figure or None
+        The figure on which the plot was made. If ``axes`` was not
+        ``None``, then the returned figure will be ``None``.
+    plt.Axes
+        The axes on which the plot was made. If ``axes`` was not
+        ``None``, then the returned axes will be ``axes``.
     """
     if axes is None:
         fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(11, 5), sharex=True)
