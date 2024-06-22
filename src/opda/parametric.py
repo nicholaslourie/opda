@@ -124,7 +124,7 @@ class QuadraticDistribution:
         # Bind other attributes to the instance.
         self.mean = (
             a + (b - a) * c / (c + 2)
-            if convex else
+            if convex else  # concave
             a + (b - a) * 2 / (c + 2)
         )
         self.variance = (b - a)**2 * 4 * c / ((c + 2)**2 * (c + 4))
@@ -531,7 +531,7 @@ class NoisyQuadraticDistribution:
         # Bind other attributes to the instance.
         self.mean = (
             a + (b - a) * c / (c + 2)
-            if convex else
+            if convex else  # concave
             a + (b - a) * 2 / (c + 2)
         )
         self.variance = o**2 + (b - a)**2 * 4 * c / ((c + 2)**2 * (c + 4))
