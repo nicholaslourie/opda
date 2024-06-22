@@ -73,13 +73,13 @@ def plot_random_search(
         func(grid),
         linestyle="-",
         c="grey",
-        label=r"$y = f(x)$",
+        label=r"$y = g(x)$",
     )
     ax.axvline(
         y_argmax,
         linestyle="--",
         c="grey",
-        label=r"$\operatorname{arg\,max} f(x)$",
+        label=r"$\operatorname{arg\,max} g(x)$",
     )
     ax.scatter(xs, ys, marker="x", c="k", s=50)
     for x in xs:
@@ -254,7 +254,7 @@ def plot_distribution_approximation(
     """
     fig, axes = plot_distribution(
         simulation.yss_cummax[:, n-1],
-        name=f"Y_{{({n})}}",
+        name=f"T_{{{n}}}",
         axes=axes,
     )
 
@@ -349,12 +349,12 @@ def plot_tuning_curve_approximation(
         ax.set_ylim(*ylim)
         ax.legend()
 
-    axes[0].set_xlabel(r"$n$")
-    axes[0].set_ylabel(r"$\tau_m(n)$")
+    axes[0].set_xlabel(r"$k$")
+    axes[0].set_ylabel(r"$\tau_m(k)$")
     axes[0].set_title("Median Tuning Curve")
 
-    axes[1].set_xlabel(r"$n$")
-    axes[1].set_ylabel(r"$\tau_e(n)$")
+    axes[1].set_xlabel(r"$k$")
+    axes[1].set_ylabel(r"$\tau_e(k)$")
     axes[1].set_title("Expected Tuning Curve")
 
     return fig, axes
