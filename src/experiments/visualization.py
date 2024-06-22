@@ -50,7 +50,7 @@ def plot_random_search(
     """
     # Validate arguments.
     if ax is None:
-        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(11, 5))
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(12, 5))
     else:
         fig = None
 
@@ -207,7 +207,7 @@ def plot_distribution(
         ``None``, then the returned axes will be ``axes``.
     """
     if axes is None:
-        fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(11, 5), sharex=True)
+        fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(12, 5), sharex=True)
     else:
         fig = None
 
@@ -315,7 +315,7 @@ def plot_tuning_curve_approximation(
         ``None``, then the returned axes will be ``axes``.
     """
     if axes is None:
-        fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(11, 5), sharex=True)
+        fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(12, 5), sharex=True)
     else:
         fig = None
 
