@@ -104,6 +104,8 @@ class QuadraticDistribution:
         c = np.array(c)[()]
         if not np.isscalar(c):
             raise ValueError("c must be a scalar.")
+        if not np.isfinite(c):
+            raise ValueError("c must be finite.")
         if c % 1 != 0:
             raise ValueError("c must be an integer.")
         if c <= 0:
@@ -497,6 +499,8 @@ class NoisyQuadraticDistribution:
         c = np.array(c)[()]
         if not np.isscalar(c):
             raise ValueError("c must be a scalar.")
+        if not np.isfinite(c):
+            raise ValueError("c must be finite.")
         if c % 1 != 0:
             raise ValueError("c must be an integer.")
         if c <= 0:
