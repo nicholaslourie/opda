@@ -170,7 +170,7 @@ def plot_pdf(
 
     n, = xs.shape
 
-    ax.hist(xs, density=True)
+    ax.hist(xs, bins="auto", density=True)
 
     ax.set_xlabel(rf"${name.lower()}$")
     ax.set_ylabel(rf"$d\mathbb{{P}}({name.upper()} = {name.lower()})$")
