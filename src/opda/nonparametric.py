@@ -162,14 +162,14 @@ class EmpiricalDistribution:
     ----------
     ys : 1D array of floats, required
         The sample for which to create an empirical distribution.
-    ws : 1D array of non-negative floats or None, optional (default=None)
+    ws : 1D array of non-negative floats or None, optional
         Weights, or the probability masses, to assign to each value in
         the sample, ``ys``. Weights must be non-negative and sum to 1.
         ``ws`` should have the same shape as ``ys``. If ``None``, then
         each sample will be assigned equal weight.
-    a : float, optional (default=-np.inf)
+    a : float, optional
         The minimum of the support of the underlying distribution.
-    b : float, optional (default=np.inf)
+    b : float, optional
         The maximum of the support of the underlying distribution.
 
     Attributes
@@ -368,10 +368,10 @@ class EmpiricalDistribution:
 
         Parameters
         ----------
-        size : None, int, or tuple of ints, optional (default=None)
+        size : None, int, or tuple of ints, optional
             The desired shape of the returned sample. If ``None``,
             then the sample is a scalar.
-        generator : np.random.Generator or None, optional (default=None)
+        generator : np.random.Generator or None, optional
             The random number generator to use. If ``None``, then the
             global default random number generator is used. See
             :py:mod:`opda.random` for more information.
@@ -491,9 +491,9 @@ class EmpiricalDistribution:
         ----------
         ns : positive float or array of floats, required
             The points at which to evaluate the tuning curve.
-        q : float from 0 to 1 inclusive, optional (default=0.5)
+        q : float from 0 to 1 inclusive, optional
             The quantile at which to evaluate the tuning curve.
-        minimize : bool, optional (default=False)
+        minimize : bool, optional
             Whether or not to compute the tuning curve for minimizing a
             metric as opposed to maximizing it.
 
@@ -527,7 +527,7 @@ class EmpiricalDistribution:
         ----------
         ns : positive float or array of floats, required
             The points at which to evaluate the tuning curve.
-        minimize : bool, optional (default=False)
+        minimize : bool, optional
             Whether or not to compute the tuning curve for minimizing a
             metric as opposed to maximizing it.
 
@@ -574,7 +574,7 @@ class EmpiricalDistribution:
         ns : positive int or array of ints, required
             The values at which to evaluate the naive tuning curve
             estimate.
-        minimize : bool, optional (default=False)
+        minimize : bool, optional
             Whether or not to estimate the tuning curve for minimizing a
             metric as opposed to maximizing it.
 
@@ -620,7 +620,7 @@ class EmpiricalDistribution:
         ns : positive int or array of ints, required
             The values at which to evaluate the v statistic tuning curve
             estimate.
-        minimize : bool, optional (default=False)
+        minimize : bool, optional
             Whether or not to estimate the tuning curve for minimizing a
             metric as opposed to maximizing it.
 
@@ -672,7 +672,7 @@ class EmpiricalDistribution:
         ns : positive int or array of ints, required
             The values at which to evaluate the u statistic tuning curve
             estimate.
-        minimize : bool, optional (default=False)
+        minimize : bool, optional
             Whether or not to estimate the tuning curve for minimizing a
             metric as opposed to maximizing it.
 
@@ -741,20 +741,20 @@ class EmpiricalDistribution:
             The sample from the distribution.
         confidence : float from 0 to 1 inclusive, required
             The coverage or confidence level for the bands.
-        a : float, optional (default=-np.inf)
+        a : float, optional
             The minimum of the support of the underlying distribution.
-        b : float, optional (default=np.inf)
+        b : float, optional
             The maximum of the support of the underlying distribution.
-        generator : np.random.Generator or None, optional (default=None)
+        generator : np.random.Generator or None, optional
             The random number generator to use. If ``None``, then the
             global default random number generator is used. See
             :py:mod:`opda.random` for more information.
-        method : str, optional (default='ld_highest_density')
+        method : str, optional
             One of the strings 'dkw', 'ks', 'ld_equal_tailed', or
             'ld_highest_density'. The ``method`` parameter determines
             the kind of confidence band and thus its properties. See
             the notes section for details on the different methods.
-        n_jobs : positive int or None, optional (default=None)
+        n_jobs : positive int or None, optional
             Set the maximum number of parallel processes to use when
             constructing the confidence bands. If ``None`` then
             ``n_jobs`` will be set to the number of CPUs returned by

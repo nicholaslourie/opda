@@ -24,17 +24,17 @@ def plot_random_search(
     ----------
     func : function, required
         A function mapping 1 dimensional vectors to scalars.
-    bounds : pair of floats, optional (default=(-1., 1.))
+    bounds : pair of floats, optional
         Bounds for the random search's uniform sampling.
-    n_samples : int, optional (default=10)
+    n_samples : int, optional
         The number of samples to take in the random search.
-    n_grid : int, optional (default=1_000)
+    n_grid : int, optional
         The number of grid points to use when plotting the function.
-    ax : plt.Axes or None, optional (default=None)
+    ax : plt.Axes or None, optional
         An axes on which to make the plot, or ``None``. If ``None``,
         then a figure and axes for the plot will be automatically
         generated.
-    generator : np.random.Generator or None, optional (default=None)
+    generator : np.random.Generator or None, optional
         The random number generator to use. If ``None``, then a new
         random number generator is created, seeded with entropy from
         the operating system.
@@ -106,7 +106,7 @@ def plot_cdf(
         The sample whose empirical CDF should be visualized.
     name : str, required
         The name of the random variable represented by ``xs``.
-    ax : plt.Axes or None, optional (default=None)
+    ax : plt.Axes or None, optional
         An axes on which to make the plot, or ``None``. If ``None``,
         then a figure and axes for the plot will be automatically
         generated.
@@ -149,7 +149,7 @@ def plot_pdf(
         The sample for which to create a histogram.
     name : str, required
         The name of the random variable represented by ``xs``.
-    ax : plt.Axes or None, optional (default=None)
+    ax : plt.Axes or None, optional
         An axes on which to make the plot, or ``None``. If ``None``,
         then a figure and axes for the plot will be automatically
         generated.
@@ -192,7 +192,7 @@ def plot_distribution(
         The sample whose distribution should be visualized.
     name : str, required
         The name of the random variable represented by ``xs``.
-    axes : plt.Axes or None, optional (default=None)
+    axes : plt.Axes or None, optional
         Axes on which to make the plot, or ``None``. If ``None``, then
         a figure and axes for the plot will be automatically
         generated.
@@ -238,7 +238,7 @@ def plot_distribution_approximation(
         in the simulation.
     n : int, required
         The number of samples from which to take the maximum.
-    axes : plt.Axes or None, optional (default=None)
+    axes : plt.Axes or None, optional
         Axes on which to make the plot, or ``None``. If ``None``, then
         a figure and axes for the plot will be automatically
         generated.
@@ -300,7 +300,7 @@ def plot_tuning_curve_approximation(
     approximating_distribution : QuadraticDistribution, required
         The distribution approximating the distribution of the maximum
         in the simulation.
-    axes : plt.Axes or None, optional (default=None)
+    axes : plt.Axes or None, optional
         Axes on which to make the plot, or ``None``. If ``None``,
         then a figure and axes for the plot will be automatically
         generated.

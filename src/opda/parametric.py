@@ -34,7 +34,7 @@ class QuadraticDistribution:
         The maximum value that the distribution can take.
     c : positive int, required
         The *effective* number of hyperparameters.
-    convex : bool, optional (default=False)
+    convex : bool, optional
         Whether or not to use the convex form of the quadratic
         distribution, as opposed to the concave form. When optimizing
         via random search, the tail of the score distribution approaches
@@ -164,10 +164,10 @@ class QuadraticDistribution:
 
         Parameters
         ----------
-        size : None, int, or tuple of ints, optional (default=None)
+        size : None, int, or tuple of ints, optional
             The desired shape of the returned sample. If ``None``,
             then the sample is a scalar.
-        generator : np.random.Generator or None, optional (default=None)
+        generator : np.random.Generator or None, optional
             The random number generator to use. If ``None``, then the
             global default random number generator is used. See
             :py:mod:`opda.random` for more information.
@@ -305,9 +305,9 @@ class QuadraticDistribution:
         ----------
         ns : positive float or array of floats, required
             The points at which to evaluate the tuning curve.
-        q : float from 0 to 1 inclusive, optional (default=0.5)
+        q : float from 0 to 1 inclusive, optional
             The quantile at which to evaluate the tuning curve.
-        minimize : bool or None, optional (default=None)
+        minimize : bool or None, optional
             Whether or not to compute the tuning curve for minimizing a
             metric as opposed to maximizing it. Defaults to
             ``None``, in which case it is taken to be the same as
@@ -357,7 +357,7 @@ class QuadraticDistribution:
         ----------
         ns : positive float or array of floats, required
             The points at which to evaluate the tuning curve.
-        minimize : bool or None, optional (default=None)
+        minimize : bool or None, optional
             Whether or not to compute the tuning curve for minimizing a
             metric as opposed to maximizing it. Defaults to
             ``None``, in which case it is taken to be the same as
@@ -428,7 +428,7 @@ class NoisyQuadraticDistribution:
         greater than 10 are not supported.
     o : finite non-negative float, required
         The standard deviation of the additive noise.
-    convex : bool, optional (default=False)
+    convex : bool, optional
         Whether or not to use the convex form of the noisy quadratic
         distribution, as opposed to the concave form. When optimizing
         via random search, the tail of the score distribution approaches
@@ -590,10 +590,10 @@ class NoisyQuadraticDistribution:
 
         Parameters
         ----------
-        size : None, int, or tuple of ints, optional (default=None)
+        size : None, int, or tuple of ints, optional
             The desired shape of the returned sample. If ``None``,
             then the sample is a scalar.
-        generator : np.random.Generator or None, optional (default=None)
+        generator : np.random.Generator or None, optional
             The random number generator to use. If ``None``, then the
             global default random number generator is used. See
             :py:mod:`opda.random` for more information.
@@ -834,9 +834,9 @@ class NoisyQuadraticDistribution:
         ----------
         ns : positive float or array of floats, required
             The points at which to evaluate the tuning curve.
-        q : float from 0 to 1 inclusive, optional (default=0.5)
+        q : float from 0 to 1 inclusive, optional
             The quantile at which to evaluate the tuning curve.
-        minimize : bool or None, optional (default=None)
+        minimize : bool or None, optional
             Whether or not to compute the tuning curve for minimizing a
             metric as opposed to maximizing it. Defaults to
             ``None``, in which case it is taken to be the same as
@@ -878,13 +878,13 @@ class NoisyQuadraticDistribution:
         ----------
         ns : positive float or array of floats, required
             The points at which to evaluate the tuning curve.
-        minimize : bool or None, optional (default=None)
+        minimize : bool or None, optional
             Whether or not to compute the tuning curve for minimizing a
             metric as opposed to maximizing it. Defaults to
             ``None``, in which case it is taken to be the same as
             ``self.convex``, so convex noisy quadratic distributions
             will minimize and concave ones will maximize.
-        atol : non-negative float or None, optional (default=None)
+        atol : non-negative float or None, optional
             The absolute tolerance to use for stopping the computation.
             The average tuning curve is computed via numerical
             integration. The computation stops when the error estimate

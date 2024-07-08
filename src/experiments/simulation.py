@@ -21,9 +21,9 @@ def make_damped_linear_sin(
     weights : 1D array of floats, required
         Weights controlling the sensitivity of the output to each
         dimension of the input.
-    bias : float, optional (default=0.)
+    bias : float, optional
         The bias term.
-    scale : float, optional (default=1.)
+    scale : float, optional
         A scalar multiplier for the function's outputs.
 
     Returns
@@ -166,7 +166,7 @@ class Simulation:
         bounds : n_dims x 2 array of finite floats, required
             Bounds on each dimension for the random search's uniform
             sampling.
-        generator : np.random.Generator or None, optional (default=None)
+        generator : np.random.Generator or None, optional
             The random number generator to use. If ``None``, then a new
             random number generator is created, seeded with entropy from
             the operating system.
