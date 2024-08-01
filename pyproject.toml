@@ -68,7 +68,7 @@ test = [
 ]
 package = [
   "build == 1.0.3",
-  "twine == 4.0.2",
+  "twine == 5.1.1",
 ]
 ci = [
   "lxml == 5.1.0",
