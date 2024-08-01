@@ -160,7 +160,12 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
     def test___repr__(self):
         self.assertEqual(
             repr(parametric.QuadraticDistribution(0., 1., 1, convex=False)),
-            "QuadraticDistribution(a=0.0, b=1.0, c=1, convex=False)",
+            f"QuadraticDistribution("
+                f"a={np.array(0.)[()]!r},"
+                f" b={np.array(1.)[()]!r},"
+                f" c={np.array(1)[()]!r},"
+                f" convex={False!r}"
+            f")",
         )
 
     def test_sample(self):
@@ -1454,9 +1459,13 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
             repr(parametric.NoisyQuadraticDistribution(
                 0., 1., 1, 1., convex=False,
             )),
-            "NoisyQuadraticDistribution("
-                "a=0.0, b=1.0, c=1, o=1.0, convex=False"
-            ")",
+            f"NoisyQuadraticDistribution("
+                f"a={np.array(0.)[()]!r},"
+                f" b={np.array(1.)[()]!r},"
+                f" c={np.array(1)[()]!r},"
+                f" o={np.array(1.)[()]!r},"
+                f" convex={False!r}"
+            f")",
         )
 
     def test_sample(self):
