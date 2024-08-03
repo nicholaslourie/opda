@@ -245,17 +245,23 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
             str(nonparametric.EmpiricalDistribution(
                 [0., 1.], None, -1., 1.,
             )),
-            "EmpiricalDistribution("
-                "ys=[0. 1.], ws=None, a=-1.0, b=1.0"
-            ")",
+            f"EmpiricalDistribution("
+                f"ys={np.array([0., 1.])!s},"
+                f" ws={None!s},"
+                f" a={np.array(-1.)[()]!s},"
+                f" b={np.array(1.)[()]!s}"
+            f")",
         )
         self.assertEqual(
             str(nonparametric.EmpiricalDistribution(
                 [0., 1.], [0.3, 0.7], -1., 1.,
             )),
-            "EmpiricalDistribution("
-                "ys=[0. 1.], ws=[0.3 0.7], a=-1.0, b=1.0"
-            ")",
+            f"EmpiricalDistribution("
+                f"ys={np.array([0., 1.])!s},"
+                f" ws={np.array([0.3, 0.7])!s},"
+                f" a={np.array(-1.)[()]!s},"
+                f" b={np.array(1.)[()]!s}"
+            f")",
         )
 
     def test___repr__(self):
@@ -263,17 +269,23 @@ class EmpiricalDistributionTestCase(testcases.RandomTestCase):
             repr(nonparametric.EmpiricalDistribution(
                 [0., 1.], None, -1., 1.,
             )),
-            "EmpiricalDistribution("
-                "ys=array([0., 1.]), ws=None, a=-1.0, b=1.0"
-            ")",
+            f"EmpiricalDistribution("
+                f"ys={np.array([0., 1.])!r},"
+                f" ws={None!r},"
+                f" a={np.array(-1.)[()]!r},"
+                f" b={np.array(1.)[()]!r}"
+            f")",
         )
         self.assertEqual(
             repr(nonparametric.EmpiricalDistribution(
                 [0., 1.], [0.3, 0.7], -1., 1.,
             )),
-            "EmpiricalDistribution("
-                "ys=array([0., 1.]), ws=array([0.3, 0.7]), a=-1.0, b=1.0"
-            ")",
+            f"EmpiricalDistribution("
+                f"ys={np.array([0., 1.])!r},"
+                f" ws={np.array([0.3, 0.7])!r},"
+                f" a={np.array(-1.)[()]!r},"
+                f" b={np.array(1.)[()]!r}"
+            f")",
         )
 
     def test_sample(self):

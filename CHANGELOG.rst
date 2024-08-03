@@ -52,18 +52,33 @@ The format is based on `Keep a Changelog
   * Add a license for the data: ``data/resnet/LICENSE``.
   * Add a README for the data: ``data/resnet/README.md``.
 
+* Add support for ``scipy == 1.14``.
+
 .. rubric:: Changes
 
 * Simplify the implementation of
   ``opda.parametric.NoisyQuadraticDistribution`` by making ``scale``
   the standard deviation of the corresponding normal random variable.
+* Upgrade packaging tools to ``build == 1.2.1`` and ``twine == 5.1.1``.
+* Skip some tests for ``opda.utils.beta_equal_tailed_interval``,
+  ``opda.utils.beta_highest_density_interval``, and
+  ``opda.utils.beta_equal_tailed_coverage`` when they fail due to
+  `an issue <https://github.com/scipy/scipy/issues/21303>`_  in
+  ``scipy == 1.14.0`` on Linux that causes spurious NaN values.
 
 .. rubric:: Deprecations
 .. rubric:: Removals
 
-* Drop support for ``numpy == 1.21``.
+* Drop support for ``numpy == 1.21``, ``numpy == 1.22``, and ``scipy == 1.8``.
 
 .. rubric:: Fixes
+
+* Update tests for the ``__repr__`` methods of
+  ``opda.nonparametric.EmpiricalDistribution``,
+  ``opda.parametric.QuadraticDistribution``, and
+  ``opda.parametric.NoisyQuadraticDistribution`` so that they're
+  compatible with ``numpy == 2.0``.
+
 .. rubric:: Documentation
 .. rubric:: Security
 

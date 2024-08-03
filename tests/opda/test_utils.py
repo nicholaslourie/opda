@@ -151,6 +151,13 @@ class DkwEpsilonTestCase(unittest.TestCase):
 class BetaEqualTailedIntervalTestCase(testcases.RandomTestCase):
     """Test opda.utils.beta_equal_tailed_interval."""
 
+    # backwards compatibility (scipy == 1.14.0)
+    @pytest.mark.skipif(
+        np.isnan(stats.beta(5., 5.).ppf(0.5)),
+        reason="stats.beta(5., 5.).ppf(0.5) incorrectly returns NaN in"
+               " scipy 1.14.0 on certain platforms. For more details,"
+               " see https://github.com/scipy/scipy/issues/21303",
+    )
     def test_beta_equal_tailed_interval(self):
         # Test when a and b are scalars.
         for a in [1., 5., 10.]:
@@ -377,6 +384,13 @@ class BetaEqualTailedIntervalTestCase(testcases.RandomTestCase):
             < 1e-10,
         ))
 
+    # backwards compatibility (scipy == 1.14.0)
+    @pytest.mark.skipif(
+        np.isnan(stats.beta(5., 5.).ppf(0.5)),
+        reason="stats.beta(5., 5.).ppf(0.5) incorrectly returns NaN in"
+               " scipy 1.14.0 on certain platforms. For more details,"
+               " see https://github.com/scipy/scipy/issues/21303",
+    )
     @pytest.mark.level(1)
     def test_on_small_confidences(self):
         for coverage in [1e-8, 1e-12, 1e-16]:
@@ -394,6 +408,13 @@ class BetaEqualTailedIntervalTestCase(testcases.RandomTestCase):
                     self.assertLessEqual(lo, beta.ppf(0.5))
                     self.assertGreaterEqual(hi, beta.ppf(0.5))
 
+    # backwards compatibility (scipy == 1.14.0)
+    @pytest.mark.skipif(
+        np.isnan(stats.beta(5., 5.).ppf(0.5)),
+        reason="stats.beta(5., 5.).ppf(0.5) incorrectly returns NaN in"
+               " scipy 1.14.0 on certain platforms. For more details,"
+               " see https://github.com/scipy/scipy/issues/21303",
+    )
     def test_on_zero_coverage(self):
         for a in [1., 5., 10.]:
             for b in [1., 5., 10.]:
@@ -411,6 +432,13 @@ class BetaEqualTailedIntervalTestCase(testcases.RandomTestCase):
 class BetaHighestDensityIntervalTestCase(testcases.RandomTestCase):
     """Test opda.utils.beta_highest_density_interval."""
 
+    # backwards compatibility (scipy == 1.14.0)
+    @pytest.mark.skipif(
+        np.isnan(stats.beta(5., 5.).ppf(0.5)),
+        reason="stats.beta(5., 5.).ppf(0.5) incorrectly returns NaN in"
+               " scipy 1.14.0 on certain platforms. For more details,"
+               " see https://github.com/scipy/scipy/issues/21303",
+    )
     def test_beta_highest_density_interval(self):
         # Test when a and b are scalars.
         for a in [1., 5., 10.]:
@@ -669,6 +697,13 @@ class BetaHighestDensityIntervalTestCase(testcases.RandomTestCase):
                     self.assertLessEqual(lo, mode)
                     self.assertGreaterEqual(hi, mode)
 
+    # backwards compatibility (scipy == 1.14.0)
+    @pytest.mark.skipif(
+        np.isnan(stats.beta(5., 5.).ppf(0.5)),
+        reason="stats.beta(5., 5.).ppf(0.5) incorrectly returns NaN in"
+               " scipy 1.14.0 on certain platforms. For more details,"
+               " see https://github.com/scipy/scipy/issues/21303",
+    )
     def test_on_zero_coverage(self):
         for a in [1., 5., 10.]:
             for b in [1., 5., 10.]:
@@ -842,6 +877,13 @@ class BetaEqualTailedCoverageTestCase(testcases.RandomTestCase):
                     self.assertEqual(coverage.shape, ())
                     self.assertAlmostEqual(coverage, 1.)
 
+    # backwards compatibility (scipy == 1.14.0)
+    @pytest.mark.skipif(
+        np.isnan(stats.beta(5., 5.).ppf(0.5)),
+        reason="stats.beta(5., 5.).ppf(0.5) incorrectly returns NaN in"
+               " scipy 1.14.0 on certain platforms. For more details,"
+               " see https://github.com/scipy/scipy/issues/21303",
+    )
     @pytest.mark.level(1)
     def test_when_interval_has_small_coverage(self):
         for a in [1., 5., 10.]:
@@ -865,6 +907,13 @@ class BetaEqualTailedCoverageTestCase(testcases.RandomTestCase):
                             lo if x_less_than_median else hi,
                         )
 
+    # backwards compatibility (scipy == 1.14.0)
+    @pytest.mark.skipif(
+        np.isnan(stats.beta(5., 5.).ppf(0.5)),
+        reason="stats.beta(5., 5.).ppf(0.5) incorrectly returns NaN in"
+               " scipy 1.14.0 on certain platforms. For more details,"
+               " see https://github.com/scipy/scipy/issues/21303",
+    )
     def test_when_interval_has_zero_coverage(self):
         for a in [1., 5., 10.]:
             for b in [1., 5., 10.]:
