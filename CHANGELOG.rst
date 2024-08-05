@@ -70,6 +70,8 @@ The format is based on `Keep a Changelog
 .. rubric:: Removals
 
 * Drop support for ``numpy == 1.21``, ``numpy == 1.22``, and ``scipy == 1.8``.
+* Remove the ``estimate_initial_parameters_and_bounds`` method from
+  ``opda.parametric.QuadraticDistribution``.
 
 .. rubric:: Fixes
 
