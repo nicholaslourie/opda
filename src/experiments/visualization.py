@@ -24,26 +24,29 @@ def plot_random_search(
     ----------
     func : function, required
         A function mapping 1 dimensional vectors to scalars.
-    bounds : pair of floats, optional (default=(-1., 1.))
+    bounds : pair of floats, optional
         Bounds for the random search's uniform sampling.
-    n_samples : int, optional (default=10)
+    n_samples : int, optional
         The number of samples to take in the random search.
-    n_grid : int, optional (default=1_000)
+    n_grid : int, optional
         The number of grid points to use when plotting the function.
-    ax : plt.Axes or None, optional (default=None)
+    ax : plt.Axes or None, optional
         An axes on which to make the plot, or ``None``. If ``None``,
         then a figure and axes for the plot will be automatically
         generated.
-    generator : None or np.random.Generator, optional (default=None)
+    generator : np.random.Generator or None, optional
         The random number generator to use. If ``None``, then a new
         random number generator is created, seeded with entropy from
         the operating system.
 
     Returns
     -------
-    plt.Figure, plt.Axes
-        The figure and axis on which the plot was made. If ``ax`` was
-        not ``None``, then the returned figure will be ``None``.
+    plt.Figure or None
+        The figure on which the plot was made. If ``ax`` was not
+        ``None``, then the returned figure will be ``None``.
+    plt.Axes
+        The axis on which the plot was made. If ``ax`` was not ``None``,
+        then the returned axis will be ``ax``.
     """
     # Validate arguments.
     if ax is None:
@@ -103,16 +106,19 @@ def plot_cdf(
         The sample whose empirical CDF should be visualized.
     name : str, required
         The name of the random variable represented by ``xs``.
-    ax : plt.Axes or None, optional (default=None)
+    ax : plt.Axes or None, optional
         An axes on which to make the plot, or ``None``. If ``None``,
         then a figure and axes for the plot will be automatically
         generated.
 
     Returns
     -------
-    plt.Figure, plt.Axes
-        The figure and axis on which the plot was made. If ``ax`` was
-        not ``None``, then the returned figure will be ``None``.
+    plt.Figure or None
+        The figure on which the plot was made. If ``ax`` was not
+        ``None``, then the returned figure will be ``None``.
+    plt.Axes
+        The axis on which the plot was made. If ``ax`` was not ``None``,
+        then the returned axis will be ``ax``.
     """
     if ax is None:
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(6, 5))
@@ -143,16 +149,19 @@ def plot_pdf(
         The sample for which to create a histogram.
     name : str, required
         The name of the random variable represented by ``xs``.
-    ax : plt.Axes or None, optional (default=None)
+    ax : plt.Axes or None, optional
         An axes on which to make the plot, or ``None``. If ``None``,
         then a figure and axes for the plot will be automatically
         generated.
 
     Returns
     -------
-    plt.Figure, plt.Axes
-        The figure and axis on which the plot was made. If ``ax`` was
-        not ``None``, then the returned figure will be ``None``.
+    plt.Figure or None
+        The figure on which the plot was made. If ``ax`` was not
+        ``None``, then the returned figure will be ``None``.
+    plt.Axes
+        The axis on which the plot was made. If ``ax`` was not ``None``,
+        then the returned axis will be ``ax``.
     """
     if ax is None:
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(6, 5))
@@ -183,16 +192,19 @@ def plot_distribution(
         The sample whose distribution should be visualized.
     name : str, required
         The name of the random variable represented by ``xs``.
-    axes : plt.Axes or None, optional (default=None)
+    axes : plt.Axes or None, optional
         Axes on which to make the plot, or ``None``. If ``None``, then
         a figure and axes for the plot will be automatically
         generated.
 
     Returns
     -------
-    plt.Figure, plt.Axes
-        The figure and axes on which the plot was made. If ``axes`` was
-        not ``None``, then the returned figure will be ``None``.
+    plt.Figure or None
+        The figure on which the plot was made. If ``axes`` was not
+        ``None``, then the returned figure will be ``None``.
+    plt.Axes
+        The axes on which the plot was made. If ``axes`` was not
+        ``None``, then the returned axes will be ``axes``.
     """
     if axes is None:
         fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(11, 5), sharex=True)
@@ -226,16 +238,19 @@ def plot_distribution_approximation(
         in the simulation.
     n : int, required
         The number of samples from which to take the maximum.
-    axes : plt.Axes or None, optional (default=None)
+    axes : plt.Axes or None, optional
         Axes on which to make the plot, or ``None``. If ``None``, then
         a figure and axes for the plot will be automatically
         generated.
 
     Returns
     -------
-    plt.Figure, plt.Axes
-        The figure and axes on which the plot was made. If ``axes`` was
-        not ``None``, then the returned figure will be ``None``.
+    plt.Figure or None
+        The figure on which the plot was made. If ``axes`` was not
+        ``None``, then the returned figure will be ``None``.
+    plt.Axes
+        The axes on which the plot was made. If ``axes`` was not
+        ``None``, then the returned axes will be ``axes``.
     """
     fig, axes = plot_distribution(
         simulation.yss_cummax[:, n-1],
@@ -285,16 +300,19 @@ def plot_tuning_curve_approximation(
     approximating_distribution : QuadraticDistribution, required
         The distribution approximating the distribution of the maximum
         in the simulation.
-    axes : plt.Axes or None, optional (default=None)
+    axes : plt.Axes or None, optional
         Axes on which to make the plot, or ``None``. If ``None``,
         then a figure and axes for the plot will be automatically
         generated.
 
     Returns
     -------
-    plt.Figure, plt.Axes
-        The figure and axes on which the plot was made. If ``axes`` was
-        not ``None``, then the returned figure will be ``None``.
+    plt.Figure or None
+        The figure on which the plot was made. If ``axes`` was not
+        ``None``, then the returned figure will be ``None``.
+    plt.Axes
+        The axes on which the plot was made. If ``axes`` was not
+        ``None``, then the returned axes will be ``axes``.
     """
     if axes is None:
         fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(11, 5), sharex=True)

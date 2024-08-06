@@ -94,6 +94,16 @@ The format is based on `Keep a Changelog
 * Correct the quantile function's definition in the docstrings for the
   ``ppf`` methods of ``opda.parametric.QuadraticDistribution`` and
   ``opda.parametric.NoisyQuadraticDistribution``.
+* Make docstring formatting more consistent:
+
+  * Always use "Returns" and never "Return" for the docstring section
+    header.
+  * Always document optional types with "or None" coming at the *end* of
+    the type description.
+  * Always document each returned value with a separate subheading when
+    a function or method returns multiple values.
+
+* Remove default values from parameters' type descriptions.
 
 .. rubric:: Security
 

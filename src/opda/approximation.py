@@ -112,7 +112,7 @@ def remez(f, a, b, n, *, atol=None):
         ``f``.
     n : non-negative int, required
         The degree of the polynomial approximation.
-    atol : non-negative float or None, optional (default=None)
+    atol : non-negative float or None, optional
         The absolute tolerance to use for stopping the computation. The
         algorithm ends when the current approximation has a maximum
         error within ``atol`` of the best possible approximation. If
@@ -395,7 +395,7 @@ def minimax_polynomial_approximation(f, a, b, n, *, atol=None):
         ``f``.
     n : non-negative int, required
         The degree of the polynomial approximation.
-    atol : non-negative float or None, optional (default=None)
+    atol : non-negative float or None, optional
         The absolute tolerance to use for stopping the computation. The
         algorithm ends when the current approximation has a maximum
         error within ``atol`` of the best possible approximation. If
@@ -512,14 +512,14 @@ def minimax_polynomial_coefficients(
         ``f``.
     n : non-negative int, required
         The degree of the polynomial approximation.
-    transform : pair of finite floats or None, optional (default=(-1., 1.))
+    transform : pair of finite floats or None, optional
         For numerical stability, it can be helpful to map the inputs
         to some other range, e.g. -1 to 1, compute the minimax
         polynomial's coefficients in this space, and then transform
         the coefficients back to the original space. The intervals
         from -1 to 1 or 0 to 1 are good choices. If ``None``, then no
         transformation is applied.
-    atol : non-negative float or None, optional (default=None)
+    atol : non-negative float or None, optional
         The absolute tolerance to use for stopping the computation. The
         algorithm ends when the current approximation has a maximum
         error within ``atol`` of the best possible approximation. If
@@ -714,7 +714,7 @@ def piecewise_polynomial_knots(f, a, b, ns, *, atol=None):
     ns : 1D array of non-negative ints, required
         The degree of the polynomial approximation on each piece. The
         length of ``ns`` determines the number of pieces.
-    atol : non-negative float or None, optional (default=None)
+    atol : non-negative float or None, optional
         The absolute tolerance to use for stopping the computation. The
         algorithm ends when the current approximation has a maximum
         error within ``atol`` of the best possible approximation. If

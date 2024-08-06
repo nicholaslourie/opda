@@ -151,7 +151,7 @@ def beta_highest_density_interval(a, b, coverage, *, atol=1e-10):
         The beta parameter for the beta distribution.
     coverage : float or array of floats from 0 to 1 inclusive, required
         The desired coverage for the returned intervals.
-    atol : non-negative float, optional (default=1e-10)
+    atol : non-negative float, optional
         The absolute tolerance to use for stopping the iteration.
 
     Returns
@@ -319,7 +319,7 @@ def beta_highest_density_coverage(a, b, x, *, atol=1e-10):
     x : float or array of floats from 0 to 1 inclusive, required
         The points defining the minimal intervals whose coverage to
         return.
-    atol : non-negative float, optional (default=1e-10)
+    atol : non-negative float, optional
         The absolute tolerance to use for stopping the iteration.
 
     Returns
