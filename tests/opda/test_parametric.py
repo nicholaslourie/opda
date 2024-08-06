@@ -2673,18 +2673,28 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                         )
 
                         ys = dist.sample(100)
+                        qs = dist.cdf(ys)
+
+                        # Remove points where the CDF gets rounded to 0
+                        # or 1 since they'll be mapped to the lower or
+                        # upper bound on the support (-inf and inf when
+                        # o > 0) and thus won't invert.
+                        ys = ys[(0. < qs) & (qs < 1.)]
+                        qs = qs[(0. < qs) & (qs < 1.)]
 
                         ys_center = ys[(ys >= a) & (ys <= b)]
+                        qs_center = qs[(ys >= a) & (ys <= b)]
                         self.assertTrue(np.allclose(
-                            dist.ppf(dist.cdf(ys_center)),
+                            dist.ppf(qs_center),
                             ys_center,
                             atol=1e-5,
                         ))
                         # NOTE: Precision of the ppf is more difficult
                         # in the tails because the CDF is nearly flat.
                         ys_tails = ys[(ys < a) | (ys > b)]
+                        qs_tails = qs[(ys < a) | (ys > b)]
                         self.assertTrue(np.allclose(
-                            dist.ppf(dist.cdf(ys_tails)),
+                            dist.ppf(qs_tails),
                             ys_tails,
                             atol=1e-2,
                         ))
