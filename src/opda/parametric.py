@@ -438,6 +438,10 @@ class NoisyQuadraticDistribution:
         The distribution's mean.
     variance : float
         The distribution's variance.
+    C_MIN : int
+        A class attribute giving the minimum supported value of ``c``.
+    C_MAX : int
+        A class attribute giving the maximum supported value of ``c``.
 
     See Also
     --------
@@ -474,6 +478,8 @@ class NoisyQuadraticDistribution:
     deviation, :math:`\sigma`.
     """
 
+    C_MIN, C_MAX = 1, 10
+
     def __init__(
             self,
             a,
@@ -502,9 +508,10 @@ class NoisyQuadraticDistribution:
             raise ValueError("c must be an integer.")
         if c <= 0:
             raise ValueError("c must be positive.")
-        if c > 10:
+        if c < self.C_MIN or c > self.C_MAX:
             raise ValueError(
-                "Values of c greater than 10 are not supported.",
+                f"Values of c less than {self.C_MIN} or greater than"
+                f" {self.C_MAX} are not supported.",
             )
 
         o = np.array(o)[()]
