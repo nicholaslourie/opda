@@ -266,9 +266,11 @@ class QuadraticDistribution:
 
         .. math::
 
-           Q(p) = \inf \{y\in[a, b]\mid p\leq F(y)\}
+           Q(p) = \inf \{y\in\operatorname{supp} f(y)\mid p\leq F(y)\}
 
-        where :math:`F` is the cumulative distribution function.
+        where :math:`f` is the probability density, :math:`F` is the
+        cumulative distribution function, and
+        :math:`\operatorname{supp} f(y)` is the support.
 
         Parameters
         ----------
@@ -763,9 +765,11 @@ class NoisyQuadraticDistribution:
 
         .. math::
 
-           Q(p) = \inf \{y\in\mathbb{R}\mid p\leq F(y)\}
+           Q(p) = \inf \{y\in\operatorname{supp} f(y)\mid p\leq F(y)\}
 
-        where :math:`F` is the cumulative distribution function.
+        where :math:`f` is the probability density, :math:`F` is the
+        cumulative distribution function, and
+        :math:`\operatorname{supp} f(y)` is the support.
 
         Parameters
         ----------
