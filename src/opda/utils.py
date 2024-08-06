@@ -546,3 +546,32 @@ def normal_cdf(xs):
     xs = np.array(xs)
 
     return 0.5 * (1. + special.erf(1 / 2**0.5 * xs))
+
+
+def normal_ppf(qs):
+    """Evaluate the PPF of the standard normal distribution.
+
+    Parameters
+    ----------
+    qs : float or array of floats from 0 to 1 inclusive, required
+        The points at which to evaluate the standard normal
+        distribution's quantile function.
+
+    Returns
+    -------
+    float or array of floats
+        The standard normal distribution's quantile function evaluated
+        at ``qs``.
+    """
+    # NOTE: In a quick benchmark, this implementation was 2-6x faster
+    # than scipy.stats.norm.ppf at moderate input sizes (1-1k) and 1.25x
+    # slower at very large sizes (100k-1M).
+
+    # Validate the arguments.
+    qs = np.array(qs)
+    if np.any((qs < 0. - 1e-10) | (qs > 1. + 1e-10)):
+        raise ValueError("qs must be between 0 and 1, inclusive.")
+    qs = np.clip(qs, 0., 1.)
+
+    # Compute the quantiles.
+    return 2**0.5 * special.erfinv(2. * qs - 1.)

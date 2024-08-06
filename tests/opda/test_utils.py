@@ -1274,3 +1274,26 @@ class NormalCdfTestCase(unittest.TestCase):
         xs = np.linspace(-10., 10., num=1_000).reshape((100, 10))
         self.assertEqual(utils.normal_cdf(xs).shape, xs.shape)
         self.assertTrue(np.allclose(utils.normal_cdf(xs), norm.cdf(xs)))
+
+
+class NormalPpfTestCase(unittest.TestCase):
+    """Test opda.utils.normal_ppf."""
+
+    def test_normal_ppf(self):
+        norm = stats.norm(0., 1.)
+        # scalar
+        for q in [
+                0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.,
+                0.0000001, 0.000001, 0.00001, 0.0001, 0.001, 0.01,
+                0.9999999, 0.999999, 0.99999, 0.9999, 0.999, 0.99,
+        ]:
+            self.assertTrue(np.isscalar(utils.normal_ppf(q)))
+            self.assertAlmostEqual(utils.normal_ppf(q), norm.ppf(q))
+        # 1D array
+        qs = np.linspace(0., 1., num=1_000)
+        self.assertEqual(utils.normal_ppf(qs).shape, qs.shape)
+        self.assertTrue(np.allclose(utils.normal_ppf(qs), norm.ppf(qs)))
+        # 2D array
+        qs = np.linspace(0., 1., num=1_000).reshape((100, 10))
+        self.assertEqual(utils.normal_ppf(qs).shape, qs.shape)
+        self.assertTrue(np.allclose(utils.normal_ppf(qs), norm.ppf(qs)))
