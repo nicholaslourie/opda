@@ -53,6 +53,8 @@ The format is based on `Keep a Changelog
   * Add a README for the data: ``data/resnet/README.md``.
 
 * Add support for ``scipy == 1.14``.
+* Add the ``C_MIN`` and ``C_MAX`` class attributes to
+  ``opda.parametric.NoisyQuadraticDistribution``.
 
 .. rubric:: Changes
 
