@@ -787,9 +787,25 @@ class NoisyQuadraticDistribution:
             raise ValueError("qs must be between 0 and 1, inclusive.")
         qs = np.clip(qs, 0., 1.)
 
-        # Compute the quantiles.
+        a, b, c, o = self.a, self.b, self.c, self.o
 
-        a, b, o = self.a, self.b, self.o
+        # Use approximations if appropriate.
+
+        if a == b and o == 0.:
+            return np.full_like(qs, a)[()]
+
+        if self._approximate_with == "noiseless":
+            if self.convex:
+                ys = a + (b - a) * qs**(2/c)
+            else:  # concave
+                ys = b - (b - a) * (1 - qs)**(2/c)
+
+            return ys
+
+        if self._approximate_with == "normal":
+            return self.mean + self.variance**0.5 * utils.normal_ppf(qs)
+
+        # Compute the quantiles.
 
         # Numerically invert the CDF with the bisection method.
         ys_lo = np.full_like(qs, a - 6 * o)
