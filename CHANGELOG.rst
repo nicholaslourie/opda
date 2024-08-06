@@ -55,6 +55,8 @@ The format is based on `Keep a Changelog
 * Add support for ``scipy == 1.14``.
 * Add the ``C_MIN`` and ``C_MAX`` class attributes to
   ``opda.parametric.NoisyQuadraticDistribution``.
+* Add ``opda.utils.normal_ppf``, a fast function for computing the
+  standard normal's PPF (quantile function).
 
 .. rubric:: Changes
 
@@ -67,6 +69,8 @@ The format is based on `Keep a Changelog
   ``opda.utils.beta_equal_tailed_coverage`` when they fail due to
   `an issue <https://github.com/scipy/scipy/issues/21303>`_  in
   ``scipy == 1.14.0`` on Linux that causes spurious NaN values.
+* Use the point mass, noiseless, and normal approximations to speed up
+  the ``ppf`` method of ``opda.parametric.NoisyQuadraticDistribution``.
 
 .. rubric:: Deprecations
 .. rubric:: Removals
@@ -82,8 +86,15 @@ The format is based on `Keep a Changelog
   ``opda.parametric.QuadraticDistribution``, and
   ``opda.parametric.NoisyQuadraticDistribution`` so that they're
   compatible with ``numpy == 2.0``.
+* Fix flakiness in the test:
+  ``NoisyQuadraticDistributionTestCase.test_ppf_is_inverse_of_cdf``.
 
 .. rubric:: Documentation
+
+* Correct the quantile function's definition in the docstrings for the
+  ``ppf`` methods of ``opda.parametric.QuadraticDistribution`` and
+  ``opda.parametric.NoisyQuadraticDistribution``.
+
 .. rubric:: Security
 
 
