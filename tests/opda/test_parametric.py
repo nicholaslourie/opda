@@ -538,14 +538,18 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                         self.assertTrue(np.isscalar(
                             dist.quantile_tuning_curve(
                                 n/10.,
-                                q=q**(1/10),
+                                q=1 - (1 - q)**(1/10)
+                                  if expect_minimize else
+                                  q**(1/10),
                                 minimize=minimize,
                             ),
                         ))
                         self.assertAlmostEqual(
                             dist.quantile_tuning_curve(
                                 n/10.,
-                                q=q**(1/10),
+                                q=1 - (1 - q)**(1/10)
+                                  if expect_minimize else
+                                  q**(1/10),
                                 minimize=minimize,
                             ),
                             curve[n-1],
@@ -554,13 +558,17 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                         self.assertTrue(np.allclose(
                             dist.quantile_tuning_curve(
                                 [n/10.],
-                                q=q**(1/10),
+                                q=1 - (1 - q)**(1/10)
+                                  if expect_minimize else
+                                  q**(1/10),
                                 minimize=minimize,
                             ),
                             [
                                 dist.quantile_tuning_curve(
                                     n/10.,
-                                    q=q**(1/10),
+                                    q=1 - (1 - q)**(1/10)
+                                      if expect_minimize else
+                                      q**(1/10),
                                     minimize=minimize,
                                 ),
                             ],
@@ -569,7 +577,9 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                     self.assertTrue(np.allclose(
                         dist.quantile_tuning_curve(
                             [0.1, 0.2, 0.3, 0.4, 0.5],
-                            q=q**(1/10),
+                            q=1 - (1 - q)**(1/10)
+                              if expect_minimize else
+                              q**(1/10),
                             minimize=minimize,
                         ),
                         curve,
@@ -578,7 +588,9 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                     self.assertTrue(np.allclose(
                         dist.quantile_tuning_curve(
                             [0.3, 0.1, 0.5],
-                            q=q**(1/10),
+                            q=1 - (1 - q)**(1/10)
+                              if expect_minimize else
+                              q**(1/10),
                             minimize=minimize,
                         ),
                         [curve[2], curve[0], curve[4]],
@@ -591,7 +603,9 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                                 [0.1, 0.2, 0.3],
                                 [0.3, 0.1, 0.5],
                             ],
-                            q=q**(1/10),
+                            q=1 - (1 - q)**(1/10)
+                              if expect_minimize else
+                              q**(1/10),
                             minimize=minimize,
                         ),
                         [
@@ -1008,6 +1022,51 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                     self.assertEqual(dist.ppf(0.), a)
                     self.assertEqual(dist.ppf(1.), b)
                     self.assertEqual(dist.ppf(1. + 1e-12), b)
+
+    def test_quantile_tuning_curve_with_different_quantiles(self):
+        n_trials = 2_000
+        a, b, c, convex = 0., 1., 1, False
+        for q in [0.25, 0.75]:
+            for minimize in [None, False, True]:
+                # NOTE: When minimize is None, default to convex.
+                expect_minimize = (
+                    minimize
+                    if minimize is not None else
+                    convex
+                )
+
+                dist = parametric.QuadraticDistribution(
+                    a,
+                    b,
+                    c,
+                    convex=convex,
+                )
+                yss = dist.sample((n_trials, 5))
+                # Use the binomial confidence interval for the quantile.
+                idx_lo, idx_pt, idx_hi = stats.binom(n_trials, q).ppf(
+                    [1e-6 / 2, 0.5, 1 - 1e-6 / 2],
+                ).astype(int)
+                curve_lo, curve, curve_hi = np.sort(
+                    np.minimum.accumulate(yss, axis=1)
+                    if expect_minimize else
+                    np.maximum.accumulate(yss, axis=1),
+                    axis=0,
+                )[(
+                    idx_lo,  # lower 1 - 1e-6 confidence bound
+                    idx_pt,  # point estimate
+                    idx_hi,  # upper 1 - 1e-6 confidence bound
+                ), :]
+                atol = np.max(curve_hi - curve_lo) / 2
+
+                self.assertTrue(np.allclose(
+                    dist.quantile_tuning_curve(
+                        [1, 2, 3, 4, 5],
+                        q=q,
+                        minimize=minimize,
+                    ),
+                    curve,
+                    atol=atol,
+                ))
 
     def test_quantile_tuning_curve_minimize_is_dual_to_maximize(self):
         for a, b, c in [(0., 1., 1), (-1., 10., 2)]:
@@ -2029,14 +2088,18 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                             self.assertTrue(np.isscalar(
                                 dist.quantile_tuning_curve(
                                     n/10.,
-                                    q=q**(1/10),
+                                    q=1 - (1 - q)**(1/10)
+                                      if expect_minimize else
+                                      q**(1/10),
                                     minimize=minimize,
                                 ),
                             ))
                             self.assertAlmostEqual(
                                 dist.quantile_tuning_curve(
                                     n/10.,
-                                    q=q**(1/10),
+                                    q=1 - (1 - q)**(1/10)
+                                      if expect_minimize else
+                                      q**(1/10),
                                     minimize=minimize,
                                 ),
                                 curve[n-1],
@@ -2045,13 +2108,17 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                             self.assertTrue(np.allclose(
                                 dist.quantile_tuning_curve(
                                     [n/10.],
-                                    q=q**(1/10),
+                                    q=1 - (1 - q)**(1/10)
+                                      if expect_minimize else
+                                      q**(1/10),
                                     minimize=minimize,
                                 ),
                                 [
                                     dist.quantile_tuning_curve(
                                         n/10.,
-                                        q=q**(1/10),
+                                        q=1 - (1 - q)**(1/10)
+                                          if expect_minimize else
+                                          q**(1/10),
                                         minimize=minimize,
                                     ),
                                 ],
@@ -2060,7 +2127,9 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                         self.assertTrue(np.allclose(
                             dist.quantile_tuning_curve(
                                 [0.1, 0.2, 0.3, 0.4, 0.5],
-                                q=q**(1/10),
+                                q=1 - (1 - q)**(1/10)
+                                  if expect_minimize else
+                                  q**(1/10),
                                 minimize=minimize,
                             ),
                             curve,
@@ -2069,7 +2138,9 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                         self.assertTrue(np.allclose(
                             dist.quantile_tuning_curve(
                                 [0.3, 0.1, 0.5],
-                                q=q**(1/10),
+                                q=1 - (1 - q)**(1/10)
+                                  if expect_minimize else
+                                  q**(1/10),
                                 minimize=minimize,
                             ),
                             [curve[2], curve[0], curve[4]],
@@ -2082,7 +2153,9 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                                     [0.1, 0.2, 0.3],
                                     [0.3, 0.1, 0.5],
                                 ],
-                                q=q**(1/10),
+                                q=1 - (1 - q)**(1/10)
+                                  if expect_minimize else
+                                  q**(1/10),
                                 minimize=minimize,
                             ),
                             [
@@ -2743,6 +2816,53 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                         self.assertEqual(dist.ppf(0.), lo)
                         self.assertEqual(dist.ppf(1.), hi)
                         self.assertEqual(dist.ppf(1. + 1e-12), hi)
+
+    @pytest.mark.level(1)
+    def test_quantile_tuning_curve_with_different_quantiles(self):
+        n_trials = 2_000
+        a, b, c, o, convex = 0., 1., 1, 1e-2, False
+        for q in [0.25, 0.75]:
+            for minimize in [None, False, True]:
+                # NOTE: When minimize is None, default to convex.
+                expect_minimize = (
+                    minimize
+                    if minimize is not None else
+                    convex
+                )
+
+                dist = parametric.NoisyQuadraticDistribution(
+                    a,
+                    b,
+                    c,
+                    o,
+                    convex=convex,
+                )
+                yss = dist.sample((n_trials, 5))
+                # Use the binomial confidence interval for the quantile.
+                idx_lo, idx_pt, idx_hi = stats.binom(n_trials, q).ppf(
+                    [1e-6 / 2, 0.5, 1 - 1e-6 / 2],
+                ).astype(int)
+                curve_lo, curve, curve_hi = np.sort(
+                    np.minimum.accumulate(yss, axis=1)
+                    if expect_minimize else
+                    np.maximum.accumulate(yss, axis=1),
+                    axis=0,
+                )[(
+                    idx_lo,  # lower 1 - 1e-6 confidence bound
+                    idx_pt,  # point estimate
+                    idx_hi,  # upper 1 - 1e-6 confidence bound
+                ), :]
+                atol = np.max(curve_hi - curve_lo) / 2
+
+                self.assertTrue(np.allclose(
+                    dist.quantile_tuning_curve(
+                        [1, 2, 3, 4, 5],
+                        q=q,
+                        minimize=minimize,
+                    ),
+                    curve,
+                    atol=atol,
+                ))
 
     @pytest.mark.level(3)
     def test_quantile_tuning_curve_minimize_is_dual_to_maximize(self):
