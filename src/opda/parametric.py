@@ -335,20 +335,11 @@ class QuadraticDistribution:
             raise TypeError("minimize must be a boolean.")
 
         # Compute the quantile tuning curve.
-        a, b, c = self.a, self.b, self.c
-
-        if self.convex:
-            if minimize:
-                ys = a + (b - a) * (1 - q**(1/ns))**(2/c)
-            else:  # maximize
-                ys = a + (b - a) * q**(2/(c * ns))
-        else:  # concave
-            if minimize:
-                ys = b - (b - a) * q**(2/(c * ns))
-            else:  # maximize
-                ys = b - (b - a) * (1 - q**(1/ns))**(2/c)
-
-        return ys
+        return self.ppf(
+            1 - (1 - q)**(1/ns)
+            if minimize else  # maximize
+            q**(1/ns),
+        )
 
     def average_tuning_curve(self, ns, minimize=None):
         """Return the average tuning curve evaluated at ``ns``.
@@ -864,12 +855,11 @@ class NoisyQuadraticDistribution:
             raise TypeError("minimize must be a boolean.")
 
         # Compute the quantile tuning curve.
-        if minimize:
-            ys = self.ppf(1 - q**(1/ns))
-        else:  # maximize
-            ys = self.ppf(q**(1/ns))
-
-        return ys
+        return self.ppf(
+            1 - (1 - q)**(1/ns)
+            if minimize else  # maximize
+            q**(1/ns),
+        )
 
     def average_tuning_curve(self, ns, minimize=None, *, atol=None):
         """Return the average tuning curve evaluated at ``ns``.

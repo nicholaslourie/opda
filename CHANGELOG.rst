@@ -88,6 +88,11 @@ The format is based on `Keep a Changelog
   compatible with ``numpy == 2.0``.
 * Fix flakiness in the test:
   ``NoisyQuadraticDistributionTestCase.test_ppf_is_inverse_of_cdf``.
+* Fix the ``quantile_tuning_curve`` methods of
+  ``opda.parametric.QuadraticDistribution`` and
+  ``opda.parametric.NoisyQuadratricDistribution`` which gave incorrect
+  output when ``q`` wasn't equal to ``0.5`` and either ``minimize`` was
+  ``True`` or ``minimize`` was ``None`` and ``convex`` was ``True``.
 
 .. rubric:: Documentation
 
