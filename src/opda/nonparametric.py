@@ -2,6 +2,7 @@
 
 import functools
 import multiprocessing
+import os
 import warnings
 
 import numpy as np
@@ -862,7 +863,12 @@ class EmpiricalDistribution:
             opda.random.DEFAULT_GENERATOR
         )
 
-        if n_jobs is not None and n_jobs < 1:
+        n_jobs = (
+            n_jobs
+            if n_jobs is not None else
+            os.cpu_count()
+        )
+        if n_jobs < 1:
             raise ValueError("n_jobs must be a positive integer.")
 
         # Compute the confidence bands.
