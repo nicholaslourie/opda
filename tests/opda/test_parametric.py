@@ -13,6 +13,28 @@ from tests import testcases
 class QuadraticDistributionTestCase(testcases.RandomTestCase):
     """Test opda.parametric.QuadraticDistribution."""
 
+    def test_class_attributes(self):
+        # Test C_MIN and C_MAX.
+
+        c_min = parametric.QuadraticDistribution.C_MIN
+        c_max = parametric.QuadraticDistribution.C_MAX
+
+        # QuadraticDistribution should always support c = 1 to 5.
+        self.assertEqual(c_min, 1)
+        self.assertGreaterEqual(c_max, 5)
+
+        # QuadraticDistribution should support all claimed values of c.
+        for c in range(c_min, c_max + 1):
+            dist = parametric.QuadraticDistribution(0., 1., c, False)
+            self.assertGreater(dist.pdf(0.5), 0.)
+            self.assertGreater(dist.cdf(0.5), 0.)
+
+        # C_MAX should match the maximum value for c mentioned in the docstring.
+        self.assertIn(
+            f"Values of ``c`` greater than {c_max} are not supported.",
+            " ".join(parametric.QuadraticDistribution.__doc__.split()),
+        )
+
     @pytest.mark.level(2)
     def test_attributes(self):
         n_samples = 1_000_000

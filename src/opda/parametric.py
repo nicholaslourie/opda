@@ -33,7 +33,8 @@ class QuadraticDistribution:
     b : finite float, required
         The maximum value that the distribution can take.
     c : positive int, required
-        The *effective* number of hyperparameters.
+        The *effective* number of hyperparameters. Values of ``c``
+        greater than 10 are not supported.
     convex : bool, optional
         Whether or not to use the convex form of the quadratic
         distribution, as opposed to the concave form. When optimizing
@@ -46,6 +47,10 @@ class QuadraticDistribution:
         The distribution's mean.
     variance : float
         The distribution's variance.
+    C_MIN : int
+        A class attribute giving the minimum supported value of ``c``.
+    C_MAX : int
+        A class attribute giving the maximum supported value of ``c``.
 
     See Also
     --------
@@ -81,6 +86,8 @@ class QuadraticDistribution:
     distribution by linearly changing its support.
     """
 
+    C_MIN, C_MAX = 1, 10
+
     def __init__(
             self,
             a,
@@ -110,6 +117,11 @@ class QuadraticDistribution:
             raise ValueError("c must be an integer.")
         if c <= 0:
             raise ValueError("c must be positive.")
+        if c < self.C_MIN or c > self.C_MAX:
+            raise ValueError(
+                f"Values of c less than {self.C_MIN} or greater than"
+                f" {self.C_MAX} are not supported.",
+            )
 
         if not isinstance(convex, bool):
             raise TypeError("convex must be a boolean.")
