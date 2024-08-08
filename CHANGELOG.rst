@@ -57,6 +57,9 @@ The format is based on `Keep a Changelog
   ``opda.parametric.NoisyQuadraticDistribution``.
 * Add ``opda.utils.normal_ppf``, a fast function for computing the
   standard normal's PPF (quantile function).
+* Check that ``c`` is finite when validating the arguments to
+  ``opda.parametric.QuadraticDistribution`` and
+  ``opda.parametric.NoisyQuadraticDistribution``.
 
 .. rubric:: Changes
 

@@ -2,6 +2,7 @@
 
 import functools
 import multiprocessing
+import os
 import warnings
 
 import numpy as np
@@ -91,8 +92,8 @@ def _ld_band_weights(
     #     ... )
     #     ... rel_err_lo = (1. - hi) / (1. - quantiles) - 1.
     #     ... rel_err_hi = (1. - lo) / (1. - quantiles) - 1.
-    #     ... fmt_qnt = lambda q: f'{q: .3f}'
-    #     ... fmt_err = lambda e: f'{e:+.3f}'
+    #     ... fmt_qnt = lambda q: f"{q: .3f}"
+    #     ... fmt_err = lambda e: f"{e:+.3f}"
     #     ... print(
     #     ...     f'99.9% Confidence Interval for Error of (1 - quantile)\n'
     #     ...     f'-----------------------------------------------------\n'
@@ -750,8 +751,8 @@ class EmpiricalDistribution:
             global default random number generator is used. See
             :py:mod:`opda.random` for more information.
         method : str, optional
-            One of the strings 'dkw', 'ks', 'ld_equal_tailed', or
-            'ld_highest_density'. The ``method`` parameter determines
+            One of the strings: "dkw", "ks", "ld_equal_tailed", or
+            "ld_highest_density". The ``method`` parameter determines
             the kind of confidence band and thus its properties. See
             the notes section for details on the different methods.
         n_jobs : positive int or None, optional
@@ -759,7 +760,7 @@ class EmpiricalDistribution:
             constructing the confidence bands. If ``None`` then
             ``n_jobs`` will be set to the number of CPUs returned by
             :py:func:`os.cpu_count`. Only some methods (e.g.
-            ``'ld_highest_density'``) can leverage parallel
+            ``"ld_highest_density"``) can leverage parallel
             computation. If the method can't use parallelism, it'll
             just use the current process instead.
 
@@ -862,7 +863,12 @@ class EmpiricalDistribution:
             opda.random.DEFAULT_GENERATOR
         )
 
-        if n_jobs is not None and n_jobs < 1:
+        n_jobs = (
+            n_jobs
+            if n_jobs is not None else
+            os.cpu_count()
+        )
+        if n_jobs < 1:
             raise ValueError("n_jobs must be a positive integer.")
 
         # Compute the confidence bands.

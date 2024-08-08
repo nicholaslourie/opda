@@ -104,6 +104,8 @@ class QuadraticDistribution:
         c = np.array(c)[()]
         if not np.isscalar(c):
             raise ValueError("c must be a scalar.")
+        if not np.isfinite(c):
+            raise ValueError("c must be finite.")
         if c % 1 != 0:
             raise ValueError("c must be an integer.")
         if c <= 0:
@@ -124,7 +126,7 @@ class QuadraticDistribution:
         # Bind other attributes to the instance.
         self.mean = (
             a + (b - a) * c / (c + 2)
-            if convex else
+            if convex else  # concave
             a + (b - a) * 2 / (c + 2)
         )
         self.variance = (b - a)**2 * 4 * c / ((c + 2)**2 * (c + 4))
@@ -497,6 +499,8 @@ class NoisyQuadraticDistribution:
         c = np.array(c)[()]
         if not np.isscalar(c):
             raise ValueError("c must be a scalar.")
+        if not np.isfinite(c):
+            raise ValueError("c must be finite.")
         if c % 1 != 0:
             raise ValueError("c must be an integer.")
         if c <= 0:
@@ -531,7 +535,7 @@ class NoisyQuadraticDistribution:
         # Bind other attributes to the instance.
         self.mean = (
             a + (b - a) * c / (c + 2)
-            if convex else
+            if convex else  # concave
             a + (b - a) * 2 / (c + 2)
         )
         self.variance = o**2 + (b - a)**2 * 4 * c / ((c + 2)**2 * (c + 4))

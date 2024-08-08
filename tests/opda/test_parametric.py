@@ -974,7 +974,7 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                     # Adjust the data for the distribution's parameters.
                     ys = (
                         a + (b - a) * ys
-                        if convex else
+                        if convex else  # concave
                         b - (b - a) * ys
                     )
 
@@ -2677,7 +2677,7 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                         # Adjust the data for the distribution's parameters.
                         ys = (
                             a + (b - a) * ys
-                            if convex else
+                            if convex else  # concave
                             b - (b - a) * ys
                         )
                         # Add normal noise.

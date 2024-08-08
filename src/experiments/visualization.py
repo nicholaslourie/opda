@@ -73,13 +73,13 @@ def plot_random_search(
         func(grid),
         linestyle="-",
         c="grey",
-        label="$y = f(x)$",
+        label=r"$y = f(x)$",
     )
     ax.axvline(
         y_argmax,
         linestyle="--",
         c="grey",
-        label="$\\operatorname{arg\\,max} f(x)$",
+        label=r"$\operatorname{arg\,max} f(x)$",
     )
     ax.scatter(xs, ys, marker="x", c="k", s=50)
     for x in xs:
@@ -87,8 +87,8 @@ def plot_random_search(
 
     ax.legend()
     ax.set_title("Random Search")
-    ax.set_xlabel("$x$")
-    ax.set_ylabel("$y$")
+    ax.set_xlabel(r"$x$")
+    ax.set_ylabel(r"$y$")
 
     return fig, ax
 
@@ -129,9 +129,9 @@ def plot_cdf(
 
     ax.plot(np.sort(xs), (np.arange(n) + 1) / n)
 
-    ax.set_xlabel(f"${name.lower()}$")
-    ax.set_ylabel(f"$\\mathbb{{P}}({name.upper()} \\leq {name.lower()})$")
-    ax.set_title(f"CDF (${name}$)")
+    ax.set_xlabel(rf"${name.lower()}$")
+    ax.set_ylabel(rf"$\mathbb{{P}}({name.upper()} \leq {name.lower()})$")
+    ax.set_title(rf"CDF (${name}$)")
 
     return fig, ax
 
@@ -172,9 +172,9 @@ def plot_pdf(
 
     ax.hist(xs, density=True)
 
-    ax.set_xlabel(f"${name.lower()}$")
-    ax.set_ylabel(f"$d\\mathbb{{P}}({name.upper()} = {name.lower()})$")
-    ax.set_title(f"PDF (${name}$)")
+    ax.set_xlabel(rf"${name.lower()}$")
+    ax.set_ylabel(rf"$d\mathbb{{P}}({name.upper()} = {name.lower()})$")
+    ax.set_title(rf"PDF (${name}$)")
 
     return fig, ax
 
@@ -349,12 +349,12 @@ def plot_tuning_curve_approximation(
         ax.set_ylim(*ylim)
         ax.legend()
 
-    axes[0].set_xlabel("$n$")
-    axes[0].set_ylabel("$\\tau_m(n)$")
+    axes[0].set_xlabel(r"$n$")
+    axes[0].set_ylabel(r"$\tau_m(n)$")
     axes[0].set_title("Median Tuning Curve")
 
-    axes[1].set_xlabel("$n$")
-    axes[1].set_ylabel("$\\tau_e(n)$")
+    axes[1].set_xlabel(r"$n$")
+    axes[1].set_ylabel(r"$\tau_e(n)$")
     axes[1].set_title("Expected Tuning Curve")
 
     return fig, axes
