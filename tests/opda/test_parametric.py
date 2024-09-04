@@ -874,6 +874,47 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                             minimize=minimize,
                         )
 
+    @pytest.mark.level(3)
+    def test_fit(self):
+        n_samples = 2_048
+
+        for a, b in [
+                # Test when a = b.
+                (    0.,    0.),
+                (    1.,    1.),
+                # Test when a != b.
+                (    0.,    1.),
+                (   -1.,    1.),
+                ( 1e-50, 2e-50),
+                (  1e50,  2e50),
+        ]:
+            # NOTE: When c = 2, convex is unidentifiable because the
+            # distribution is uniform whether convex is True or
+            # False. Thus, we test c = 1 and 3.
+            for c in [1, 3]:
+                for convex in [False, True]:
+                    dist = parametric.QuadraticDistribution(
+                        a, b, c, convex,
+                    )
+                    ys = dist.sample(n_samples)
+
+                    with warnings.catch_warnings():
+                        warnings.filterwarnings(
+                            "ignore" if a == b else "default",
+                            message=r"Parameters might be unidentifiable.",
+                            category=RuntimeWarning,
+                        )
+                        dist_hat = parametric.QuadraticDistribution.fit(ys)
+
+                    # Check the parameters are approximately correct.
+                    self.assertAlmostEqual(dist_hat.a, a, delta=5e-2 * (b - a))
+                    self.assertAlmostEqual(dist_hat.b, b, delta=5e-2 * (b - a))
+                    # NOTE: When a = b, the distribution is a point mass
+                    # for any c or convex, thus they are unidentifiable.
+                    if a != b:
+                        self.assertEqual(dist_hat.c, c)
+                        self.assertEqual(dist_hat.convex, convex)
+
     def test_sample_defaults_to_global_random_number_generator(self):
         # sample should be deterministic if global seed is set.
         dist = parametric.QuadraticDistribution(0., 1., 2)
@@ -1135,6 +1176,396 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                       .QuadraticDistribution(-b, -a, c, convex=not convex)
                       .average_tuning_curve(ns, minimize=False),
                 ))
+
+    @pytest.mark.level(3)
+    def test_fit_applies_limits_correctly(self):
+        n_samples = 2_048
+
+        c, convex = 1, False
+        for a, b in [
+                # Test when a = b.
+                (0., 0.),
+                # Test when a != b.
+                (0., 1.),
+        ]:
+            dist = parametric.QuadraticDistribution(a, b, c, convex)
+            ys = dist.sample(n_samples)
+
+            # Test fit with limits.
+
+            for censor_side in ["left", "right", "both"]:
+                for censor_trivial in [False, True]:
+                    limit_lower = (
+                        -np.inf         if censor_side == "right" else
+                        a - 0.1         if censor_trivial else
+                        dist.ppf(0.1)   if a != b else
+                        a + 0.1       # if a == b
+                    )
+                    limit_upper = (
+                        np.inf          if censor_side == "left" else
+                        b + 0.1         if censor_trivial else
+                        dist.ppf(0.975) if a != b else
+                        b - 0.1       # if a == b
+                    )
+
+                    if a == b and not censor_trivial:
+                        # When a = b, a non-trivial censoring will
+                        # censor all observations.
+                        with self.assertRaises(ValueError):
+                            dist_hat =\
+                                parametric.QuadraticDistribution.fit(
+                                    ys=ys,
+                                    limits=(limit_lower, limit_upper),
+                                )
+                        continue
+
+                    with warnings.catch_warnings():
+                        warnings.filterwarnings(
+                            "ignore" if a == b else "default",
+                            message=r"Parameters might be unidentifiable.",
+                            category=RuntimeWarning,
+                        )
+                        dist_hat = parametric.QuadraticDistribution.fit(
+                            ys=ys,
+                            limits=(limit_lower, limit_upper),
+                        )
+
+                    self.assertAlmostEqual(dist_hat.a, a, delta=5e-2 * (b - a))
+                    self.assertAlmostEqual(dist_hat.b, b, delta=5e-2 * (b - a))
+                    # NOTE: When a = b, the distribution is a point mass
+                    # for any c or convex, thus they are unidentifiable.
+                    if a != b:
+                        self.assertEqual(dist_hat.c, c)
+                        self.assertEqual(dist_hat.convex, convex)
+
+            # Test limits is a left-open interval.
+
+            threshold = a if a == b else a + 0.75 * (b - a)
+
+            if a == b:
+                # Since limits is left-open and all observations equal a,
+                # they are all censored when the lower limit is a.
+                with self.assertRaises(ValueError):
+                    dist_hat = parametric.QuadraticDistribution.fit(
+                        ys=ys,
+                        limits=(threshold, np.inf),
+                    )
+                # Since limits is right-closed, no observations are
+                # censored when just the upper limit equals b.
+                with warnings.catch_warnings():
+                    warnings.filterwarnings(
+                        "ignore",
+                        message=r"Parameters might be unidentifiable.",
+                        category=RuntimeWarning,
+                    )
+                    dist_hat = parametric.QuadraticDistribution.fit(
+                        ys=ys,
+                        limits=(-np.inf, threshold),
+                    )
+                self.assertAlmostEqual(dist_hat.a, a, delta=5e-2 * (b - a))
+                self.assertAlmostEqual(dist_hat.b, b, delta=5e-2 * (b - a))
+            else:  # a != b
+                # Since limits is left-open, moving observations below
+                # it to the lower endpoint will not effect the fit.
+                dist_hat = parametric.QuadraticDistribution.fit(
+                    ys=np.where(ys <= threshold, threshold, ys),
+                    limits=(threshold, np.inf),
+                )
+                self.assertAlmostEqual(dist_hat.a, a, delta=1.5e-1 * (b - a))
+                self.assertAlmostEqual(dist_hat.b, b, delta=1.5e-1 * (b - a))
+                self.assertEqual(dist_hat.c, c)
+                self.assertEqual(dist_hat.convex, convex)
+
+    @pytest.mark.level(3)
+    def test_fit_applies_constraints_correctly(self):
+        n_samples = 2_048
+
+        c, convex = 1, False
+        for a, b in [
+                # Test when a = b.
+                (0., 0.),
+                # Test when a != b.
+                (0., 1.),
+        ]:
+            dist = parametric.QuadraticDistribution(a, b, c, convex)
+            ys = dist.sample(n_samples)
+
+            # Test fit with feasible constraints.
+
+            for constraints in [
+                    # Constrain a.
+                    {"a": a},
+                    {"a": (a, b)},
+                    {"a": (-np.inf, a)},
+                    # Constrain b.
+                    {"b": b},
+                    {"b": (a, b)},
+                    {"b": (b, np.inf)},
+                    # Constrain c.
+                    {"c": c},
+                    {"c": (0, c)},
+                    {"c": (c, 100)},
+                    # Constrain convex.
+                    {"convex": convex},
+                    {"convex": (convex,)},
+                    {"convex": (False, True)},
+                    # Fix two numeric parameters.
+                    {"a": a, "b": b},
+                    {"a": a, "c": c},
+                    {"b": b, "c": c},
+                    # Fix all three numeric parameters.
+                    {"a": a, "b": b, "c": c},
+                    # Fix all parameters.
+                    {"a": a, "b": b, "c": c, "convex": convex},
+            ]:
+                with warnings.catch_warnings():
+                    warnings.filterwarnings(
+                        "ignore" if a == b else "default",
+                        message=r"Parameters might be unidentifiable.",
+                        category=RuntimeWarning,
+                    )
+                    warnings.filterwarnings(
+                        "ignore" if "c" in constraints else "default",
+                        message=r"The constraint for c includes values"
+                                r" outside of 1 to 10,",
+                        category=RuntimeWarning,
+                    )
+                    dist_hat = parametric.QuadraticDistribution.fit(
+                        ys=ys,
+                        constraints=constraints,
+                    )
+
+                # Check the fit recovers the distribution.
+                self.assertAlmostEqual(dist_hat.a, a, delta=5e-2 * (b - a))
+                self.assertAlmostEqual(dist_hat.b, b, delta=5e-2 * (b - a))
+                # NOTE: When a = b, the distribution is a point mass for
+                # any c or convex, thus they are unidentifiable.
+                if a != b:
+                    self.assertEqual(dist_hat.c, c)
+                    self.assertEqual(dist_hat.convex, convex)
+
+                # Check the constraint was obeyed.
+                for parameter, value in constraints.items():
+                    estimate = getattr(dist_hat, parameter)
+                    if np.isscalar(value):
+                        self.assertEqual(estimate, value)
+                    elif parameter in {"a", "b", "c"}:
+                        lo, hi = value
+                        self.assertGreaterEqual(estimate, lo)
+                        self.assertLessEqual(estimate, hi)
+                    elif parameter in {"convex"}:
+                        self.assertIn(estimate, value)
+                    else:
+                        raise ValueError(
+                            f"Unrecognized parameter: {parameter}",
+                        )
+
+            # Test fit with infeasible constraints.
+
+            for censor in [False, True]:
+                if a == b and censor:
+                    # When a = b, all observations are equal thus it is
+                    # impossible to censor some but not all of
+                    # them. The case of censoring all observations is
+                    # already covered in other tests.
+                    continue
+
+                limits = (
+                    (a + 0.1 * (b - a), b - 0.1 * (b - a))
+                    if censor else
+                    (-np.inf, np.inf)
+                )
+
+                for constraints, exception in [
+                        # Constrain a to be greater than observed ys.
+                        ({"a": (max(a, limits[0]) + 0.1, np.inf)}, ValueError),
+                        ({"a": (1e8, 1e9)}, ValueError),
+                        # Constrain b to be less than observed ys.
+                        ({"b": (-np.inf, min(b, limits[1]) - 0.1)}, ValueError),
+                        ({"b": (-1e9, -1e8)}, ValueError),
+                        # Constrain c to unsupported values.
+                        ({"c": (-10, 0)}, ValueError),
+                        ({"c": (11, 20)}, ValueError),
+                        # Constrain a or b outside estimated bounds.
+                        ({"a": (-1e9, -1e8)}, exceptions.OptimizationError),
+                        ({"b": (1e8, 1e9)}, exceptions.OptimizationError),
+                ]:
+                    with warnings.catch_warnings(),\
+                         self.assertRaises(exception):
+                        warnings.filterwarnings(
+                            "ignore" if a == b else "default",
+                            message=r"Parameters might be unidentifiable.",
+                            category=RuntimeWarning,
+                        )
+                        dist_hat = parametric.QuadraticDistribution.fit(
+                            ys=ys,
+                            limits=limits,
+                            constraints=constraints,
+                        )
+
+    @pytest.mark.level(2)
+    def test_fit_for_interactions_between_limits_and_constraints(self):
+        n_samples = 2_048
+
+        a, b, c, convex = 0., 1., 1, False
+        dist = parametric.QuadraticDistribution(a, b, c, convex)
+
+        # Test when constraints keeps a above the least of ys but not
+        # the least *observed* y, thus the constraint is still feasible.
+        y_min = -1.
+        ys = dist.sample(n_samples)
+        ys[np.argmin(ys)] = y_min
+        dist_hat = parametric.QuadraticDistribution.fit(
+            ys=ys,
+            limits=(a, b),
+            constraints={"a": ((y_min + a) / 2, np.inf)},
+        )
+        self.assertAlmostEqual(dist_hat.a, a, delta=5e-2 * (b - a))
+        self.assertAlmostEqual(dist_hat.b, b, delta=5e-2 * (b - a))
+        self.assertEqual(dist_hat.c, c)
+        self.assertEqual(dist_hat.convex, convex)
+
+        # Test when constraints keeps b below the greatest of ys but not
+        # the greatest *observed* y, thus the constraint is still feasible.
+        y_max = 2.
+        ys = dist.sample(n_samples)
+        ys[np.argmax(ys)] = y_max
+        dist_hat = parametric.QuadraticDistribution.fit(
+            ys=ys,
+            limits=(a, b),
+            constraints={"b": (-np.inf, (b + y_max) / 2)},
+        )
+        self.assertAlmostEqual(dist_hat.a, a, delta=5e-2 * (b - a))
+        self.assertAlmostEqual(dist_hat.b, b, delta=5e-2 * (b - a))
+        self.assertEqual(dist_hat.c, c)
+        self.assertEqual(dist_hat.convex, convex)
+
+        # Test when constraints prevents the distribution from putting
+        # any probability in one of the censored tails. In that case,
+        # observing a point in the tail is a zero probability event,
+        # which can ruin the fit. If a point equals the lower limit (as
+        # often happens with aggressive rounding), then it gets placed
+        # in the left tail since limits defines a left-open interval.
+        # Thus, it's important to test this edge case.
+        #   zero probability mass in the left tail.
+        y_min = a
+        ys = dist.sample(n_samples)
+        ys[np.argmin(ys)] = y_min
+        dist_hat = parametric.QuadraticDistribution.fit(
+            ys=ys,
+            limits=(a, b),
+            constraints={"a": (a, np.inf)},
+        )
+        self.assertAlmostEqual(dist_hat.a, a, delta=5e-2 * (b - a))
+        self.assertAlmostEqual(dist_hat.b, b, delta=5e-2 * (b - a))
+        self.assertEqual(dist_hat.c, c)
+        self.assertEqual(dist_hat.convex, convex)
+        #   zero probability mass in the right tail.
+        y_max = b
+        ys = dist.sample(n_samples)
+        ys[np.argmax(ys)] = y_max
+        dist_hat = parametric.QuadraticDistribution.fit(
+            ys=ys,
+            limits=(a, b),
+            constraints={"b": (-np.inf, b)},
+        )
+        self.assertAlmostEqual(dist_hat.a, a, delta=5e-2 * (b - a))
+        self.assertAlmostEqual(dist_hat.b, b, delta=5e-2 * (b - a))
+        self.assertEqual(dist_hat.c, c)
+        self.assertEqual(dist_hat.convex, convex)
+
+    @pytest.mark.level(2)
+    def test_fit_with_ties(self):
+        n_samples = 2_048
+
+        a, b, c, convex = 0., 1., 1, False
+        dist = parametric.QuadraticDistribution(a, b, c, convex)
+
+        # Test fit with aggressive (1e-2) and light (1e-4) rounding.
+
+        for decimals in [2, 4]:
+            ys = np.round(dist.sample(n_samples), decimals=decimals)
+
+            dist_hat = parametric.QuadraticDistribution.fit(ys)
+
+            self.assertAlmostEqual(dist_hat.a, a, delta=5e-2 * (b - a))
+            self.assertAlmostEqual(dist_hat.b, b, delta=5e-2 * (b - a))
+            self.assertEqual(dist_hat.c, c)
+            self.assertEqual(dist_hat.convex, convex)
+
+        # Test fit with small spacings (e.g., floating point errors).
+
+        ys = np.round(dist.sample(n_samples), decimals=2)
+        ys += (
+            self.generator.choice([-256, -16, -1, 0, 1, 16, 256], size=len(ys))
+            * np.spacing(ys)
+        )
+
+        dist_hat = parametric.QuadraticDistribution.fit(ys)
+
+        self.assertAlmostEqual(dist_hat.a, a, delta=5e-2 * (b - a))
+        self.assertAlmostEqual(dist_hat.b, b, delta=5e-2 * (b - a))
+        self.assertEqual(dist_hat.c, c)
+        self.assertEqual(dist_hat.convex, convex)
+
+    def test_fit_accepts_integer_data(self):
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message=r"Parameters might be unidentifiable.",
+                category=RuntimeWarning,
+            )
+            dist_hat = parametric.QuadraticDistribution.fit([0] * 8)
+
+        self.assertEqual(dist_hat.a, 0.)
+        self.assertEqual(dist_hat.b, 0.)
+
+    @pytest.mark.level(2)
+    def test_fit_defaults_to_global_random_number_generator(self):
+        n_samples = 256
+        # fit should be deterministic if global seed is set.
+        ys = parametric.QuadraticDistribution(
+            0., 1., 1, False,
+        ).sample(n_samples)
+        #   Before setting the seed, two fits should be unequal.
+        self.assertNotEqual(
+            parametric.QuadraticDistribution.fit(ys),
+            parametric.QuadraticDistribution.fit(ys),
+        )
+        #   After setting the seed, two fits should be unequal.
+        opda.random.set_seed(0)
+        self.assertNotEqual(
+            parametric.QuadraticDistribution.fit(ys),
+            parametric.QuadraticDistribution.fit(ys),
+        )
+        #   Resetting the seed should produce the same fit.
+        opda.random.set_seed(0)
+        first_fit = parametric.QuadraticDistribution.fit(ys)
+        opda.random.set_seed(0)
+        second_fit = parametric.QuadraticDistribution.fit(ys)
+        self.assertEqual(first_fit, second_fit)
+
+    @pytest.mark.level(2)
+    def test_fit_is_deterministic_given_generator_argument(self):
+        n_samples = 256
+        ys = parametric.QuadraticDistribution(
+            0., 1., 1, False,
+        ).sample(n_samples)
+        # Reusing the same generator, two fits should be unequal.
+        generator = np.random.default_rng(0)
+        self.assertNotEqual(
+            parametric.QuadraticDistribution.fit(ys, generator=generator),
+            parametric.QuadraticDistribution.fit(ys, generator=generator),
+        )
+        # Using generators in the same state should produce the same fit.
+        self.assertEqual(
+            parametric.QuadraticDistribution.fit(
+                ys, generator=np.random.default_rng(0),
+            ),
+            parametric.QuadraticDistribution.fit(
+                ys, generator=np.random.default_rng(0),
+            ),
+        )
 
 
 class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
