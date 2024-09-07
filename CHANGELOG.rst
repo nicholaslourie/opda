@@ -54,12 +54,16 @@ The format is based on `Keep a Changelog
 
 * Add support for ``scipy == 1.14`` and ``numpy == 2.1``.
 * Add the ``C_MIN`` and ``C_MAX`` class attributes to
+  ``opda.parametric.QuadraticDistribution`` and
   ``opda.parametric.NoisyQuadraticDistribution``.
 * Add ``opda.utils.normal_ppf``, a fast function for computing the
   standard normal's PPF (quantile function).
 * Check that ``c`` is finite when validating the arguments to
   ``opda.parametric.QuadraticDistribution`` and
   ``opda.parametric.NoisyQuadraticDistribution``.
+* Add ``fit`` methods to the parametric distributions:
+  ``opda.parametric.QuadraticDistribution.fit`` and
+  ``opda.parametric.NoisyQuadraticDistribution.fit``.
 
 .. rubric:: Changes
 
@@ -74,6 +78,17 @@ The format is based on `Keep a Changelog
   ``scipy == 1.14.0`` on Linux that causes spurious NaN values.
 * Use the point mass, noiseless, and normal approximations to speed up
   the ``ppf`` method of ``opda.parametric.NoisyQuadraticDistribution``.
+* Disable lint rules:
+
+  * ``B023``: "Function definition does not bind loop variable
+    {name}".
+  * ``PLW2901``: "Outer {outer_kind} variable {name} overwritten by
+    inner {inner_kind} target".
+  * ``SIM102``: "Use a single ``if`` statement instead of nested
+    ``if`` statements".
+
+* Restrict the range of values for ``c`` supported by
+  ``opda.parametric.QuadraticDistribution`` to ``1`` to ``10``.
 
 .. rubric:: Deprecations
 .. rubric:: Removals
