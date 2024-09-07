@@ -52,7 +52,7 @@ The format is based on `Keep a Changelog
   * Add a license for the data: ``data/resnet/LICENSE``.
   * Add a README for the data: ``data/resnet/README.md``.
 
-* Add support for ``scipy == 1.14``.
+* Add support for ``scipy == 1.14`` and ``numpy == 2.1``.
 * Add the ``C_MIN`` and ``C_MAX`` class attributes to
   ``opda.parametric.NoisyQuadraticDistribution``.
 * Add ``opda.utils.normal_ppf``, a fast function for computing the
