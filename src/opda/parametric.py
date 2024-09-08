@@ -2561,6 +2561,19 @@ class NoisyQuadraticDistribution:
                         # The parameters are invalid (e.g., a > b).
                         return np.inf
 
+                    # In practice, the cdf method is not monotonic due
+                    # to small approximation errors. Non-monotonicity
+                    # can create negative spacings, which become NaNs
+                    # after taking the log. Sorting the cdf values both
+                    # fixes this non-monotonicity and reduces the
+                    # average approximation error, improving the fit.
+                    #
+                    # Since the cdf values will be perfectly or almost
+                    # perfectly sorted, use an in-place timsort (i.e.,
+                    # kind="stable") which can take advantage of this.
+                    ps = dist.cdf(zs)
+                    ps.sort(kind="stable")
+
                     return - np.sum(
                         # Instead of the raw grouped negative
                         # log-likelihood, divide the sum by (n + 1) and
@@ -2574,20 +2587,9 @@ class NoisyQuadraticDistribution:
                         # "Alternatives to maximum likelihood estimation
                         # based on spacings and the Kullback-Leibler
                         # divergence" (Ekstrom, 2008).
-                        ks * np.log(np.diff(
-                            # In practice, the cdf method is not
-                            # monotonic due to small approximation
-                            # errors. Non-monotonicity creates negative
-                            # spacings and thus NaNs after taking the
-                            # log. Instead, accumulate the maximum to
-                            # force the CDF to be monotonic. This sends
-                            # negative spacings to zero, making the loss
-                            # infinite. This approach works well because
-                            # negative spacings can only occur when the
-                            # true spacing is very small anyway (i.e.,
-                            # within the CDF's approximation error).
-                            np.maximum.accumulate(dist.cdf(zs)),
-                        ) * (n + 1) / ks) / (n + 1),
+                        ks * np.log(
+                            np.diff(ps) * (n + 1) / ks,
+                        ) / (n + 1),
                         where=ks > 0,
                     )
             else:
