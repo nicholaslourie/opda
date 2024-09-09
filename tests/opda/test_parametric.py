@@ -2903,7 +2903,7 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                     grid = np.linspace(a - 6 * o, b + 6 * o, num=128)
                     self.assertAlmostEqual(
                         np.max(np.abs(dist.cdf(grid) - dist_hat.cdf(grid))), 0.,
-                        delta=utils.dkw_epsilon(n_samples, 1 - 1e-6),
+                        delta=utils.dkw_epsilon(n_samples, 1 - 1e-9),
                     )
                     # Check the parameters are approximately correct.
                     self.assertAlmostEqual(
