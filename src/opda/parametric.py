@@ -2627,7 +2627,7 @@ class NoisyQuadraticDistribution:
             # b yields our final estimates.
             initial_population = []
             ss = (
-                np.logspace(-6, 2, num=5)
+                [1e-6, 1e-4, 1e-2, 1e-1, 1e+0, 1e+1, 1e+2]
                 if a is None or b is None or o is None else
                 [1.]  # Use at least one s so that we include the c estimate.
             )
