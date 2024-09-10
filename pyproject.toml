@@ -177,6 +177,9 @@ ignore = [
   "S320",     # Using lxml to parse untrusted data is known to be vulnerable...
               # (S320 is wrong, see https://github.com/PyCQA/bandit/issues/767).
   "PERF401",  # Use a list comprehension to create a transformed list
+  "B023",     # Function definition does not bind loop variable {name}
+  "PLW2901",  # Outer {outer_kind} variable {name} overwritten by inner ...
+  "SIM102",   # Use a single `if` statement instead of nested `if` statements
 ]
 extend-select = [
   "D402",     # First line should not be the function's signature

@@ -1,10 +1,13 @@
 """Parametric distributions and tools for optimal design analysis."""
 
+import collections
 import importlib.resources
+import itertools
 import json
+import warnings
 
 import numpy as np
-from scipy import special
+from scipy import optimize, special, stats
 
 from opda import exceptions, utils
 import opda.random
@@ -14,6 +17,14 @@ import opda.random
 import sys  # ruff: isort: skip
 # NOTE: This import is for checking the Python version for backwards
 # compatibility in computing the _APPROXIMATIONS constant below.
+
+# backwards compatibility (scipy < 1.11)
+
+import importlib.metadata  # ruff: isort: skip
+# NOTE: This import is for checking the scipy version for backwards
+# compatibility in the fit methods below.
+
+scipy_version = tuple(map(int, importlib.metadata.version("scipy").split(".")))
 
 
 class QuadraticDistribution:
@@ -33,7 +44,8 @@ class QuadraticDistribution:
     b : finite float, required
         The maximum value that the distribution can take.
     c : positive int, required
-        The *effective* number of hyperparameters.
+        The *effective* number of hyperparameters. Values of ``c``
+        greater than 10 are not supported.
     convex : bool, optional
         Whether or not to use the convex form of the quadratic
         distribution, as opposed to the concave form. When optimizing
@@ -46,6 +58,10 @@ class QuadraticDistribution:
         The distribution's mean.
     variance : float
         The distribution's variance.
+    C_MIN : int
+        A class attribute giving the minimum supported value of ``c``.
+    C_MAX : int
+        A class attribute giving the maximum supported value of ``c``.
 
     See Also
     --------
@@ -81,6 +97,8 @@ class QuadraticDistribution:
     distribution by linearly changing its support.
     """
 
+    C_MIN, C_MAX = 1, 10
+
     def __init__(
             self,
             a,
@@ -110,6 +128,11 @@ class QuadraticDistribution:
             raise ValueError("c must be an integer.")
         if c <= 0:
             raise ValueError("c must be positive.")
+        if c < self.C_MIN or c > self.C_MAX:
+            raise ValueError(
+                f"Values of c less than {self.C_MIN} or greater than"
+                f" {self.C_MAX} are not supported.",
+            )
 
         if not isinstance(convex, bool):
             raise TypeError("convex must be a boolean.")
@@ -394,6 +417,786 @@ class QuadraticDistribution:
                 )
 
         return ys
+
+    @classmethod
+    def fit(
+            cls,
+            ys,
+            limits = (-np.inf, np.inf),
+            constraints = None,
+            *,
+            generator = None,
+            method = "maximum_spacing",
+    ):
+        r"""Return a quadratic distribution fitted to ``ys``.
+
+        Parameters
+        ----------
+        ys : 1D array of finite floats, required
+            The sample from the distribution.
+        limits : pair of floats, optional
+            The left-open interval over which to fit the distribution.
+            Observations outside the interval are censored (the fit
+            considers only that an observation occured above or below
+            the interval, not its exact value).
+        constraints : mapping or None, optional
+            A mapping from strings (the class's parameter names) to
+            constraints. For ``a``, ``b``, and ``c``, the constraint can
+            be either a float (fixing the parameter's value) or a pair
+            of floats (restricting the parameter to that closed
+            interval). For ``convex``, the constraint can be either a
+            boolean (fixing the parameter's value) or a sequence of
+            booleans (restricting the parameter to that set). The
+            mapping can be empty and need not include all the
+            parameters.
+        generator : np.random.Generator or None, optional
+            The random number generator to use. If ``None``, then the
+            global default random number generator is used. See
+            :py:mod:`opda.random` for more information.
+        method : str, optional
+            One of the strings: "maximum_spacing". The ``method``
+            parameter determines how the distribution will be estimated.
+            See the notes section for details on different methods.
+
+        Returns
+        -------
+        QuadraticDistribution
+            The fitted quadratic distribution.
+
+        Notes
+        -----
+        We fit the distribution via maximum product spacing estimation
+        (MPS) [1]_ [2]_. MPS maximizes the product of the spacings:
+        :math:`F\left(Y_{(i)}; \theta\right) - F\left(Y_{(i-1)};
+        \theta\right)`, where :math:`F` is the CDF at the parameters
+        :math:`\theta` and :math:`Y_{(i)}` is the i'th order statistic.
+
+        To compute the maximum, we optimize the spacing function with a
+        generic algorithm that might fail to find the maximum; however,
+        such failures should be rare.
+
+        **Fitting Part of the Data**
+
+        The quadratic distribution approximates the *tail* of the score
+        distribution from random search. Thus, you'll typically fit just
+        the tail. You can accomplish this using the ``limits`` parameter
+        which censors all observations outside a left-open interval.
+        Thus, ``limits = (-np.inf, threshold)`` will censor everything
+        above ``threshold`` and ``limits = (threshold, np.inf)`` will
+        censor everything less than or equal to ``threshold``.
+
+        **Why Use Maximum Spacing Estimation?**
+
+        Often, maximum spacing still works where maximum likelihood
+        breaks down. In our case, the quadratic distribution has
+        unbounded probability density when :math:`\gamma = 1`. Since the
+        parameters :math:`\alpha` and :math:`\beta` control the
+        distribution's support, this unbounded density leads to the
+        *unbounded likelihood problem* [3]_ which makes the maximum
+        likelihood estimator inconsistent. Unlike maximum likelihood,
+        maximum spacing remains consistent even with an unbounded
+        likelihood.
+
+        **A Variant of Maximum Spacing Estimation**
+
+        Standard MPS can't handle tied data points. In order to handle
+        ties and censoring, we use a variant of MPS. For a detailed
+        description, see the notes section of
+        :py:class:`NoisyQuadraticDistribution`.
+
+        References
+        ----------
+        .. [1] Cheng, R. C. H., & Amin, N. A. K. (1983). Estimating
+           Parameters in Continuous Univariate Distributions with a
+           Shifted Origin. Journal of the Royal Statistical Society.
+           Series B (Methodological), 45(3), 394-403.
+
+        .. [2] Ranneby, B. (1984). The Maximum Spacing Method. An
+           Estimation Method Related to the Maximum Likelihood Method.
+           Scandinavian Journal of Statistics, 11(2), 93-112.
+
+        .. [3] Cheng, R. C. H., & Traylor, L. (1995). Non-Regular
+           Maximum Likelihood Problems. Journal of the Royal Statistical
+           Society. Series B (Methodological), 57(1), 3-44.
+
+        Examples
+        --------
+        Use :py:meth:`fit` to estimate the distribution from data:
+
+        .. code:: python
+
+           >>> QuadraticDistribution.fit(
+           ...   ys=[0.59, 0.86, 0.94, 0.81, 0.68, 0.90, 0.93, 0.75],
+           ... )
+           QuadraticDistribution(...)
+
+        When fitting a quadratic distribution to the results from random
+        search, you'll typically restrict it to be *convex* when
+        *minimizing* and *concave* when *maximizing*. You can accomplish
+        this with ``constraints``:
+
+        .. code:: python
+
+           >>> minimize = True  # If random search minimized / maximized
+           >>> QuadraticDistribution.fit(
+           ...   ys=[5.0, 2.9, 5.1, 6.8, 3.2],
+           ...   constraints={"convex": True if minimize else False},
+           ... )
+           QuadraticDistribution(...)
+
+        The quadratic distribution approximates the score distribution's
+        left tail when minimizing and right tail when maximizing. You
+        can fit to only the tail of your data using ``limits``:
+
+        .. code:: python
+
+           >>> threshold = 5.  # The maximum cross-entropy to consider
+           >>> QuadraticDistribution.fit(
+           ...   ys=[5.0, 2.9, 5.1, 6.8, 3.2],  # 5.1 & 6.8 are censored
+           ...   limits=(
+           ...     (-np.inf, threshold)  # minimize: fit the left tail
+           ...     if minimize else
+           ...     (threshold, np.inf)   # maximize: fit the right tail
+           ...   ),
+           ...   constraints={"convex": True if minimize else False},
+           ... )
+           QuadraticDistribution(...)
+
+        You could also censor both tails if necessary:
+
+        .. code:: python
+
+           >>> QuadraticDistribution.fit(
+           ...   ys=[5.0, 2.9, 5.1, 6.8, 3.2],
+           ...   limits=(1., 10.),
+           ... )
+           QuadraticDistribution(...)
+
+        Finally, you can use ``constraints`` to bound any of the
+        parameters in case you have some extra information. For example,
+        if you knew a bound on the performace of the worst or best
+        hyperparameters, you could constrain ``a`` and ``b``:
+
+        .. code:: python
+
+           >>> min_accuracy, max_accuracy = 0., 1.
+           >>> QuadraticDistribution.fit(
+           ...   ys=[0.59, 0.86, 0.94, 0.81, 0.68, 0.90, 0.93, 0.75],
+           ...   constraints={
+           ...     "a": (min_accuracy, max_accuracy),
+           ...     "b": (min_accuracy, max_accuracy),
+           ...   },
+           ... )
+           QuadraticDistribution(...)
+
+        Or, you might know that the random search used 3
+        hyperparameters, so the effective number of hyperparameters
+        (``c``) can be at most that:
+
+        .. code:: python
+
+           >>> n_hyperparameters = 3
+           >>> QuadraticDistribution.fit(
+           ...   ys=[0.59, 0.86, 0.94, 0.81, 0.68, 0.90, 0.93, 0.75],
+           ...   constraints={"c": (1, n_hyperparameters)},
+           ... )
+           QuadraticDistribution(...)
+
+        You could also fix ``c`` (or ``a``, ``b``, or ``convex``) to a
+        particular value:
+
+        .. code:: python
+
+           >>> QuadraticDistribution.fit(
+           ...   ys=[0.59, 0.86, 0.94, 0.81, 0.68, 0.90, 0.93, 0.75],
+           ...   constraints={"c": 1},
+           ... )
+           QuadraticDistribution(...)
+
+        Of course, you can mix and match all of these ideas together as
+        desired.
+        """
+        # Validate arguments.
+        ys = np.array(ys)
+        if len(ys.shape) != 1:
+            raise ValueError(f"ys must be a 1D array, not {len(ys.shape)}D.")
+        if len(ys) == 0:
+            raise ValueError("ys must be non-empty.")
+        if not np.all(np.isfinite(ys)):
+            raise ValueError("ys must only contain finite floats.")
+        if np.issubdtype(ys.dtype, np.integer):
+            # Only cast ys if it has an integer data type, otherwise
+            # preserve its precision which we'll need later in order
+            # to decide how much to round the data.
+            ys = ys.astype(float)
+
+        limits = np.array(limits)
+        if len(limits.shape) != 1:
+            raise ValueError("limits must be a 1D sequence.")
+        if len(limits) != 2:
+            raise ValueError("limits must be a pair.")
+        if not np.all(np.isreal(limits)):
+            raise TypeError("limits must only contain floats.")
+        if np.any(np.isnan(limits)):
+            raise ValueError("limits cannot contain NaN values.")
+        if limits[0] >= limits[1]:
+            raise ValueError(
+                "limits must be a proper (left-open) interval. The"
+                " lower bound cannot equal or exceed the upper bound.",
+            )
+
+        constraints = dict(constraints) if constraints is not None else {}
+        for parameter, constraint in constraints.items():
+            constraint = np.array(constraint)[()]
+            if parameter in {"a", "b", "c"}:
+                # Check invariants for a, b, and c.
+                if not np.isscalar(constraint) and constraint.shape != (2,):
+                    raise TypeError(
+                        f"The constraint for {parameter} must be"
+                        f" either a scalar or a pair.",
+                    )
+                if not np.all(np.isreal(constraint)):
+                    raise TypeError(
+                        f"The constraint for {parameter} must be"
+                        f" either a float or a pair of floats.",
+                    )
+                if np.any(np.isnan(constraint)):
+                    raise ValueError(
+                        f"The constraint for {parameter} cannot"
+                        f" contain NaNs.",
+                    )
+                if constraint.shape == (2,) and constraint[0] > constraint[1]:
+                    raise ValueError(
+                        f"The constraint for {parameter} cannot have a lower"
+                        f" bound greater than the upper bound.",
+                    )
+                # Check invariants that only apply to c.
+                if parameter == "c":
+                    if np.any(constraint % 1 != 0):
+                        raise ValueError(
+                            "The constraint for c must be either an integer"
+                            " or a pair of integers.",
+                        )
+                    if np.isscalar(constraint):
+                        if constraint < cls.C_MIN or constraint > cls.C_MAX:
+                            raise ValueError(
+                                f"The constraint for c fixes its value"
+                                f" outside of {cls.C_MIN} to"
+                                f" {cls.C_MAX} but only values within"
+                                f" that range are supported.",
+                            )
+                    else:
+                        if (
+                                constraint[0] > cls.C_MAX
+                                or constraint[1] < cls.C_MIN
+                        ):
+                            raise ValueError(
+                                f"The constraint for c excludes all"
+                                f" supported values. Only values of c"
+                                f" between {cls.C_MIN} and {cls.C_MAX}"
+                                f" are supported.",
+                            )
+                        if (
+                                constraint[0] < cls.C_MIN
+                                or constraint[1] > cls.C_MAX
+                        ):
+                            warnings.warn(
+                                f"The constraint for c includes values"
+                                f" outside of {cls.C_MIN} to"
+                                f" {cls.C_MAX}, but only values within"
+                                f" that range are supported. Consider"
+                                f" revising the constraint to only"
+                                f" include values within that range.",
+                                RuntimeWarning,
+                                stacklevel=2,
+                            )
+            elif parameter == "convex":
+                if not np.isscalar(constraint) and len(constraint.shape) != 1:
+                    raise TypeError(
+                        f"The constraint for {parameter} must be"
+                        f" either a scalar or 1D list.",
+                    )
+                if not np.isscalar(constraint) and len(constraint) == 0:
+                    raise ValueError(
+                        f"The constraint for {parameter} must not be"
+                        f" empty.",
+                    )
+                if constraint.dtype != bool:
+                    raise TypeError(
+                        f"The constraint for {parameter} must be"
+                        f" either a bool or a list of bools.",
+                    )
+                if np.any(np.unique(constraint, return_counts=True)[1] > 1):
+                    raise ValueError(
+                        f"The constraint for {parameter} cannot contain"
+                        f" duplicate elements.",
+                    )
+            else:
+                raise ValueError(
+                    f"constraints contains an unrecognized key ({parameter}),"
+                    f" all keys must be parameters of the class.",
+                )
+
+        generator = (
+            generator
+            if generator is not None else
+            opda.random.DEFAULT_GENERATOR
+        )
+
+        # Censor the data.
+        limit_lower, limit_upper = limits
+
+        n = len(ys)
+        n_lower, n_upper = np.sum(ys <= limit_lower), np.sum(ys > limit_upper)
+        ys_observed = ys[(limit_lower < ys) & (ys <= limit_upper)]
+
+        if n < 3:
+            raise ValueError(
+                "ys must contain at least three data points.",
+            )
+
+        if len(ys_observed) == 0:
+            raise ValueError(
+                "All ys are censored because they fall outside of"
+                " limits. At least some ys must be observed.",
+            )
+
+        # NOTE: When observations are censored in the left or the right
+        # tail, the min or max is unavailable. In those cases, use
+        # limit_lower as the min and limit_upper as the max as those are
+        # the smallest / largest values we know are compatible with the
+        # distribution. You could instead use the smallest / largest
+        # observed values; however, this approach fails when all values
+        # but one are censored because then the min and max are equal.
+        y_min = np.min(ys_observed) if n_lower == 0 else limit_lower
+        i_min = 1 if n_lower == 0 else n_lower          # the rank of y_min
+        y_max = np.max(ys_observed) if n_upper == 0 else limit_upper
+        j_max = n if n_upper == 0 else n - n_upper + 1  # the rank of y_max
+
+        # backwards compatibility (scipy < 1.11)
+        #
+        # This method implements point constraints (fixing a, b, or c to
+        # a particular value) differently than interval constraints
+        # (restricting a, b, or c to a range). This is necessary when
+        # scipy < 1.11 because optimize.differential_evolution
+        # encounters zero division errors and uses too big of a
+        # population when a parameter has equal upper and lower bounds
+        # (see https://github.com/scipy/scipy/issues/17788). After
+        # dropping support for scipy < 1.11, try to simplify this method
+        # by replacing point constraints ({"a": p}) with interval
+        # constraints ({"a": (p, p)}) and sharing the rest of the logic.
+
+        # Handle constraints.
+        a_constraint = constraints.get("a", [-np.inf, np.inf])
+        a = a_constraint if np.isscalar(a_constraint) else None
+        b_constraint = constraints.get("b", [-np.inf, np.inf])
+        b = b_constraint if np.isscalar(b_constraint) else None
+        c_constraint = constraints.get("c", [cls.C_MIN, cls.C_MAX])
+        c = c_constraint if np.isscalar(c_constraint) else None
+
+        cs = range(
+            max(cls.C_MIN, c_constraint[0]),
+            min(cls.C_MAX, c_constraint[1]) + 1,
+        ) if c is None else [c]
+        convexs = (
+            [False, True] if "convex" not in constraints else
+            [constraints["convex"]] if np.isscalar(constraints["convex"]) else
+            constraints["convex"]
+        )
+
+        # Check for error and warning conditions.
+        if y_min == y_max and n_upper == 0 and n_lower == 0\
+           and (len(cs) > 1 or len(convexs) > 1):
+            warnings.warn(
+                "Parameters might be unidentifiable. All ys are equal,"
+                " suggesting the distribution is a point mass. The"
+                " distribution is a point mass whenever a = b, making c"
+                " and convex unidentifiable. If appropriate, use the"
+                " constraints parameter to specify c and convex.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+
+        if a is not None and a > y_min:
+            raise ValueError(
+                "constraints must not fix a to be greater than the"
+                " least observation (or the lower limit if the least"
+                " observation is censored).",
+            )
+        if a is None and a_constraint[0] > y_min:
+            raise ValueError(
+                "constraints must not constrain a to be greater than the"
+                " least observation (or the lower limit if the least"
+                " observation is censored).",
+            )
+
+        if b is not None and b < y_max:
+            raise ValueError(
+                "constraints must not fix b to be less than the"
+                " greatest observation (or the upper limit if the"
+                " greatest observation is censored).",
+            )
+        if b is None and b_constraint[1] < y_max:
+            raise ValueError(
+                "constraints must not constrain b to be less than the"
+                " greatest observation (or the upper limit if the"
+                " greatest observation is censored).",
+            )
+
+        # Fit the distribution.
+        best_loss = np.inf
+        best_parameters = None
+        for convex in convexs:
+            # Determine the search space.
+            bounds = []
+            integrality = []
+
+            # NOTE: We must bound a and b for our optimization. Since a
+            # is the minimum and b is the maximum of the support, we
+            # have: a <= y_min and y_max <= b. For the other sides, we
+            # need data-dependent bounds that adapt gracefully across
+            # scales.
+            #   If we knew (b - a), then we could use:
+            # y_min - (b - a) <= a and b <= y_max + (b - a). We'll bound
+            # (b - a) as follows. Consider the distribution of
+            # (Y_(j) - Y_(i)) / (b - a), it depends only on c and
+            # convex. Let w be the 1e-9 quantile of this distribution,
+            # then with high probability:
+            #
+            #   (Y_(j) - Y_(i)) / (b - a) > w
+            #
+            # or equivalently:
+            #
+            #   1/w (Y_(j) - Y_(i)) > b - a
+            #
+            # To approximate w, consider F(Y_(j)) - F(Y_(i)). It has the
+            # same distribution as the difference of the i'th and j'th
+            # order statistics of the uniform distribution, or
+            # Beta(j - i, n - (j - i) + 1). The lower 1e-9 quantile of
+            # this distribution bounds the probability mass separating
+            # these order statistics. We could then seek the shortest
+            # interval containing at least this probability mass in
+            # Q(0, 1, c, convex). The length of that interval is a lower
+            # bound for w, but it's too conservative. Instead, we
+            # approximate w using the length of the equal-tailed
+            # interval containing that probability mass.
+            p = stats.beta(j_max - i_min, n - (j_max - i_min) + 1).ppf(1e-9)
+            w = max(
+                1 / np.diff(
+                    cls(0, 1, c, convex).ppf([0.5 - p/2, 0.5 + p/2]),
+                )[0]
+                for c in cs
+            )
+
+            a_bounds = (
+                # Intersect the constraint and default bounds.
+                max(y_min - w * (y_max - y_min), a_constraint[0]),
+                min(y_min, a_constraint[1]),
+            ) if a is None else (a, a)
+
+            if a_bounds[0] > a_bounds[1]:
+                # The intersection of the default bounds and the
+                # constraint is empty.
+                raise exceptions.OptimizationError(
+                    "The constraint on a excludes all promising values"
+                    " for it. Consider relaxing the constraint on a or"
+                    " re-examining your data.",
+                )
+
+            # backwards compatibility (scipy < 1.11)
+            if scipy_version < (1, 11) and a_bounds[0] == a_bounds[1]:
+                # NOTE: In scipy < 1.11, optimize.differential_evolution
+                # encounters a zero division bug when upper and lower
+                # bounds are equal. Avoid it by passing a directly.
+                a = a_bounds[0]
+
+            if a is None:
+                bounds.append(a_bounds)
+                integrality.append(False)
+
+            b_bounds = (
+                # Intersect the constraint and default bounds.
+                max(y_max, b_constraint[0]),
+                min(y_max + w * (y_max - y_min), b_constraint[1]),
+            ) if b is None else (b, b)
+
+            if b_bounds[0] > b_bounds[1]:
+                # The intersection of the default bounds and the
+                # constraint is empty.
+                raise exceptions.OptimizationError(
+                    "The constraint on b excludes all promising values"
+                    " for it. Consider relaxing the constraint on b or"
+                    " re-examining your data.",
+                )
+
+            # backwards compatibility (scipy < 1.11)
+            if scipy_version < (1, 11) and b_bounds[0] == b_bounds[1]:
+                # NOTE: In scipy < 1.11, optimize.differential_evolution
+                # encounters a zero division bug when upper and lower
+                # bounds are equal. Avoid it by passing b directly.
+                b = b_bounds[0]
+
+            if b is None:
+                bounds.append(b_bounds)
+                integrality.append(False)
+
+            c_bounds = (
+                # Intersect the constraint and default bounds.
+                max(cls.C_MIN, c_constraint[0]),
+                min(cls.C_MAX, c_constraint[1]),
+            ) if c is None else (c, c)
+
+            if c_bounds[0] > c_bounds[1]:
+                # The intersection of the default bounds and the
+                # constraint is empty.
+                raise exceptions.OptimizationError(
+                    "The constraint on c excludes all promising values"
+                    " for it. Consider relaxing the constraint on c or"
+                    " re-examining your data.",
+                )
+
+            # backwards compatibility (scipy < 1.11)
+            if scipy_version < (1, 11) and c_bounds[0] == c_bounds[1]:
+                # NOTE: In scipy < 1.11, optimize.differential_evolution
+                # encounters a zero division bug when upper and lower
+                # bounds are equal. Avoid it by passing c directly.
+                c = c_bounds[0]
+
+            if c is None:
+                bounds.append(c_bounds)
+                integrality.append(True)
+
+            # Define the loss.
+            if method == "maximum_spacing":
+                # Maximum spacing estimation is sensitive to closely
+                # spaced observations. Two observations that represent
+                # the same point but differ due to floating point errors
+                # could noticeably impact the estimate's quality. To
+                # prevent this, round the data a tiny bit before
+                # defining the buckets in order to group such
+                # observations together.
+                #
+                # In practice, this rounding should improve the
+                # estimate, but it could cause limit_lower or
+                # limit_upper to shift and thus censor a point that's
+                # technically within the limits (though extremely close
+                # to the boundary).
+                finfo = np.finfo(ys_observed.dtype)
+                # For rounding, use 3 fewer digits than the coarsest
+                # precision of any observed point and clip the number of
+                # decimals to stay within those representable by the
+                # floating point format.
+                decimals = - np.clip(
+                    np.log10(np.max(np.spacing(ys_observed))),
+                    np.log10(finfo.smallest_normal),
+                    np.log10(finfo.max),
+                ).astype(int) - 3
+                zs, ks = np.unique(np.round(
+                    np.concatenate([
+                        # lower bound on the support
+                        [a_bounds[0]],
+                        # lower limit (for the censoring)
+                        [limit_lower] if n_lower > 0 else [],
+                        # order statistics
+                        ys_observed,
+                        # upper limit (for the censoring)
+                        [limit_upper] if n_upper > 0 else [],
+                        # upper bound on the support
+                        [b_bounds[1]],
+                    ]),
+                    decimals=decimals,
+                ), return_counts=True)
+
+                ks = ks[1:]  # The leftmost count corresponds to no bucket.
+                if n_lower > 0:
+                    # Set the count for the left tail bucket.
+                    ks[0] = n_lower
+                if n_upper > 0:
+                    # Remove the extra count created by defining the
+                    # right tail bucket.
+                    ks[-2] -= 1
+                    # Set the count for the right tail bucket with the
+                    # extra count at the top of the support.
+                    ks[-1] = (n_upper + 1)
+
+                def loss(parameters):
+                    dist = cls(
+                        a=(
+                            a             if a is not None else
+                            parameters[0]
+                        ),
+                        b=(
+                            b             if b is not None else
+                            parameters[
+                                0 + (a is None)
+                            ]
+                        ),
+                        c=(
+                            c             if c is not None else
+                            parameters[
+                                0 + (a is None) + (b is None)
+                            ]
+                        ),
+                        convex=convex,
+                    )
+
+                    return - np.sum(
+                        # Instead of the raw grouped negative
+                        # log-likelihood, divide the sum by (n + 1) and
+                        # divide the spacings by ks / (n + 1). This
+                        # modification makes the loss an estimator of
+                        # the KL-divergence and, more importantly, keeps
+                        # the loss's scale constant across sample sizes
+                        # which improves the optimization.
+                        #
+                        # For more discussion, see the M_T2 objective in
+                        # "Alternatives to maximum likelihood estimation
+                        # based on spacings and the Kullback-Leibler
+                        # divergence" (Ekstrom, 2008).
+                        ks * np.log(
+                            np.diff(dist.cdf(zs)) * (n + 1) / ks,
+                        ) / (n + 1),
+                        where=ks > 0,
+                    )
+            else:
+                raise ValueError(
+                    'method must be "maximum_spacing".',
+                )
+
+            # The optimizer can have difficulty finding the optimum, so
+            # we provide some initial estimates to make it more robust.
+            #
+            # The initial estimates use a grid over c. For a and b, we
+            # use estimates of the form:
+            #
+            #   a = y_min - w_a (y_max - y_min)
+            #   b = y_max + w_b (y_max - y_min)
+            #
+            # Ideally, w_a would equal (y_min - a) / (y_max - y_min) and
+            # w_b would equal (b - y_max) / (y_max - y_min) because then
+            # our estimates would equal a and b exactly. Since y_min and
+            # y_max include the location, and (y_max - y_min) includes
+            # the scale, the distributions of these quantities depend
+            # only on c and convex. Thus, we can treat w_a and w_b as if
+            # the underlying distribution was Q(0, 1, c, convex). Let
+            # F^-1 be its quantile function. To obtain estimates for w_a
+            # and w_b, we replace y_min and y_max with F^-1(i/(n+1)) and
+            # F^-1(j/(n+1)) where i and j are the ranks of each. To
+            # obtain multiple estimates, we can replace i/(n+1) and
+            # j/(n+1) with other quantiles of F(y_min) and
+            # F(y_max), which are distributed according to
+            # Beta(i, n - i + 1) and Beta(j, n - j + 1). Finally,
+            # plugging w_a and w_b into our original equations for a and
+            # b yields our final estimates.
+            initial_population = []
+            for c_candidate in cs:
+                initial_estimates = collections.defaultdict(list)
+                ds = (
+                    # When fitting a and b only adjust y_min lower and
+                    # y_max higher than their medians to prevent them
+                    # from crossing. Also, only use 3 estimates for each
+                    # of a and b since that makes 3 * 3 = 9 estimates
+                    # for the pair.
+                    [0.0, 0.2, 0.4]
+                    if a is None and b is None else
+                    # When fitting only a or only b use more initial
+                    # estimates for it to ensure the initial population
+                    # has a reasonable size.
+                    [-0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4]
+                )
+                for d in ds:
+                    std_dist = cls(0., 1., c_candidate, convex)
+                    std_y_min = std_dist.ppf(
+                        stats.beta(i_min, n - i_min + 1).ppf(0.5 - d),
+                    )
+                    std_y_max = std_dist.ppf(
+                        stats.beta(j_max, n - j_max + 1).ppf(0.5 + d),
+                    )
+                    if a is None:
+                        initial_estimates["a"].append(np.clip(
+                            # Clip the estimate to obey the constraint.
+                            y_min
+                            - std_y_min / (std_y_max - std_y_min)
+                              * (y_max - y_min),
+                            a_bounds[0],
+                            a_bounds[1],
+                        ))
+                    if b is None:
+                        initial_estimates["b"].append(np.clip(
+                            # Clip the estimate to obey the constraint.
+                            y_max
+                            + (1 - std_y_max) / (std_y_max - std_y_min)
+                              * (y_max - y_min),
+                            b_bounds[0],
+                            b_bounds[1],
+                        ))
+                if c is None:
+                    initial_estimates["c"].append(c_candidate)
+
+                initial_population.extend(
+                    itertools.product(*initial_estimates.values()),
+                )
+
+            # Optimize the loss to compute the estimate.
+            if len(bounds) > 0:
+                with np.errstate(divide="ignore", invalid="ignore"):
+                    result = optimize.differential_evolution(
+                        loss,
+                        bounds=bounds,
+                        init=initial_population,
+                        integrality=integrality,
+                        polish=True,
+                        updating="immediate",
+                        vectorized=False,
+                        workers=1,
+                        seed=generator,
+                    )
+                parameters = result.x
+                curr_loss = result.fun
+            else:  # There are no parameters to fit
+                parameters = []
+                curr_loss = loss(parameters)
+
+            # Check if the current value of convex is the best so far.
+            if curr_loss < best_loss:
+                best_loss = curr_loss
+                best_parameters = {
+                    "a": (
+                        a             if a is not None else
+                        parameters[0]
+                    ),
+                    "b": (
+                        b             if b is not None else
+                        parameters[
+                            0 + (a is None)
+                        ]
+                    ),
+                    "c": (
+                        c             if c is not None else
+                        parameters[
+                            0 + (a is None) + (b is None)
+                        ]
+                    ),
+                    "convex": convex,
+                }
+
+        if not np.isfinite(best_loss):
+            raise exceptions.OptimizationError(
+                "fit failed to find parameters with finite loss.",
+            )
+
+        if best_parameters.get("c") == 2 and len(convexs) > 1:
+            warnings.warn(
+                "Parameters might be unidentifiable. The fit found"
+                " c = 2. When c = 2, convex is unidentifiable because"
+                " either value for convex gives the uniform from a to b."
+                " If appropriate, use the constraints parameter to"
+                " specify convex.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+
+        return cls(**best_parameters)
 
 
 class NoisyQuadraticDistribution:
@@ -982,6 +1785,1017 @@ class NoisyQuadraticDistribution:
             )
 
         return max(0., lo) + min(0., hi) + ys
+
+    @classmethod
+    def fit(
+            cls,
+            ys,
+            limits = (-np.inf, np.inf),
+            constraints = None,
+            *,
+            generator = None,
+            method = "maximum_spacing",
+    ):
+        r"""Return a noisy quadratic distribution fitted to ``ys``.
+
+        Parameters
+        ----------
+        ys : 1D array of finite floats, required
+            The sample from the distribution.
+        limits : pair of floats, optional
+            The left-open interval over which to fit the distribution.
+            Observations outside the interval are censored (the fit
+            considers only that an observation occured above or below
+            the interval, not its exact value).
+        constraints : mapping or None, optional
+            A mapping from strings (the class's parameter names) to
+            constraints. For ``a``, ``b``, ``c``, and ``o`` the constraint
+            can be either a float (fixing the parameter's value) or a pair
+            of floats (restricting the parameter to that closed
+            interval). For ``convex``, the constraint can be either a
+            boolean (fixing the parameter's value) or a sequence of
+            booleans (restricting the parameter to that set). The
+            mapping can be empty and need not include all the
+            parameters.
+        generator : np.random.Generator or None, optional
+            The random number generator to use. If ``None``, then the
+            global default random number generator is used. See
+            :py:mod:`opda.random` for more information.
+        method : str, optional
+            One of the strings: "maximum_spacing". The ``method``
+            parameter determines how the distribution will be estimated.
+            See the notes section for details on different methods.
+
+        Returns
+        -------
+        NoisyQuadraticDistribution
+            The fitted noisy quadratic distribution.
+
+        Notes
+        -----
+        We fit the distribution via maximum product spacing estimation
+        (MPS) [1]_ [2]_. MPS maximizes the product of the spacings:
+        :math:`F\left(Y_{(i)}; \theta\right) - F\left(Y_{(i-1)};
+        \theta\right)`, where :math:`F` is the CDF at the parameters
+        :math:`\theta` and :math:`Y_{(i)}` is the i'th order statistic.
+
+        To compute the maximum, we optimize the spacing function with a
+        generic algorithm that might fail to find the maximum; however,
+        such failures should be rare.
+
+        **Fitting Part of the Data**
+
+        The noisy quadratic distribution approximates the *tail* of the
+        score distribution from random search. Thus, you'll typically
+        fit just the tail. You can accomplish this using the ``limits``
+        parameter which censors all observations outside a left-open
+        interval. Thus, ``limits = (-np.inf, threshold)`` will censor
+        everything above ``threshold`` and ``limits = (threshold,
+        np.inf)`` will censor everything less than or equal to
+        ``threshold``.
+
+        **Why Use Maximum Spacing Estimation?**
+
+        Often, maximum spacing still works where maximum likelihood
+        breaks down. In our case, the noisy quadratic distribution has
+        unbounded probability density when :math:`\sigma = 0` and
+        :math:`\gamma = 1`. Since the parameters :math:`\alpha` and
+        :math:`\beta` control the distribution's support, this unbounded
+        density leads to the *unbounded likelihood problem* [3]_ which
+        makes the maximum likelihood estimator inconsistent. Unlike
+        maximum likelihood, maximum spacing remains consistent even with
+        an unbounded likelihood.
+
+        **A Variant of Maximum Spacing Estimation**
+
+        Standard MPS can't handle tied data points because then the
+        spacing, :math:`F\left(Y_{(i)}; \theta\right) -
+        F\left(Y_{(i-1)}; \theta\right)`, would be zero, making the
+        whole product of spacings zero.
+
+        To handle ties and censoring, we view maximum spacing as maximum
+        likelihood on grouped data [4]_. Roughly, we imagine adding an
+        extra data point at :math:`Y_{(n+1)} = \infty`, then grouping
+        the data between the order statistics, and finally applying
+        maximum likelihood.
+
+        More specifically, we group the data into buckets defined as
+        left-open intervals: :math:`\left(Z_{(i-1)}, Z_{(i)}\right]`. To
+        construct the buckets, we deduplicate the uncensored order
+        statistics along with the lower and upper bounds on the support:
+
+        .. math::
+
+           -\infty = Z_{(0)} < Z_{(1)} = Y_{(i_1)} < \ldots
+           < Y_{(i_k)} = Z_{(k)} < Z_{(k+1)} = \infty
+
+        If there are censored observations in the left tail then we
+        further divide the first bucket at the lower limit for
+        censoring; similarly, if the right tail contains censored
+        observations, we divide the last bucket at the upper limit. If
+        any of the (uncensored) order statistics equals one of the
+        censoring limits, then we leave the bucket as is so as never to
+        create a zero-length bucket. In this way, the deduplication
+        ensures all buckets have positive length.
+
+        With the buckets defined, we bin the data into each of the
+        buckets and put an extra data point in the rightmost one (as in
+        typical maximum spacing estimation). Intuitively, this
+        corresponds to estimating the CDF at each order statistic by
+        i/(n+1), reducing the upward bias at the order statistics. For
+        example, if you have one data point, you might guess that it's
+        near the median rather than the max of the distribution. If
+        :math:`N_i` is the number of data points in bucket
+        :math:`\left(Z_{(i-1)}, Z_{(i)}\right]`, then the objective
+        becomes:
+
+        .. math::
+
+           \sum_{i=1}^{l} N_i \log\left(
+             F\left(Z_{(i)}; \theta\right)
+             - F\left(Z_{(i-1)}; \theta\right)
+           \right)
+
+        where :math:`l` is the highest index of all the :math:`Z_{(i)}`.
+
+        When fitting with constraints, a minor modification is necessary
+        if :math:`\sigma` is constrained to be zero. Instead of using
+        :math:`\pm\infty` as the bounds on the support, you must use
+        :math:`\alpha_-` (the lower bound on :math:`\alpha`) and
+        :math:`\beta_+` (the upper bound on :math:`\beta`); also, the
+        leftmost bucket must be closed (i.e., include
+        :math:`\alpha_-`). The reason is that if you were to construct
+        the buckets using :math:`-\infty` and you had a data point equal
+        to :math:`\alpha_-` then you'd get a bucket that contains zero
+        probability no matter the parameters. Even worse, that data
+        point would get put in this bucket, sending the product of
+        spacings to zero. Similarly, if you used :math:`\infty` and you
+        had a data point equal to :math:`\beta_+` then you'd get another
+        zero probabiliy bucket. The extra data point at the top of the
+        support will get put in this bucket and again send the product
+        of spacings to zero. These situations can be fairly common in
+        practice due to rounding. Thus, in constrained problems where
+        :math:`\sigma` is zero we construct the buckets using
+        :math:`\alpha_-` and :math:`\beta_+`.
+
+        References
+        ----------
+        .. [1] Cheng, R. C. H., & Amin, N. A. K. (1983). Estimating
+           Parameters in Continuous Univariate Distributions with a
+           Shifted Origin. Journal of the Royal Statistical Society.
+           Series B (Methodological), 45(3), 394-403.
+
+        .. [2] Ranneby, B. (1984). The Maximum Spacing Method. An
+           Estimation Method Related to the Maximum Likelihood Method.
+           Scandinavian Journal of Statistics, 11(2), 93-112.
+
+        .. [3] Cheng, R. C. H., & Traylor, L. (1995). Non-Regular
+           Maximum Likelihood Problems. Journal of the Royal Statistical
+           Society. Series B (Methodological), 57(1), 3-44.
+
+        .. [4] Titterington, D. M. (1985). Comment on “Estimating
+           Parameters in Continuous Univariate Distributions.” Journal
+           of the Royal Statistical Society. Series B (Methodological),
+           47(1), 115-116.
+
+        Examples
+        --------
+        Use :py:meth:`fit` to estimate the distribution from data:
+
+        .. code:: python
+
+           >>> NoisyQuadraticDistribution.fit(
+           ...   ys=[0.59, 0.86, 0.94, 0.81, 0.68, 0.90, 0.93, 0.75],
+           ... )
+           NoisyQuadraticDistribution(...)
+
+        When fitting a noisy quadratic distribution to the results from
+        random search, you'll typically restrict it to be *convex* when
+        *minimizing* and *concave* when *maximizing*. You can accomplish
+        this with ``constraints``:
+
+        .. code:: python
+
+           >>> minimize = True  # If random search minimized / maximized
+           >>> NoisyQuadraticDistribution.fit(
+           ...   ys=[5.0, 2.9, 5.1, 6.8, 3.2],
+           ...   constraints={"convex": True if minimize else False},
+           ... )
+           NoisyQuadraticDistribution(...)
+
+        The noisy quadratic distribution approximates the score distribution's
+        left tail when minimizing and right tail when maximizing. You
+        can fit to only the tail of your data using ``limits``:
+
+        .. code:: python
+
+           >>> threshold = 5.  # The maximum cross-entropy to consider
+           >>> NoisyQuadraticDistribution.fit(
+           ...   ys=[5.0, 2.9, 5.1, 6.8, 3.2],  # 5.1 & 6.8 are censored
+           ...   limits=(
+           ...     (-np.inf, threshold)  # minimize: fit the left tail
+           ...     if minimize else
+           ...     (threshold, np.inf)   # maximize: fit the right tail
+           ...   ),
+           ...   constraints={"convex": True if minimize else False},
+           ... )
+           NoisyQuadraticDistribution(...)
+
+        You could also censor both tails if necessary:
+
+        .. code:: python
+
+           >>> NoisyQuadraticDistribution.fit(
+           ...   ys=[5.0, 2.9, 5.1, 6.8, 3.2],
+           ...   limits=(1., 10.),
+           ... )
+           NoisyQuadraticDistribution(...)
+
+        Finally, you can use ``constraints`` to bound any of the
+        parameters in case you have some extra information. For example,
+        if you knew a bound on the average performance of the worst or
+        best hyperparameters, you could constrain ``a`` and ``b``:
+
+        .. code:: python
+
+           >>> min_accuracy, max_accuracy = 0., 1.
+           >>> NoisyQuadraticDistribution.fit(
+           ...   ys=[0.59, 0.86, 0.94, 0.81, 0.68, 0.90, 0.93, 0.75],
+           ...   constraints={
+           ...     "a": (min_accuracy, max_accuracy),
+           ...     "b": (min_accuracy, max_accuracy),
+           ...   },
+           ... )
+           NoisyQuadraticDistribution(...)
+
+        Or, you might know that the random search used 3
+        hyperparameters, so the effective number of hyperparameters
+        (``c``) can be at most that:
+
+        .. code:: python
+
+           >>> n_hyperparameters = 3
+           >>> NoisyQuadraticDistribution.fit(
+           ...   ys=[0.59, 0.86, 0.94, 0.81, 0.68, 0.90, 0.93, 0.75],
+           ...   constraints={"c": (1, n_hyperparameters)},
+           ... )
+           NoisyQuadraticDistribution(...)
+
+        You could also fix ``c`` (or ``a``, ``b``, ``o``, or ``convex``)
+        to a particular value:
+
+        .. code:: python
+
+           >>> NoisyQuadraticDistribution.fit(
+           ...   ys=[0.59, 0.86, 0.94, 0.81, 0.68, 0.90, 0.93, 0.75],
+           ...   constraints={"c": 1},
+           ... )
+           NoisyQuadraticDistribution(...)
+
+        Of course, you can mix and match all of these ideas together as
+        desired.
+        """
+        # Validate arguments.
+        ys = np.array(ys)
+        if len(ys.shape) != 1:
+            raise ValueError(f"ys must be a 1D array, not {len(ys.shape)}D.")
+        if len(ys) == 0:
+            raise ValueError("ys must be non-empty.")
+        if not np.all(np.isfinite(ys)):
+            raise ValueError("ys must only contain finite floats.")
+        if np.issubdtype(ys.dtype, np.integer):
+            # Only cast ys if it has an integer data type, otherwise
+            # preserve its precision which we'll need later in order
+            # to decide how much to round the data.
+            ys = ys.astype(float)
+
+        limits = np.array(limits)
+        if len(limits.shape) != 1:
+            raise ValueError("limits must be a 1D sequence.")
+        if len(limits) != 2:
+            raise ValueError("limits must be a pair.")
+        if not np.all(np.isreal(limits)):
+            raise TypeError("limits must only contain floats.")
+        if np.any(np.isnan(limits)):
+            raise ValueError("limits cannot contain NaN values.")
+        if limits[0] >= limits[1]:
+            raise ValueError(
+                "limits must be a proper (left-open) interval. The"
+                " lower bound cannot equal or exceed the upper bound.",
+            )
+
+        constraints = dict(constraints) if constraints is not None else {}
+        for parameter, constraint in constraints.items():
+            constraint = np.array(constraint)[()]
+            if parameter in {"a", "b", "c", "o"}:
+                # Check invaraints for a, b, c, and o.
+                if not np.isscalar(constraint) and constraint.shape != (2,):
+                    raise TypeError(
+                        f"The constraint for {parameter} must be"
+                        f" either a scalar or a pair.",
+                    )
+                if not np.all(np.isreal(constraint)):
+                    raise TypeError(
+                        f"The constraint for {parameter} must be"
+                        f" either a float or a pair of floats.",
+                    )
+                if np.any(np.isnan(constraint)):
+                    raise ValueError(
+                        f"The constraint for {parameter} cannot"
+                        f" contain NaNs.",
+                    )
+                if constraint.shape == (2,) and constraint[0] > constraint[1]:
+                    raise ValueError(
+                        f"The constraint for {parameter} cannot have a lower"
+                        f" bound greater than the upper bound.",
+                    )
+                # Check invariants that only apply to c.
+                if parameter == "c":
+                    if np.any(constraint % 1 != 0):
+                        raise ValueError(
+                            "The constraint for c must be either an integer"
+                            " or a pair of integers.",
+                        )
+                    if np.isscalar(constraint):
+                        if constraint < cls.C_MIN or constraint > cls.C_MAX:
+                            raise ValueError(
+                                f"The constraint for c fixes its value"
+                                f" outside of {cls.C_MIN} to"
+                                f" {cls.C_MAX} but only values within"
+                                f" that range are supported.",
+                            )
+                    else:
+                        if (
+                                constraint[0] > cls.C_MAX
+                                or constraint[1] < cls.C_MIN
+                        ):
+                            raise ValueError(
+                                f"The constraint for c excludes all"
+                                f" supported values. Only values of c"
+                                f" between {cls.C_MIN} and {cls.C_MAX}"
+                                f" are supported.",
+                            )
+                        if (
+                                constraint[0] < cls.C_MIN
+                                or constraint[1] > cls.C_MAX
+                        ):
+                            warnings.warn(
+                                f"The constraint for c includes values"
+                                f" outside of {cls.C_MIN} to"
+                                f" {cls.C_MAX}, but only values within"
+                                f" that range are supported. Consider"
+                                f" revising the constraint to only"
+                                f" include values within that range.",
+                                RuntimeWarning,
+                                stacklevel=2,
+                            )
+                # Check invariants that only apply to o.
+                if parameter == "o":
+                    if np.any(constraint < 0.):
+                        raise ValueError(
+                            "The constraint for o must be either a"
+                            " non-negative number or a pair of"
+                            " non-negative numbers.",
+                        )
+            elif parameter == "convex":
+                if not np.isscalar(constraint) and len(constraint.shape) != 1:
+                    raise TypeError(
+                        f"The constraint for {parameter} must be"
+                        f" either a scalar or 1D list.",
+                    )
+                if not np.isscalar(constraint) and len(constraint) == 0:
+                    raise ValueError(
+                        f"The constraint for {parameter} must not be"
+                        f" empty.",
+                    )
+                if constraint.dtype != bool:
+                    raise TypeError(
+                        f"The constraint for {parameter} must be"
+                        f" either a bool or a list of bools.",
+                    )
+                if np.any(np.unique(constraint, return_counts=True)[1] > 1):
+                    raise ValueError(
+                        f"The constraint for {parameter} cannot contain"
+                        f" duplicate elements.",
+                    )
+            else:
+                raise ValueError(
+                    f"constraints contains an unrecognized key ({parameter}),"
+                    f" all keys must be parameters of the class.",
+                )
+
+        generator = (
+            generator
+            if generator is not None else
+            opda.random.DEFAULT_GENERATOR
+        )
+
+        # Censor the data.
+        limit_lower, limit_upper = limits
+
+        n = len(ys)
+        n_lower, n_upper = np.sum(ys <= limit_lower), np.sum(ys > limit_upper)
+        ys_observed = ys[(limit_lower < ys) & (ys <= limit_upper)]
+
+        if n < 3:
+            raise ValueError(
+                "ys must contain at least three data points.",
+            )
+
+        if len(ys_observed) == 0:
+            raise ValueError(
+                "All ys are censored because they fall outside of"
+                " limits. At least some ys must be observed.",
+            )
+
+        # NOTE: When observations are censored in the left or the right
+        # tail, the min or max is unavailable. In those cases, use
+        # limit_lower as the min and limit_upper as the max as those are
+        # the smallest / largest values we know are compatible with the
+        # distribution. You could instead use the smallest / largest
+        # observed values; however, this approach fails when all values
+        # but one are censored because then the min and max are equal.
+        y_min = np.min(ys_observed) if n_lower == 0 else limit_lower
+        i_min = 1 if n_lower == 0 else n_lower          # the rank of y_min
+        y_max = np.max(ys_observed) if n_upper == 0 else limit_upper
+        j_max = n if n_upper == 0 else n - n_upper + 1  # the rank of y_max
+
+        # backwards compatibility (scipy < 1.11)
+        #
+        # This method implements point constraints (fixing a, b, c, or o
+        # to a particular value) differently than interval constraints
+        # (restricting a, b, c, or o to a range). This is necessary when
+        # scipy < 1.11 because optimize.differential_evolution
+        # encounters zero division errors and uses too big of a
+        # population when a parameter has equal upper and lower bounds
+        # (see https://github.com/scipy/scipy/issues/17788). After
+        # dropping support for scipy < 1.11, try to simplify this method
+        # by replacing point constraints ({"a": p}) with interval
+        # constraints ({"a": (p, p)}) and sharing the rest of the logic.
+
+        # Handle constraints.
+        a_constraint = constraints.get("a", [-np.inf, np.inf])
+        a = a_constraint if np.isscalar(a_constraint) else None
+        b_constraint = constraints.get("b", [-np.inf, np.inf])
+        b = b_constraint if np.isscalar(b_constraint) else None
+        c_constraint = constraints.get("c", [cls.C_MIN, cls.C_MAX])
+        c = c_constraint if np.isscalar(c_constraint) else None
+        o_constraint = constraints.get("o", [0., np.inf])
+        o = o_constraint if np.isscalar(o_constraint) else None
+
+        cs = range(
+            max(cls.C_MIN, c_constraint[0]),
+            min(cls.C_MAX, c_constraint[1]) + 1,
+        ) if c is None else [c]
+        convexs = (
+            [False, True] if "convex" not in constraints else
+            [constraints["convex"]] if np.isscalar(constraints["convex"]) else
+            constraints["convex"]
+        )
+
+        # Check for error and warning conditions.
+        if y_min == y_max and n_upper == 0 and n_lower == 0\
+           and (len(cs) > 1 or len(convexs) > 1):
+            warnings.warn(
+                "Parameters might be unidentifiable. All ys are equal,"
+                " suggesting the distribution is a point mass. The"
+                " distribution is a point mass whenever a = b and o = 0,"
+                " making c and convex unidentifiable. If appropriate,"
+                " use the constraints parameter to specify c and convex.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+
+        if a is not None and np.max(o_constraint) <= 0. and a > y_min:
+            raise ValueError(
+                "constraints must not fix o to be zero and a to be"
+                " greater than the least observation (or the lower"
+                " limit if the least observation is censored).",
+            )
+        if a is None and np.max(o_constraint) <= 0. and a_constraint[0] > y_min:
+            raise ValueError(
+                "constraints must not constrain o to be zero and a to"
+                " be greater than the least observation (or the lower"
+                " limit if the least observation is censored).",
+            )
+
+        if b is not None and np.max(o_constraint) <= 0. and b < y_max:
+            raise ValueError(
+                "constraints must not fix o to be zero and b to be"
+                " less than the greatest observation (or the upper"
+                " limit if the greatest observation is censored).",
+            )
+        if b is None and np.max(o_constraint) <= 0. and b_constraint[1] < y_max:
+            raise ValueError(
+                "constraints must not constrain o to be zero and b to"
+                " be less than the greatest observation (or the upper"
+                " limit if the greatest observation is censored).",
+            )
+
+        # Fit the distribution.
+        best_loss = np.inf
+        best_parameters = None
+        for convex in convexs:
+            # Determine the search space.
+            bounds = []
+            integrality = []
+
+            # NOTE: We must bound a and b for our optimization. We need
+            # data-dependent bounds that adapt gracefully across scales.
+            #   Imagine o = 0, then if we knew (b - a) we could use:
+            # y_min - (b - a) <= a <= b <= y_max + (b - a). We'll
+            # bound (b - a) as follows. Consider the distribution of
+            # (Y_(j) - Y_(i)) / (b - a), it depends only on c, o = 0,
+            # and convex. Let w be the 1e-9 quantile of this
+            # distribution, then with high probability:
+            #
+            #   (Y_(j) - Y_(i)) / (b - a) > w
+            #
+            # or equivalently:
+            #
+            #   1/w (Y_(j) - Y_(i)) > b - a
+            #
+            # To approximate w, consider F(Y_(j)) - F(Y_(i)). It has the
+            # same distribution as the difference of the i'th and j'th
+            # order statistics of the uniform distribution, or
+            # Beta(j - i, n - (j - i) + 1). The lower 1e-9 quantile of
+            # this distribution bounds the probability mass separating
+            # these order statistics. We could then seek the shortest
+            # interval containing at least this probability mass in
+            # Q(0, 1, c, 0, convex). The length of that interval is a
+            # lower bound for w, but it's too conservative. Instead, we
+            # approximate w using the length of the equal-tailed
+            # interval containing that probability mass.
+            #   Intuitively, as o increases (Y_(j) -  Y_(i)) / (b - a)
+            # will tend to be larger. Specifically, y_min will be
+            # farther left and y_max farther right due to the sample's
+            # increased spread. Thus, the numerator gets larger while
+            # the denominator remains the same. Simulations seem to
+            # confirm this intuition. So, we obtain bounds by assuming
+            # o = 0 and then applying them in the general case.
+            p = stats.beta(j_max - i_min, n - (j_max - i_min) + 1).ppf(1e-9)
+            w = max(
+                1 / np.diff(
+                    cls(0, 1, c, 0, convex).ppf([0.5 - p/2, 0.5 + p/2]),
+                )[0]
+                for c in cs
+            )
+
+            a_bounds = (
+                # Intersect the constraint and default bounds.
+                max(y_min - w * (y_max - y_min), a_constraint[0]),
+                min(y_max + w * (y_max - y_min), a_constraint[1]),
+            ) if a is None else (a, a)
+
+            if a_bounds[0] > a_bounds[1]:
+                # The intersection of the default bounds and the
+                # constraint is empty.
+                raise exceptions.OptimizationError(
+                    "The constraint on a excludes all promising values"
+                    " for it. Consider relaxing the constraint on a or"
+                    " re-examining your data.",
+                )
+
+            # backwards compatibility (scipy < 1.11)
+            if scipy_version < (1, 11) and a_bounds[0] == a_bounds[1]:
+                # NOTE: In scipy < 1.11, optimize.differential_evolution
+                # encounters a zero division bug when upper and lower
+                # bounds are equal. Avoid it by passing a directly.
+                a = a_bounds[0]
+
+            if a is None:
+                bounds.append(a_bounds)
+                integrality.append(False)
+
+            b_bounds = (
+                # Intersect the constraint and default bounds.
+                max(y_min - w * (y_max - y_min), b_constraint[0]),
+                min(y_max + w * (y_max - y_min), b_constraint[1]),
+            ) if b is None else (b, b)
+
+            if b_bounds[0] > b_bounds[1]:
+                # The intersection of the default bounds and the
+                # constraint is empty.
+                raise exceptions.OptimizationError(
+                    "The constraint on b excludes all promising values"
+                    " for it. Consider relaxing the constraint on b or"
+                    " re-examining your data.",
+                )
+
+            # backwards compatibility (scipy < 1.11)
+            if scipy_version < (1, 11) and b_bounds[0] == b_bounds[1]:
+                # NOTE: In scipy < 1.11, optimize.differential_evolution
+                # encounters a zero division bug when upper and lower
+                # bounds are equal. Avoid it by passing b directly.
+                b = b_bounds[0]
+
+            if b is None:
+                bounds.append(b_bounds)
+                integrality.append(False)
+
+            c_bounds = (
+                # Intersect the constraint and default bounds.
+                max(cls.C_MIN, c_constraint[0]),
+                min(cls.C_MAX, c_constraint[1]),
+            ) if c is None else (c, c)
+
+            if c_bounds[0] > c_bounds[1]:
+                # The intersection of the default bounds and the
+                # constraint is empty.
+                raise exceptions.OptimizationError(
+                    "The constraint on c excludes all promising values"
+                    " for it. Consider relaxing the constraint on c or"
+                    " re-examining your data.",
+                )
+
+            # backwards compatibility (scipy < 1.11)
+            if scipy_version < (1, 11) and c_bounds[0] == c_bounds[1]:
+                # NOTE: In scipy < 1.11, optimize.differential_evolution
+                # encounters a zero division bug when upper and lower
+                # bounds are equal. Avoid it by passing c directly.
+                c = c_bounds[0]
+
+            if c is None:
+                bounds.append(c_bounds)
+                integrality.append(True)
+
+            # NOTE: Now we need bounds for o. For a lower bound we can
+            # use 0. For an upper bound, consider o / (Y_(j) - Y_(i)).
+            # Let v be the 1-1e-9 quantile for this quantity, then with
+            # high probability:
+            #
+            #   o / (Y_(j) - Y_(i)) < v
+            #
+            # or equivalently:
+            #
+            #   o < v (Y_(j) - Y_(i))
+            #
+            # Typically, the range of Y = Q + E will be greater than
+            # that of E alone. Thus, we obtain a lower bound on v
+            # by ignoring Q and assuming the data are normally
+            # distributed. For the normal, the standard deviation
+            # cancels the scale so we need only consider the standard
+            # normal distribution. To approximate v, consider
+            # F(Y_(j)) - F(Y_(i)). As before, it has the distribution of
+            # the difference of the uniform's i'th and j'th order
+            # statistics. The lower 1e-9 quantile of this distribution
+            # provides a lower bound on how much probability mass can
+            # separate these order statistics. Since the standard normal
+            # is symmetric with a mode at 0, the equal-tailed interval
+            # is also the highest probability density interval, so it
+            # gives a lower bound on Y_(j) - Y_(i) and thus an upper
+            # bound on o / (Y_(j) - Y_(i)) = v. Simulations with the
+            # standard normal show that this bound is not too
+            # conservative.
+            v = 1 / np.diff(stats.norm(0., 1.).ppf([0.5 - p/2, 0.5 + p/2]))[0]
+
+            o_bounds = (
+                # Intersect the constraint and default bounds.
+                max(0., o_constraint[0]),
+                min(v * (y_max - y_min), o_constraint[1]),
+            ) if o is None else (o, o)
+
+            if o_bounds[0] > o_bounds[1]:
+                # The intersection of the default bounds and the
+                # constraint is empty.
+                raise exceptions.OptimizationError(
+                    "The constraint on o excludes all promising values"
+                    " for it. Consider relaxing the constraint on o or"
+                    " re-examining your data.",
+                )
+
+            # backwards compatibility (scipy < 1.11)
+            if scipy_version < (1, 11) and o_bounds[0] == o_bounds[1]:
+                # NOTE: In scipy < 1.11, optimize.differential_evolution
+                # encounters a zero division bug when upper and lower
+                # bounds are equal. Avoid it by passing o directly.
+                o = o_bounds[0]
+
+            if o is None:
+                bounds.append(o_bounds)
+                integrality.append(False)
+
+            # Define the loss.
+            if method == "maximum_spacing":
+                # Maximum spacing estimation is sensitive to closely
+                # spaced observations. Two observations that represent
+                # the same point but differ due to floating point errors
+                # could noticeably impact the estimate's quality. To
+                # prevent this, round the data a tiny bit before
+                # defining the buckets in order to group such
+                # observations together.
+                #
+                # In practice, this rounding should improve the
+                # estimate, but it could cause limit_lower or
+                # limit_upper to shift and thus censor a point that's
+                # technically within the limits (though extremely close
+                # to the boundary).
+                finfo = np.finfo(ys_observed.dtype)
+                # For rounding, use 3 fewer digits than the coarsest
+                # precision of any observed point and clip the number of
+                # decimals to stay within those representable by the
+                # floating point format.
+                decimals = - np.clip(
+                    np.log10(np.max(np.spacing(ys_observed))),
+                    np.log10(finfo.smallest_normal),
+                    np.log10(finfo.max),
+                ).astype(int) - 3
+                zs, ks = np.unique(np.round(
+                    np.concatenate([
+                        # lower bound on the support
+                        [-np.inf] if np.max(o_bounds) > 0. else [a_bounds[0]],
+                        # lower limit (for the censoring)
+                        [limit_lower] if n_lower > 0 else [],
+                        # order statistics
+                        ys_observed,
+                        # upper limit (for the censoring)
+                        [limit_upper] if n_upper > 0 else [],
+                        # upper bound on the support
+                        [np.inf] if np.max(o_bounds) > 0. else [b_bounds[1]],
+                    ]),
+                    decimals=decimals,
+                ), return_counts=True)
+
+                ks = ks[1:]  # The leftmost count corresponds to no bucket.
+                if n_lower > 0:
+                    # Set the count for the left tail bucket.
+                    ks[0] = n_lower
+                if n_upper > 0:
+                    # Remove the extra count created by defining the
+                    # right tail bucket.
+                    ks[-2] -= 1
+                    # Set the count for the right tail bucket with the
+                    # extra count at the top of the support.
+                    ks[-1] = (n_upper + 1)
+
+                def loss(parameters):
+                    # Attempt to initialize the distribution. If the
+                    # parameters are invalid, return infinite loss.
+                    try:
+                        dist = cls(
+                            a=(
+                                a             if a is not None else
+                                parameters[0]
+                            ),
+                            b=(
+                                b             if b is not None else
+                                parameters[
+                                    0 + (a is None)
+                                ]
+                            ),
+                            c=(
+                                c             if c is not None else
+                                parameters[
+                                    0 + (a is None) + (b is None)
+                                ]
+                            ),
+                            o=(
+                                o             if o is not None else
+                                parameters[
+                                    0 + (a is None) + (b is None) + (c is None)
+                                ]
+                            ),
+                            convex=convex,
+                        )
+                    except ValueError:
+                        # The parameters are invalid (e.g., a > b).
+                        return np.inf
+
+                    # In practice, the cdf method is not monotonic due
+                    # to small approximation errors. Non-monotonicity
+                    # can create negative spacings, which become NaNs
+                    # after taking the log. Sorting the cdf values both
+                    # fixes this non-monotonicity and reduces the
+                    # average approximation error, improving the fit.
+                    #
+                    # Since the cdf values will be perfectly or almost
+                    # perfectly sorted, use an in-place timsort (i.e.,
+                    # kind="stable") which can take advantage of this.
+                    ps = dist.cdf(zs)
+                    ps.sort(kind="stable")
+
+                    return - np.sum(
+                        # Instead of the raw grouped negative
+                        # log-likelihood, divide the sum by (n + 1) and
+                        # divide the spacings by ks / (n + 1). This
+                        # modification makes the loss an estimator of
+                        # the KL-divergence and, more importantly, keeps
+                        # the loss's scale constant across sample sizes
+                        # which improves the optimization.
+                        #
+                        # For more discussion, see the M_T2 objective in
+                        # "Alternatives to maximum likelihood estimation
+                        # based on spacings and the Kullback-Leibler
+                        # divergence" (Ekstrom, 2008).
+                        ks * np.log(
+                            np.diff(ps) * (n + 1) / ks,
+                        ) / (n + 1),
+                        where=ks > 0,
+                    )
+            else:
+                raise ValueError(
+                    'method must be "maximum_spacing".',
+                )
+
+            # The optimizer can have difficulty finding the optimum, so
+            # we provide some initial estimates to make it more robust.
+            #
+            # For the initial estimates, we reparametrize the
+            # distribution in terms of a, b, c, s, and convex where
+            # s = o / (b - a) is a shape parameter. The initial
+            # estimates then use a grid over c and s. For a and b, we
+            # use estimates of the form:
+            #
+            #   a = y_min - w_a (y_max - y_min)
+            #   b = y_max + w_b (y_max - y_min)
+            #
+            # Ideally, w_a would equal (y_min - a) / (y_max - y_min) and
+            # w_b would equal (b - y_max) / (y_max - y_min) because then
+            # our estimates would equal a and b exactly. Since y_min and
+            # y_max include the location, and (y_max - y_min) includes
+            # the scale, the distributions of these quantities depend
+            # only on c, s = o / (b - a), and convex. Thus, we can treat
+            # w_a and w_b as if the underlying distribution was
+            # Q(0, 1, c, s, convex). Let F^-1 be its quantile function.
+            # To obtain estimates for w_a and w_b, we replace y_min and
+            # y_max with F^-1(i/(n+1)) and F^-1(j/(n+1)) where i and j
+            # are the ranks of each. To obtain multiple estimates, we
+            # can replace i/(n+1) and j/(n+1) with other quantiles of
+            # F(y_min) and F(y_max), which are distributed according to
+            # Beta(i, n - i + 1) and Beta(j, n - j + 1). Finally,
+            # plugging w_a and w_b into our original equations for a and
+            # b yields our final estimates.
+            initial_population = []
+            ss = (
+                [1e-6, 1e-4, 1e-2, 1e-1, 1e+0, 1e+1, 1e+2]
+                if a is None or b is None or o is None else
+                [1.]  # Use at least one s so that we include the c estimate.
+            )
+            for c_candidate in cs:
+                for s in ss:
+                    initial_estimates = collections.defaultdict(list)
+                    ds = (
+                        # When fitting a and b, use 2 estimates for
+                        # each since there are 5 s estimates for a
+                        # total of 2 * 2 * 5 = 20 estimates.
+                        [-0.2, 0.2]
+                        if a is None and b is None else
+                        # When fitting only a or only b use more initial
+                        # estimates for it to ensure the initial population
+                        # has a reasonable size.
+                        [-0.2, -0.1, 0.1, 0.2]
+                    )
+                    for d in ds:
+                        std_dist = cls(0., 1., c_candidate, s, convex)
+                        std_y_min = std_dist.ppf(
+                            stats.beta(i_min, n - i_min + 1).ppf(0.5 + d),
+                        )
+                        std_y_max = std_dist.ppf(
+                            stats.beta(j_max, n - j_max + 1).ppf(0.5 + d),
+                        )
+                        if a is None:
+                            initial_estimates["a"].append(np.clip(
+                                # Clip the estimate to obey the constraint.
+                                y_min
+                                - std_y_min / (std_y_max - std_y_min)
+                                  * (y_max - y_min),
+                                a_bounds[0],
+                                a_bounds[1],
+                            ))
+                        if b is None:
+                            initial_estimates["b"].append(np.clip(
+                                # Clip the estimate to obey the constraint.
+                                y_max
+                                + (1 - std_y_max) / (std_y_max - std_y_min)
+                                  * (y_max - y_min),
+                                b_bounds[0],
+                                b_bounds[1],
+                            ))
+                    if c is None:
+                        initial_estimates["c"].append(c_candidate)
+                    if o is None:
+                        # Estimate o as s times an estimate of b - a.
+                        std_dist = cls(0., 1., c_candidate, s, convex)
+                        std_y_min = std_dist.ppf(i_min / (n + 1))
+                        std_y_max = std_dist.ppf(j_max / (n + 1))
+
+                        initial_estimates["o"].append(np.clip(
+                            # Clip the estimate to obey the constraint.
+                            s * ((
+                                y_max
+                                + (1 - std_y_max) / (std_y_max - std_y_min)
+                                  * (y_max - y_min)
+                                if b is None else
+                                b
+                            ) - (
+                                y_min
+                                - std_y_min / (std_y_max - std_y_min)
+                                  * (y_max - y_min)
+                                if a is None else
+                                a
+                            ))
+                            if a is None or b is None or a < b else
+                            # Since a == b, the distribution is just a
+                            # normal and b - a = 0 so we can't multiply
+                            # s by (b - a). Instead, multiply s by an
+                            # estimate of the standard deviation.
+                            #
+                            # To estimate the standard deviation,
+                            # consider o / (Y_(j) - Y_(i)). It's
+                            # distribution is independent of the mean
+                            # and variance. For the standard normal, we
+                            # could approximate Y_(i) and Y_(j) by the
+                            # i/(n+1)'th and j/(n+1)'th quantiles, z_i
+                            # and z_j. Then o / (Y_(j) - Y_(i)) is
+                            # approximately c = 1/(z_j - z_i) so we
+                            # estimate o by c * (Y_(j) - Y_(i)).
+                            s * (y_max - y_min) / (np.diff(
+                                stats.norm(0., 1.).ppf([
+                                    i_min / (n + 1),
+                                    j_max / (n + 1),
+                                ]),
+                            )[0]),
+                            o_bounds[0],
+                            o_bounds[1],
+                        ))
+
+                    initial_population.extend(
+                        itertools.product(*initial_estimates.values()),
+                    )
+
+            # Select the best estimates for the initial population.
+            with np.errstate(divide="ignore", invalid="ignore"):
+                _, initial_population = zip(*sorted([
+                    (loss(parameters), parameters)
+                    for parameters in initial_population
+                ])[:60])
+
+            # Optimize the loss to compute the estimate.
+            if len(bounds) > 0:
+                with np.errstate(divide="ignore", invalid="ignore"):
+                    result = optimize.differential_evolution(
+                        loss,
+                        bounds=bounds,
+                        init=initial_population,
+                        integrality=integrality,
+                        polish=True,
+                        updating="immediate",
+                        vectorized=False,
+                        workers=1,
+                        seed=generator,
+                    )
+                parameters = result.x
+                curr_loss = result.fun
+            else:  # There are no parameters to fit
+                parameters = []
+                curr_loss = loss(parameters)
+
+            # Check if the current value of convex is the best so far.
+            if curr_loss < best_loss:
+                best_loss = curr_loss
+                best_parameters = {
+                    "a": (
+                        a             if a is not None else
+                        parameters[0]
+                    ),
+                    "b": (
+                        b             if b is not None else
+                        parameters[
+                            0 + (a is None)
+                        ]
+                    ),
+                    "c": (
+                        c             if c is not None else
+                        parameters[
+                            0 + (a is None) + (b is None)
+                        ]
+                    ),
+                    "o": (
+                        o             if o is not None else
+                        parameters[
+                            0 + (a is None) + (b is None) + (c is None)
+                        ]
+                    ),
+                    "convex": convex,
+                }
+
+        if not np.isfinite(best_loss):
+            raise exceptions.OptimizationError(
+                "fit failed to find parameters with finite loss.",
+            )
+
+        if best_parameters.get("c") == 2 and len(convexs) > 1:
+            warnings.warn(
+                "Parameters might be unidentifiable. The fit found"
+                " c = 2. When c = 2, convex is unidentifiable because"
+                " either value for convex gives the same distribution."
+                " If appropriate, use the constraints parameter to"
+                " specify convex.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+
+        return cls(**best_parameters)
 
     @np.errstate(invalid="ignore")
     def _partial_normal_moment(self, loc, scale, k):
