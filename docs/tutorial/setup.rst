@@ -133,12 +133,13 @@ versions. They can be found in the package's metadata:
    3.10
    3.11
    3.12
+   3.13
 
 To install them, we recommend `pyenv <https://github.com/pyenv/pyenv>`_:
 
 .. code-block:: console
 
-   $ pyenv install 3.8 3.9 3.10 3.11 3.12
+   $ pyenv install 3.8 3.9 3.10 3.11 3.12 3.13
 
 After the required versions are installed, make sure they're available
 on your PATH. You can do this either `globally
@@ -146,7 +147,7 @@ on your PATH. You can do this either `globally
 
 .. code-block:: console
 
-   $ pyenv global system 3.8 3.9 3.10 3.11 3.12
+   $ pyenv global system 3.8 3.9 3.10 3.11 3.12 3.13
 
 Or `locally
 <https://github.com/pyenv/pyenv/blob/master/COMMANDS.md#pyenv-local>`_
@@ -154,7 +155,7 @@ Or `locally
 
 .. code-block:: console
 
-   $ pyenv local opda 3.8 3.9 3.10 3.11 3.12
+   $ pyenv local opda 3.8 3.9 3.10 3.11 3.12 3.13
 
 The above example assumes you have a virtual environment named ``opda``
 that you wish to `activate using pyenv-virtualenv

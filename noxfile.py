@@ -31,7 +31,7 @@ else:
 ROOT = pathlib.Path(__file__).resolve().parent
 """The repository root."""
 
-SUPPORTED_PYTHON_VERSIONS = {"3.8", "3.9", "3.10", "3.11", "3.12"}
+SUPPORTED_PYTHON_VERSIONS = {"3.8", "3.9", "3.10", "3.11", "3.12", "3.13"}
 """All Python versions currently supported by opda."""
 
 SUPPORTED_PACKAGE_VERSIONS = {
