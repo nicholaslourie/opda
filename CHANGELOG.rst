@@ -64,6 +64,7 @@ The format is based on `Keep a Changelog
 * Add ``fit`` methods to the parametric distributions:
   ``opda.parametric.QuadraticDistribution.fit`` and
   ``opda.parametric.NoisyQuadraticDistribution.fit``.
+* Add support for Python 3.13.
 
 .. rubric:: Changes
 
@@ -93,7 +94,8 @@ The format is based on `Keep a Changelog
 .. rubric:: Deprecations
 .. rubric:: Removals
 
-* Drop support for ``numpy == 1.21``, ``numpy == 1.22``, and ``scipy == 1.8``.
+* Drop support for ``numpy == 1.21``, ``numpy == 1.22``,
+  ``scipy == 1.8``, and  ``scipy == 1.9``.
 * Remove the ``estimate_initial_parameters_and_bounds`` method from
   ``opda.parametric.QuadraticDistribution``.
 
