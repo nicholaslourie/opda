@@ -41,8 +41,8 @@ The format is based on `Keep a Changelog
            .. _unreleased: https://github.com/nicholaslourie/opda/compare/${VERSION}...HEAD
 
 
-`Unreleased`_
-=============
+`v0.7.0`_ - 2024-11-11
+======================
 .. rubric:: Additions
 
 * Add the hyperparameter tuning scaling results from tuning ResNet18
@@ -91,7 +91,6 @@ The format is based on `Keep a Changelog
 * Restrict the range of values for ``c`` supported by
   ``opda.parametric.QuadraticDistribution`` to ``1`` to ``10``.
 
-.. rubric:: Deprecations
 .. rubric:: Removals
 
 * Drop support for ``numpy == 1.21``, ``numpy == 1.22``,
@@ -129,8 +128,6 @@ The format is based on `Keep a Changelog
     a function or method returns multiple values.
 
 * Remove default values from parameters' type descriptions.
-
-.. rubric:: Security
 
 
 `v0.6.1`_ - 2024-04-03
@@ -537,7 +534,7 @@ This version is the first uploaded to PyPI and available via ``pip``!
 ..
   Link Definitions
 
-.. _unreleased: https://github.com/nicholaslourie/opda/compare/v0.6.1...HEAD
+.. _v0.7.0: https://github.com/nicholaslourie/opda/compare/v0.6.1...v0.7.0
 .. _v0.6.1: https://github.com/nicholaslourie/opda/compare/v0.6.0...v0.6.1
 .. _v0.6.0: https://github.com/nicholaslourie/opda/compare/v0.5.0...v0.6.0
 .. _v0.5.0: https://github.com/nicholaslourie/opda/compare/v0.4.0...v0.5.0
