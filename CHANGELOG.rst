@@ -44,9 +44,15 @@ The format is based on `Keep a Changelog
 `Unreleased`_
 =============
 .. rubric:: Additions
+
+* Add support for ``numpy == 2.2`` and ``scipy == 1.15``.
+
 .. rubric:: Changes
 .. rubric:: Deprecations
 .. rubric:: Removals
+
+* Drop support for ``numpy == 1.23``.
+
 .. rubric:: Fixes
 .. rubric:: Documentation
 .. rubric:: Security
