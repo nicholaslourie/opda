@@ -54,6 +54,10 @@ The format is based on `Keep a Changelog
 * Drop support for ``numpy == 1.23``.
 
 .. rubric:: Fixes
+
+* Fix support policy check in continuous integration so that it
+  more accurately determines currently supported python versions.
+
 .. rubric:: Documentation
 .. rubric:: Security
 
