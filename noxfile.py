@@ -69,17 +69,51 @@ def fetch_supported_python_versions():
     opda's support policy is to maintain compatibility with all python
     versions that still receive security updates.
     """
+    today = datetime.datetime.now(
+        # Use the earliest date "Anywhere on Earth".
+        tz=datetime.timezone(offset=datetime.timedelta(hours=-12)),
+    ).strftime("%Y-%m-%d")
+    date_regex = re.compile(r"^\d{4}-\d{2}(?:-\d{2})?")
+
     # Get currently supported python versions from the downloads page.
     response = requests.get("https://www.python.org/downloads/", timeout=30)
     root = etree.fromstring(response.content, parser=etree.HTMLParser())
 
     supported_versions = set()
     for element in root.xpath(
-            "//div[contains(@class, 'active-release-list-widget')]"
-            "/ol/li[span[@class='release-status']/text() != 'prerelease']"
-            "/span[@class='release-version']",
+            "//div[contains(@class, 'active-release-list-widget')]/ol/li",
     ):
-        python_version = element.text
+        (release_version,) = element.xpath("span[@class='release-version']")
+        (release_status,) = element.xpath("span[@class='release-status']")
+        (release_start,) = element.xpath("span[@class='release-start']")
+        (release_end,) = element.xpath("span[@class='release-end']")
+
+        python_version = release_version.text
+
+        support_status = release_status.text
+        support_start = date_regex.match(release_start.text).group()
+        support_end = date_regex.match(release_end.text).group()
+        if (
+                support_status in {"bugfix", "security"}
+                and (support_start <= today and today < support_end)
+        ):
+            # The version is supported.
+            pass
+        elif (
+                support_status not in {"bugfix", "security"}
+                and (today < support_start or support_end <= today)
+        ):
+            # The version is not supported.
+            continue
+        else:
+            # The support status and dates seem to conflict.
+            raise RuntimeError(
+                f"Support status and dates conflict for"
+                f" Python {python_version}. This issue is likely the"
+                f" result of a parsing error. Check that the function"
+                f" fetch_supported_python_versions is still correct.",
+            )
+
         feature_version, *_ = version_regex.match(python_version).groups()
 
         supported_versions.add(feature_version)
