@@ -3,9 +3,23 @@
 import dataclasses
 import typing
 
-from autograd import numpy as npx
 import numpy as np
 from scipy import optimize
+
+# backwards compatibility (autograd < ???)
+import warnings  # ruff: isort: skip
+
+with warnings.catch_warnings():
+    warnings.filterwarnings(
+        "ignore",
+        message=r"numpy.core.einsumfunc is deprecated",
+        category=DeprecationWarning,
+    )
+    # Importing autograd can raise deprecation warnings depending on
+    # the version of autograd and numpy. For example, autograd 1.7.0
+    # and numpy == 2.0.2 give a deprecation warning on import.
+    from autograd import numpy as npx
+
 
 # test functions
 
