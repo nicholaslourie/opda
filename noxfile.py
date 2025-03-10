@@ -297,6 +297,10 @@ def support(session):
             f"ADD Python {python_version} to SUPPORTED_PYTHON_VERSIONS"
             f" in noxfile.py.",
         )
+        maintenance_actions.append(
+            f"ADD Python {python_version} to versions discussed in"
+            f" docs/tutorial/setup.rst.",
+        )
     for python_version in (
             SUPPORTED_PYTHON_VERSIONS - policy_python_versions
     ):
@@ -307,6 +311,10 @@ def support(session):
         maintenance_actions.append(
             f"DROP Python {python_version} from SUPPORTED_PYTHON_VERSIONS"
             f" in noxfile.py.",
+        )
+        maintenance_actions.append(
+            f"DROP Python {python_version} from versions discussed in"
+            f" docs/tutorial/setup.rst.",
         )
         maintenance_actions.append(
             "UPDATE .default-python-version file.",
