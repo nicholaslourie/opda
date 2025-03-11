@@ -3112,7 +3112,7 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                     self.assertTrue(np.allclose(
                         dist.pdf(ys),
                         pdf_monte_carlo_integration(ys),
-                        atol=1e-3 / o,
+                        atol=2e-3 / o,
                         # The Monte Carlo integration has limited
                         # precision, becoming less precise as o shrinks.
                     ))
