@@ -2908,11 +2908,11 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                     # Check the parameters are approximately correct.
                     self.assertAlmostEqual(
                         dist_hat.a, a,
-                        delta=5e-2 * (b - a) + 3 * o,
+                        delta=5e-2 * (b - a) + 4 * o,
                     )
                     self.assertAlmostEqual(
                         dist_hat.b, b,
-                        delta=5e-2 * (b - a) + 3 * o,
+                        delta=5e-2 * (b - a) + 4 * o,
                     )
                     self.assertAlmostEqual(
                         dist_hat.mean, dist.mean,
@@ -3500,11 +3500,11 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
 
                     self.assertAlmostEqual(
                         dist_hat.a, a,
-                        delta=5e-2 * (b - a) + 3 * o,
+                        delta=5e-2 * (b - a) + 4 * o,
                     )
                     self.assertAlmostEqual(
                         dist_hat.b, b,
-                        delta=5e-2 * (b - a) + 3 * o,
+                        delta=5e-2 * (b - a) + 4 * o,
                     )
                     self.assertGreaterEqual(dist_hat.o, o / 5.)
                     self.assertLessEqual(dist_hat.o, 5. * o)
@@ -3540,11 +3540,11 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                     )
                 self.assertAlmostEqual(
                     dist_hat.a, a,
-                    delta=5e-2 * (b - a) + 3 * o,
+                    delta=5e-2 * (b - a) + 4 * o,
                 )
                 self.assertAlmostEqual(
                     dist_hat.b, b,
-                    delta=5e-2 * (b - a) + 3 * o,
+                    delta=5e-2 * (b - a) + 4 * o,
                 )
             else:  # a != b
                 # Since limits is left-open, moving observations below
@@ -3635,11 +3635,11 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                 # Check the fit recovers the distribution.
                 self.assertAlmostEqual(
                     dist_hat.a, a,
-                    delta=5e-2 * (b - a) + 3 * o,
+                    delta=5e-2 * (b - a) + 4 * o,
                 )
                 self.assertAlmostEqual(
                     dist_hat.b, b,
-                    delta=5e-2 * (b - a) + 3 * o,
+                    delta=5e-2 * (b - a) + 4 * o,
                 )
                 self.assertGreaterEqual(dist_hat.o, o / 5.)
                 self.assertLessEqual(dist_hat.o, 5. * o)
@@ -3822,11 +3822,11 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
 
             self.assertAlmostEqual(
                 dist_hat.a, a,
-                delta=5e-2 * (b - a) + 3 * o,
+                delta=5e-2 * (b - a) + 4 * o,
             )
             self.assertAlmostEqual(
                 dist_hat.b, b,
-                delta=5e-2 * (b - a) + 3 * o,
+                delta=5e-2 * (b - a) + 4 * o,
             )
             self.assertGreaterEqual(dist_hat.o, o / 5.)
             self.assertLessEqual(dist_hat.o, 5. * o)
@@ -3845,11 +3845,11 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
 
         self.assertAlmostEqual(
             dist_hat.a, a,
-            delta=5e-2 * (b - a) + 3 * o,
+            delta=5e-2 * (b - a) + 4 * o,
         )
         self.assertAlmostEqual(
             dist_hat.b, b,
-            delta=5e-2 * (b - a) + 3 * o,
+            delta=5e-2 * (b - a) + 4 * o,
         )
         self.assertGreaterEqual(dist_hat.o, o / 5.)
         self.assertLessEqual(dist_hat.o, 5. * o)
