@@ -58,6 +58,9 @@ The format is based on `Keep a Changelog
 * Fix support policy check in continuous integration so that it
   more accurately determines currently supported python versions.
 
+* Suppress expected deprecation warnings that ``autograd`` fires when
+  installed with certain versions of ``numpy``.
+
 .. rubric:: Documentation
 .. rubric:: Security
 
