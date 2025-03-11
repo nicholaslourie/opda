@@ -31,12 +31,12 @@ else:
 ROOT = pathlib.Path(__file__).resolve().parent
 """The repository root."""
 
-SUPPORTED_PYTHON_VERSIONS = {"3.8", "3.9", "3.10", "3.11", "3.12", "3.13"}
+SUPPORTED_PYTHON_VERSIONS = {"3.9", "3.10", "3.11", "3.12", "3.13"}
 """All Python versions currently supported by opda."""
 
 SUPPORTED_PACKAGE_VERSIONS = {
     "numpy": {"1.24", "1.25", "1.26", "2.0", "2.1", "2.2"},
-    "scipy": {"1.10", "1.11", "1.12", "1.13", "1.14", "1.15"},
+    "scipy": {"1.11", "1.12", "1.13", "1.14", "1.15"},
 }
 """All core package versions currently supported by opda."""
 

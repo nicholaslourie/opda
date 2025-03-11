@@ -51,7 +51,8 @@ The format is based on `Keep a Changelog
 .. rubric:: Deprecations
 .. rubric:: Removals
 
-* Drop support for ``numpy == 1.23``.
+* Drop support for ``numpy == 1.23`` and ``scipy == 1.10``.
+* Drop support for Python 3.8.
 
 .. rubric:: Fixes
 

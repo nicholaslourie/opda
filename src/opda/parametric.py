@@ -12,12 +12,6 @@ from scipy import optimize, special, stats
 from opda import exceptions, utils
 import opda.random
 
-# backwards compatibility (Python < 3.9)
-
-import sys  # ruff: isort: skip
-# NOTE: This import is for checking the Python version for backwards
-# compatibility in computing the _APPROXIMATIONS constant below.
-
 # backwards compatibility (scipy < 1.11)
 
 import importlib.metadata  # ruff: isort: skip
@@ -3126,9 +3120,6 @@ _APPROXIMATIONS = {
         for approximation in approximations
     ]
     for exponent, approximations in json.loads(
-            # backwards compatibility (Python < 3.9)
-            importlib.resources.read_text("opda", "_approximations.json")
-            if sys.version_info < (3, 9, 0) else
             importlib.resources
                 .files("opda").joinpath("_approximations.json")
                 .read_text(),

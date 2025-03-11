@@ -11,14 +11,6 @@ from scipy import special, stats
 from opda import utils
 import opda.random
 
-# backwards compatibility (Python < 3.9)
-
-import sys  # ruff: isort: skip
-
-if sys.version_info < (3, 9, 0):
-    functools.cache = functools.lru_cache(maxsize=None)
-
-
 # helper functions and classes
 
 def _normalize_pmf(ws):
