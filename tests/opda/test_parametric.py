@@ -3877,15 +3877,37 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
             0., 1., 1, 1e-2, False,
         ).sample(n_samples)
         #   Before setting the seed, two fits should be unequal.
-        self.assertNotEqual(
-            parametric.NoisyQuadraticDistribution.fit(ys),
-            parametric.NoisyQuadraticDistribution.fit(ys),
+        self.assertTrue(
+            # Occasionally but rarely, the fits can be identical even
+            # though the random seeds are not. Thus, automatically try a
+            # second time in case this occurs so as to avoid spuriously
+            # failing the test.
+            (
+                parametric.NoisyQuadraticDistribution.fit(ys)
+                !=
+                parametric.NoisyQuadraticDistribution.fit(ys)
+            ) or (
+                parametric.NoisyQuadraticDistribution.fit(ys)
+                !=
+                parametric.NoisyQuadraticDistribution.fit(ys)
+            ),
         )
         #   After setting the seed, two fits should be unequal.
         opda.random.set_seed(0)
-        self.assertNotEqual(
-            parametric.NoisyQuadraticDistribution.fit(ys),
-            parametric.NoisyQuadraticDistribution.fit(ys),
+        self.assertTrue(
+            # Occasionally but rarely, the fits can be identical even
+            # though the random seeds are not. Thus, automatically try a
+            # second time in case this occurs so as to avoid spuriously
+            # failing the test.
+            (
+                parametric.NoisyQuadraticDistribution.fit(ys)
+                !=
+                parametric.NoisyQuadraticDistribution.fit(ys)
+            ) or (
+                parametric.NoisyQuadraticDistribution.fit(ys)
+                !=
+                parametric.NoisyQuadraticDistribution.fit(ys)
+            ),
         )
         #   Resetting the seed should produce the same fit.
         opda.random.set_seed(0)
@@ -3902,9 +3924,24 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
         ).sample(n_samples)
         # Reusing the same generator, two fits should be unequal.
         generator = np.random.default_rng(0)
-        self.assertNotEqual(
-            parametric.NoisyQuadraticDistribution.fit(ys, generator=generator),
-            parametric.NoisyQuadraticDistribution.fit(ys, generator=generator),
+        self.assertTrue(
+            # Occasionally but rarely, the fits can be identical even
+            # though the random seeds are not. Thus, automatically try
+            # a second time in case this occurs so as to avoid
+            # spuriously failing the test.
+            (
+                parametric.NoisyQuadraticDistribution.fit(
+                    ys, generator=generator,
+                ) != parametric.NoisyQuadraticDistribution.fit(
+                    ys, generator=generator,
+                )
+            ) or (
+                parametric.NoisyQuadraticDistribution.fit(
+                    ys, generator=generator,
+                ) != parametric.NoisyQuadraticDistribution.fit(
+                    ys, generator=generator,
+                )
+            ),
         )
         # Using generators in the same state should produce the same fit.
         self.assertEqual(
