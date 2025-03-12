@@ -2722,7 +2722,7 @@ class NoisyQuadraticDistribution:
                 _, initial_population = zip(*sorted([
                     (loss(parameters), parameters)
                     for parameters in initial_population
-                ])[:60])
+                ])[:90])
 
             # Optimize the loss to compute the estimate.
             if len(bounds) > 0:
