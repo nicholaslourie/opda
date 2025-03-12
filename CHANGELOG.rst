@@ -65,6 +65,7 @@ The format is based on `Keep a Changelog
   installed with certain versions of ``numpy``.
 * Make ``opda.parametric.NoisyQuadraticDistribution.fit`` optimize
   more robustly.
+* Fix flakiness in various tests.
 
 .. rubric:: Documentation
 .. rubric:: Security
