@@ -74,8 +74,8 @@ This directory should contain the following files:
 
   - **LICENSE**: the license for using this data
   - **README.md**: this README file
-  - **deberta-base.results.jsonl**: the hyperparameter tuning results for
-    DeBERTa base
+  - **deberta-base_tuning.results.jsonl**: the hyperparameter tuning results
+    for DeBERTa base
   - **deberta-v3-base.results.jsonl**: the hyperparameter tuning results for
     DeBERTaV3 base
 
