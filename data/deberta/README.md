@@ -76,8 +76,8 @@ This directory should contain the following files:
   - **README.md**: this README file
   - **deberta-base_tuning.results.jsonl**: the hyperparameter tuning results
     for DeBERTa base
-  - **deberta-v3-base.results.jsonl**: the hyperparameter tuning results for
-    DeBERTaV3 base
+  - **deberta-v3-base_tuning.results.jsonl**: the hyperparameter tuning
+    results for DeBERTaV3 base
 
 
 Citation
