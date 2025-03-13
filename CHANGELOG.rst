@@ -63,6 +63,8 @@ The format is based on `Keep a Changelog
 
 * Suppress expected deprecation warnings that ``autograd`` fires when
   installed with certain versions of ``numpy``.
+* Make ``opda.parametric.NoisyQuadraticDistribution.fit`` optimize
+  more robustly.
 
 .. rubric:: Documentation
 .. rubric:: Security
