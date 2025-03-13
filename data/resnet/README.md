@@ -15,8 +15,10 @@ problems. For more information, see the code repository,
 Data Creation
 -------------
 The data represent the results from tuning the hyperparameters of
-ResNet18 for ImageNet via random search. The hyperparameters were
-sampled randomly from the following distribution:
+ResNet18 for ImageNet via random search.
+
+For the *tuning* experiment (`resnet18_tuning.results.jsonl`), the
+hyperparameters were sampled randomly from the following distribution:
 
     epochs ~ DiscreteUniform({20, 21, ..., 100})
     batch_size ~ DiscreteUniform({128, 256, 512, 1024})
@@ -30,6 +32,17 @@ sampled randomly from the following distribution:
 1,024 hyperparameter configurations were sampled. After each epoch,
 the model was evaluated on ImageNet's validation set. These learning
 curves are then reported in the data.
+
+For the *residual* experiment (`resnet18_residual.results.jsonl`), the
+results were generated from those of the *tuning* experiment as
+follows. First, all the hyperparameter configurations from the *tuning*
+experiment were sorted by the best top 1 validation accuracy of any of
+the training run's checkpoints (with an accuracy of 0 when the training
+loss NaN'd before the first checkpoint). Next, the hyperparameter
+configurations at the 12.5th, 25th, 37.5th, 50th, 62.5th, 75th, 87.5th,
+and 100th quantiles of accuracy (ascending) were selected. Finally, each
+of these 8 configurations was then retrained 128 times with different
+random seeds, for a total of 1,024 training runs.
 
 
 Data Structure
@@ -59,6 +72,15 @@ format. Each line is a JSON object with the following keys and values:
     - **top_5**: the top-5 accuracy on the validation set
     - **train_loss**: the training loss (cross-entropy)
 
+Some of the files have important additional structure.
+
+In `resnet18_residual.results.jsonl`, each successive block of 128
+lines (i.e., lines 1 through 128, 129 through 256, and so on)
+represents the same hyperparameter configuration trained with
+different random seeds. Moreover, these hyperparameter configurations
+are in increasing order of performance. See *Data Creation* for how
+the configurations were created.
+
 
 Files
 -----
@@ -68,6 +90,11 @@ This directory should contain the following files:
   - **README.md**: this README file
   - **resnet18_tuning.results.jsonl**: the hyperparameter tuning
     results for ResNet18
+  - **resnet18_residual.results.jsonl**: the results from retraining
+    ResNet18 hyperparameter configurations with different random seeds
+
+See *Data Creation* and *Data Structure* for detailed descriptions of
+the results within each file.
 
 
 Contact
