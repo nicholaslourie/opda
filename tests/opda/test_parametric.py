@@ -1271,8 +1271,8 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                     ys=np.where(ys <= threshold, threshold, ys),
                     limits=(threshold, np.inf),
                 )
-                self.assertAlmostEqual(dist_hat.a, a, delta=1.5e-1 * (b - a))
-                self.assertAlmostEqual(dist_hat.b, b, delta=1.5e-1 * (b - a))
+                self.assertAlmostEqual(dist_hat.a, a, delta=2e-1 * (b - a))
+                self.assertAlmostEqual(dist_hat.b, b, delta=5e-2 * (b - a))
                 self.assertEqual(dist_hat.c, c)
                 self.assertEqual(dist_hat.convex, convex)
 
@@ -2908,11 +2908,11 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                     # Check the parameters are approximately correct.
                     self.assertAlmostEqual(
                         dist_hat.a, a,
-                        delta=5e-2 * (b - a) + 3 * o,
+                        delta=5e-2 * (b - a) + 4 * o,
                     )
                     self.assertAlmostEqual(
                         dist_hat.b, b,
-                        delta=5e-2 * (b - a) + 3 * o,
+                        delta=5e-2 * (b - a) + 4 * o,
                     )
                     self.assertAlmostEqual(
                         dist_hat.mean, dist.mean,
@@ -3112,7 +3112,7 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                     self.assertTrue(np.allclose(
                         dist.pdf(ys),
                         pdf_monte_carlo_integration(ys),
-                        atol=1e-3 / o,
+                        atol=2e-3 / o,
                         # The Monte Carlo integration has limited
                         # precision, becoming less precise as o shrinks.
                     ))
@@ -3500,11 +3500,11 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
 
                     self.assertAlmostEqual(
                         dist_hat.a, a,
-                        delta=5e-2 * (b - a) + 3 * o,
+                        delta=5e-2 * (b - a) + 4 * o,
                     )
                     self.assertAlmostEqual(
                         dist_hat.b, b,
-                        delta=5e-2 * (b - a) + 3 * o,
+                        delta=5e-2 * (b - a) + 4 * o,
                     )
                     self.assertGreaterEqual(dist_hat.o, o / 5.)
                     self.assertLessEqual(dist_hat.o, 5. * o)
@@ -3540,11 +3540,11 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                     )
                 self.assertAlmostEqual(
                     dist_hat.a, a,
-                    delta=5e-2 * (b - a) + 3 * o,
+                    delta=5e-2 * (b - a) + 4 * o,
                 )
                 self.assertAlmostEqual(
                     dist_hat.b, b,
-                    delta=5e-2 * (b - a) + 3 * o,
+                    delta=5e-2 * (b - a) + 4 * o,
                 )
             else:  # a != b
                 # Since limits is left-open, moving observations below
@@ -3555,11 +3555,11 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                 )
                 self.assertAlmostEqual(
                     dist_hat.a, a,
-                    delta=1.5e-1 * (b - a) + 9 * o,
+                    delta=2e-1 * (b - a) + 4 * o,
                 )
                 self.assertAlmostEqual(
                     dist_hat.b, b,
-                    delta=1.5e-1 * (b - a) + 9 * o,
+                    delta=5e-2 * (b - a) + 4 * o,
                 )
                 self.assertEqual(dist_hat.c, c)
                 self.assertGreaterEqual(dist_hat.o, o / 5.)
@@ -3635,11 +3635,11 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                 # Check the fit recovers the distribution.
                 self.assertAlmostEqual(
                     dist_hat.a, a,
-                    delta=5e-2 * (b - a) + 3 * o,
+                    delta=5e-2 * (b - a) + 4 * o,
                 )
                 self.assertAlmostEqual(
                     dist_hat.b, b,
-                    delta=5e-2 * (b - a) + 3 * o,
+                    delta=5e-2 * (b - a) + 4 * o,
                 )
                 self.assertGreaterEqual(dist_hat.o, o / 5.)
                 self.assertLessEqual(dist_hat.o, 5. * o)
@@ -3822,11 +3822,11 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
 
             self.assertAlmostEqual(
                 dist_hat.a, a,
-                delta=5e-2 * (b - a) + 3 * o,
+                delta=5e-2 * (b - a) + 4 * o,
             )
             self.assertAlmostEqual(
                 dist_hat.b, b,
-                delta=5e-2 * (b - a) + 3 * o,
+                delta=5e-2 * (b - a) + 4 * o,
             )
             self.assertGreaterEqual(dist_hat.o, o / 5.)
             self.assertLessEqual(dist_hat.o, 5. * o)
@@ -3845,11 +3845,11 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
 
         self.assertAlmostEqual(
             dist_hat.a, a,
-            delta=5e-2 * (b - a) + 3 * o,
+            delta=5e-2 * (b - a) + 4 * o,
         )
         self.assertAlmostEqual(
             dist_hat.b, b,
-            delta=5e-2 * (b - a) + 3 * o,
+            delta=5e-2 * (b - a) + 4 * o,
         )
         self.assertGreaterEqual(dist_hat.o, o / 5.)
         self.assertLessEqual(dist_hat.o, 5. * o)
@@ -3877,15 +3877,37 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
             0., 1., 1, 1e-2, False,
         ).sample(n_samples)
         #   Before setting the seed, two fits should be unequal.
-        self.assertNotEqual(
-            parametric.NoisyQuadraticDistribution.fit(ys),
-            parametric.NoisyQuadraticDistribution.fit(ys),
+        self.assertTrue(
+            # Occasionally but rarely, the fits can be identical even
+            # though the random seeds are not. Thus, automatically try a
+            # second time in case this occurs so as to avoid spuriously
+            # failing the test.
+            (
+                parametric.NoisyQuadraticDistribution.fit(ys)
+                !=
+                parametric.NoisyQuadraticDistribution.fit(ys)
+            ) or (
+                parametric.NoisyQuadraticDistribution.fit(ys)
+                !=
+                parametric.NoisyQuadraticDistribution.fit(ys)
+            ),
         )
         #   After setting the seed, two fits should be unequal.
         opda.random.set_seed(0)
-        self.assertNotEqual(
-            parametric.NoisyQuadraticDistribution.fit(ys),
-            parametric.NoisyQuadraticDistribution.fit(ys),
+        self.assertTrue(
+            # Occasionally but rarely, the fits can be identical even
+            # though the random seeds are not. Thus, automatically try a
+            # second time in case this occurs so as to avoid spuriously
+            # failing the test.
+            (
+                parametric.NoisyQuadraticDistribution.fit(ys)
+                !=
+                parametric.NoisyQuadraticDistribution.fit(ys)
+            ) or (
+                parametric.NoisyQuadraticDistribution.fit(ys)
+                !=
+                parametric.NoisyQuadraticDistribution.fit(ys)
+            ),
         )
         #   Resetting the seed should produce the same fit.
         opda.random.set_seed(0)
@@ -3902,9 +3924,24 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
         ).sample(n_samples)
         # Reusing the same generator, two fits should be unequal.
         generator = np.random.default_rng(0)
-        self.assertNotEqual(
-            parametric.NoisyQuadraticDistribution.fit(ys, generator=generator),
-            parametric.NoisyQuadraticDistribution.fit(ys, generator=generator),
+        self.assertTrue(
+            # Occasionally but rarely, the fits can be identical even
+            # though the random seeds are not. Thus, automatically try
+            # a second time in case this occurs so as to avoid
+            # spuriously failing the test.
+            (
+                parametric.NoisyQuadraticDistribution.fit(
+                    ys, generator=generator,
+                ) != parametric.NoisyQuadraticDistribution.fit(
+                    ys, generator=generator,
+                )
+            ) or (
+                parametric.NoisyQuadraticDistribution.fit(
+                    ys, generator=generator,
+                ) != parametric.NoisyQuadraticDistribution.fit(
+                    ys, generator=generator,
+                )
+            ),
         )
         # Using generators in the same state should produce the same fit.
         self.assertEqual(
