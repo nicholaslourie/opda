@@ -48,6 +48,16 @@ The format is based on `Keep a Changelog
 * Add support for ``numpy == 2.2`` and ``scipy == 1.15``.
 
 .. rubric:: Changes
+
+* Rename hyperparameter tuning results files:
+
+  * Rename ``data/deberta/deberta-base.results.jsonl`` to
+    ``data/deberta/deberta-base_tuning.results.jsonl``.
+  * Rename ``data/deberta/deberta-v3-base.results.jsonl`` to
+    ``data/deberta/deberta-v3-base_tuning.results.jsonl``.
+  * Rename ``data/resnet/resnet18_scaling.results.jsonl`` to
+    ``data/resnet/resnet18_tuning.results.jsonl``.
+
 .. rubric:: Deprecations
 .. rubric:: Removals
 
