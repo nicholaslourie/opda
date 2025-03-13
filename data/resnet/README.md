@@ -66,7 +66,7 @@ This directory should contain the following files:
 
   - **LICENSE**: the license for using this data
   - **README.md**: this README file
-  - **resnet18_scaling.results.jsonl**: the hyperparameter tuning
+  - **resnet18_tuning.results.jsonl**: the hyperparameter tuning
     results for ResNet18
 
 
