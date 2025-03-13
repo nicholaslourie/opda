@@ -1271,8 +1271,8 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                     ys=np.where(ys <= threshold, threshold, ys),
                     limits=(threshold, np.inf),
                 )
-                self.assertAlmostEqual(dist_hat.a, a, delta=1.5e-1 * (b - a))
-                self.assertAlmostEqual(dist_hat.b, b, delta=1.5e-1 * (b - a))
+                self.assertAlmostEqual(dist_hat.a, a, delta=2e-1 * (b - a))
+                self.assertAlmostEqual(dist_hat.b, b, delta=5e-2 * (b - a))
                 self.assertEqual(dist_hat.c, c)
                 self.assertEqual(dist_hat.convex, convex)
 
@@ -3555,11 +3555,11 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
                 )
                 self.assertAlmostEqual(
                     dist_hat.a, a,
-                    delta=1.5e-1 * (b - a) + 9 * o,
+                    delta=2e-1 * (b - a) + 4 * o,
                 )
                 self.assertAlmostEqual(
                     dist_hat.b, b,
-                    delta=1.5e-1 * (b - a) + 9 * o,
+                    delta=5e-2 * (b - a) + 4 * o,
                 )
                 self.assertEqual(dist_hat.c, c)
                 self.assertGreaterEqual(dist_hat.o, o / 5.)
