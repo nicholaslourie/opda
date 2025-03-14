@@ -66,6 +66,12 @@ The format is based on `Keep a Changelog
   * Add a license for the data: ``data/convnext/LICENSE``.
   * Add a README for the data: ``data/convnext/README.md``.
 
+* Add the hyperparameter ablation results from fixing successively more
+  hyperparameters when tuning ResNet18 on ImageNet via random search.
+
+  * Add the data itself: ``data/resnet/resnet18_ablation.results.jsonl``.
+  * Update its README to describe the data: ``data/resnet/README.md``.
+
 .. rubric:: Changes
 
 * Rename hyperparameter tuning results files:
