@@ -44,6 +44,44 @@ and 100th quantiles of accuracy (ascending) were selected. Finally, each
 of these 8 configurations was then retrained 128 times with different
 random seeds, for a total of 1,024 training runs.
 
+For the *ablation* experiment (`resnet18_ablation.results.jsonl`), the
+results from the *tuning* experiment along with a few additional trial
+runs were used to design a hyperparameter search space that efficiently
+captures the loss surface in the neighborhood around the optimum. Some
+of the hyperparameters were sampled while others were fixed. At the
+start, `epochs`, `batch_size`, `momentum` and `use_blurpool` were fixed:
+
+    epochs = 85
+    batch_size = 512
+    momentum = 0.85
+    use_blurpool = 1
+
+while `lr`, `lr_peak_epoch`, `weight_decay` and `label_smoothing` were
+sampled from the following distribution:
+
+    lr ~ LogUniform([2e-1, 2e1])
+    lr_peak_epoch = DiscreteUniform({0, 1, 2, ..., 30})
+    weight_decay ~ LogUniform([5e-7, 5e-5])
+    label_smoothing ~ Uniform([0.0, 0.3])
+
+The sampled hyperparameters were then sequentially fixed (i.e.,
+ablated). From iteration 1 to 256 none of the four hyperparameters was
+fixed. At iteration 257, `label_smoothing` was fixed:
+
+    label_smoothing = 0.15
+
+At iteration 513, `weight_decay` was fixed:
+
+    weight_decay = 5e-6
+
+At iteration 769, `lr_peak_epoch` was fixed:
+
+    lr_peak_epoch = 15
+
+The `lr` hyperparameter was never fixed. Thus, the first 256 iterations
+vary 4 hyperparameters, the next 256 vary 3, the next 256 vary 2, and
+the last 256 vary 1.
+
 
 Data Structure
 --------------
@@ -81,6 +119,11 @@ different random seeds. Moreover, these hyperparameter configurations
 are in increasing order of performance. See *Data Creation* for how
 the configurations were created.
 
+In `resnet18_ablation.results.jsonl`, each successive block of 256
+lines (i.e., lines 1 through 256, 257 through 512, and so on) fixes an
+additional hyperparameter, ablating it from the search distribution. See
+*Data Creation* for how the configurations were created.
+
 
 Files
 -----
@@ -92,6 +135,8 @@ This directory should contain the following files:
     results for ResNet18
   - **resnet18_residual.results.jsonl**: the results from retraining
     ResNet18 hyperparameter configurations with different random seeds
+  - **resnet18_ablation.results.jsonl**: the results from ablating
+    hyperparameters from the search distribution for ResNet18
 
 See *Data Creation* and *Data Structure* for detailed descriptions of
 the results within each file.
