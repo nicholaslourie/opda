@@ -59,6 +59,13 @@ The format is based on `Keep a Changelog
   * Add a license for the data: ``data/alexnet/LICENSE``.
   * Add a README for the data: ``data/alexnet/README.md``.
 
+* Add the hyperparameter tuning results from tuning ConvNeXt for
+  ImageNet via random search.
+
+  * Add the data itself: ``data/convnext/convnext-tiny_tuning.results.jsonl``.
+  * Add a license for the data: ``data/convnext/LICENSE``.
+  * Add a README for the data: ``data/convnext/README.md``.
+
 .. rubric:: Changes
 
 * Rename hyperparameter tuning results files:
