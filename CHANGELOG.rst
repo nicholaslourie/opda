@@ -46,6 +46,11 @@ The format is based on `Keep a Changelog
 .. rubric:: Additions
 
 * Add support for ``numpy == 2.2`` and ``scipy == 1.15``.
+* Add the hyperparameter residual results from retraining configurations
+  for ResNet18 on ImageNet with different random seeds.
+
+  * Add the data itself: ``data/resnet/resnet18_residual.results.jsonl``.
+  * Update its README to describe the data: ``data/resnet/README.md``.
 
 .. rubric:: Changes
 
@@ -78,6 +83,10 @@ The format is based on `Keep a Changelog
 * Fix flakiness in various tests.
 
 .. rubric:: Documentation
+
+* Improve the README for the DeBERTa hyperparameter tuning results
+  (``data/deberta/README.md``).
+
 .. rubric:: Security
 
 

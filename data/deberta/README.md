@@ -8,7 +8,7 @@ from tuning the hyperparameters of [DeBERTa](https://arxiv.org/abs/2006.03654)
 and [DeBERTaV3](https://arxiv.org/abs/2111.09543)
 for [MultiNLI](https://arxiv.org/abs/1704.05426) via random
 search. These results can be used to apply optimal design analysis to
-these problem. For more information, see the code
+these problems. For more information, see the code
 repository, [`opda`](https://github.com/nicholaslourie/opda), or the
 paper that introduced this data,
 ["Show Your Work with Confidence: Confidence Bands for Tuning Curves"](https://arxiv.org/abs/2311.09480).
@@ -28,8 +28,12 @@ To cite this data or other aspects of the paper, please use:
 Data Creation
 -------------
 The data represent the results from tuning the hyperparameters of
-DeBERTa and DeBERTaV3 for MultiNLI via random search. For both models,
-hyperparameters were sampled randomly from the following distribution:
+DeBERTa and DeBERTaV3 for MultiNLI via random search.
+
+For the *tuning* experiments for both models
+(`deberta-base_tuning.results.jsonl` and
+`deberta-v3-base_tuning.results.jsonl`), hyperparameters were sampled
+randomly from the following distribution:
 
     num_train_epochs ~ DiscreteUniform({1, 2, 3, 4})
     train_batch_size ~ DiscreteUniform({16, 17, ..., 64})
@@ -78,6 +82,9 @@ This directory should contain the following files:
     for DeBERTa base
   - **deberta-v3-base_tuning.results.jsonl**: the hyperparameter tuning
     results for DeBERTaV3 base
+
+See *Data Creation* and *Data Structure* for detailed descriptions of
+the results within each file.
 
 
 Citation
