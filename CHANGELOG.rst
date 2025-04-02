@@ -72,6 +72,13 @@ The format is based on `Keep a Changelog
   * Add the data itself: ``data/resnet/resnet18_ablation.results.jsonl``.
   * Update its README to describe the data: ``data/resnet/README.md``.
 
+* Add the hyperparameter tuning results from tuning small Llama models
+  for SlimPajama via random search.
+
+  * Add the data itself: ``data/llama/llama-33m_tuning.results.jsonl``.
+  * Add a license for the data: ``data/llama/LICENSE``.
+  * Add a README for the data: ``data/llama/README.md``.
+
 .. rubric:: Changes
 
 * Rename hyperparameter tuning results files:
