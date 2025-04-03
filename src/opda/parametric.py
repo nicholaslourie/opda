@@ -2490,7 +2490,7 @@ class NoisyQuadraticDistribution:
                 # decimals to stay within those representable by the
                 # floating point format.
                 decimals = - np.clip(
-                    np.log10(np.max(np.spacing(ys_observed))),
+                    np.log10(np.max(np.abs(np.spacing(ys_observed)))),
                     np.log10(finfo.smallest_normal),
                     np.log10(finfo.max),
                 ).astype(int) - 3
