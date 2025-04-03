@@ -1567,6 +1567,35 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
             ),
         )
 
+    @pytest.mark.level(1)
+    def test_fit_when_all_ys_are_negative(self):
+        n_samples = 8
+
+        # Due to the small sample size, fit might estimate that c = 2,
+        # in which case it will fire a warning about identifiability.
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message=r"Parameters might be unidentifiable.",
+                category=RuntimeWarning,
+            )
+
+            # Test when a = b.
+            ys = [-1.] * n_samples
+            parametric.QuadraticDistribution.fit(
+                ys,
+                method="maximum_spacing",
+            )
+
+            # Test when a != b.
+            ys = parametric.QuadraticDistribution(
+                -2., -1., 1, False,
+            ).sample(n_samples)
+            parametric.QuadraticDistribution.fit(
+                ys,
+                method="maximum_spacing",
+            )
+
 
 class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
     """Test opda.parametric.NoisyQuadraticDistribution."""
