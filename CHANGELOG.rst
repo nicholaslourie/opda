@@ -83,6 +83,12 @@ The format is based on `Keep a Changelog
   * Rename ``data/resnet/resnet18_scaling.results.jsonl`` to
     ``data/resnet/resnet18_tuning.results.jsonl``.
 
+* Upgrade packaging tools to ``setuptools >= 77.0``,
+  ``build == 1.2.2``,  and ``twine == 6.1.0``.
+* Specify license using an SPDX license expression for
+  ``project.license`` in ``pyproject.toml`` instead of the classifier:
+  ``License :: OSI Approved :: Apache Software License``.
+
 .. rubric:: Deprecations
 .. rubric:: Removals
 
