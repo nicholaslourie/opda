@@ -67,7 +67,7 @@ test = [
   "pytest == 7.4.4",
 ]
 package = [
-  "build == 1.2.1",
+  "build == 1.2.2",
   "twine == 6.1.0",
 ]
 ci = [
