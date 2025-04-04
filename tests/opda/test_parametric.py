@@ -3885,6 +3885,7 @@ class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
         self.assertEqual(dist_hat.c, c)
         self.assertEqual(dist_hat.convex, convex)
 
+    @pytest.mark.level(2)
     def test_fit_accepts_integer_data(self):
         with warnings.catch_warnings():
             warnings.filterwarnings(
