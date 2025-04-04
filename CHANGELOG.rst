@@ -114,6 +114,9 @@ The format is based on `Keep a Changelog
 * Make ``opda.parametric.NoisyQuadraticDistribution.fit`` optimize
   more robustly.
 * Fix flakiness in various tests.
+* Fix an error thrown by ``opda.parametric.QuadraticDistribution.fit``
+  and ``opda.parametric.NoisyQuadraticDistribution.fit`` when all
+  ``ys`` are negative.
 
 .. rubric:: Documentation
 
