@@ -52,6 +52,17 @@ randomly from the following distribution:
 evaluated on separate validation and test sets every 500 gradient
 updates. These learning curves are then reported in the data.
 
+For the *residual* experiment (`llama-33m_residual.results.jsonl`), the
+results were generated from those of the *tuning* experiment as
+follows. First, all the hyperparameter configurations from the *tuning*
+experiment were sorted by the best raw validation loss (`val_raw_loss`)
+logged at any point during training (with any NaNs or missing losses
+being replaced by infinity). Next, the hyperparameter configurations at
+the 12.5th, 25th, 37.5th, 50th, 62.5th, 75th, 87.5th, and 100th
+quantiles of loss (descending) were selected. Finally, each of these 8
+configurations was then retrained 128 times with different random seeds,
+for a total of 1,024 training runs.
+
 
 Data Structure
 --------------
@@ -98,6 +109,15 @@ format. Each line is a JSON object with the following keys and values:
     - **test_weight_averaged_accuracy**: the per-token accuracy of the
       weight averaged model on the test set
 
+Some of the files have important additional structure.
+
+In `llama-33m_residual.results.jsonl`, each successive block of 128
+lines (i.e., lines 1 through 128, 129 through 256, and so on) represents
+the same hyperparameter configuration trained with different random
+seeds. Moreover, these hyperparameter configurations are in decreasing
+order of the loss. See *Data Creation* for how the configurations were
+created.
+
 
 Files
 -----
@@ -106,7 +126,9 @@ This directory should contain the following files:
   - **LICENSE**: the license for using this data
   - **README.md**: this README file
   - **llama-33m_tuning.results.jsonl**: the hyperparameter tuning
-    results for Llama 33M.
+    results for Llama 33M
+  - **llama-33m_residual.results.jsonl**: the results from retraining
+    Llama hyperparameter configurations with different random seeds
 
 See *Data Creation* and *Data Structure* for detailed descriptions of
 the results within each file.
