@@ -79,6 +79,12 @@ The format is based on `Keep a Changelog
   * Add a license for the data: ``data/llama/LICENSE``.
   * Add a README for the data: ``data/llama/README.md``.
 
+* Add the hyperparameter residual results from retraining configurations
+  for small Llama models on SlimPajama with different random seeds.
+
+  * Add the data itself: ``data/llama/llama-33m_residual.results.jsonl``.
+  * Update its README to describe the data: ``data/llama/README.md``.
+
 .. rubric:: Changes
 
 * Rename hyperparameter tuning results files:
