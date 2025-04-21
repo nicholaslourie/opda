@@ -1596,6 +1596,64 @@ class QuadraticDistributionTestCase(testcases.RandomTestCase):
                 method="maximum_spacing",
             )
 
+    def test_fit_with_censored_infinity(self):
+        n_samples = 2_048
+
+        a, b, c, convex = 0., 1., 2, False
+        dist = parametric.QuadraticDistribution(a, b, c, convex)
+        ys = dist.sample(n_samples)
+
+        # NOTE: Use constraints in fit below to make fit run faster.
+
+        # Test when ys contains inf.
+        #   positive infinitiy
+        with self.assertRaises(ValueError):
+            parametric.QuadraticDistribution.fit(
+                ys=np.concatenate([[np.inf], ys]),
+                limits=(-np.inf, np.inf),
+                constraints={"c": c, "convex": convex},
+            )
+        #   negative infinitiy
+        with self.assertRaises(ValueError):
+            parametric.QuadraticDistribution.fit(
+                ys=np.concatenate([[-np.inf], ys]),
+                limits=(-np.inf, np.inf),
+                constraints={"c": c, "convex": convex},
+            )
+        #   both positive and negative infinity
+        with self.assertRaises(ValueError):
+            parametric.QuadraticDistribution.fit(
+                ys=np.concatenate([[-np.inf, np.inf], ys]),
+                limits=(-np.inf, np.inf),
+                constraints={"c": c, "convex": convex},
+            )
+
+        # Test when ys contains inf but it is censored.
+        #   positive infinitiy
+        dist_hat = parametric.QuadraticDistribution.fit(
+            ys=np.concatenate([[np.inf], ys]),
+            limits=(-np.inf, b),
+            constraints={"c": c, "convex": convex},
+        )
+        self.assertAlmostEqual(dist_hat.a, a, delta=5e-2 * (b - a))
+        self.assertAlmostEqual(dist_hat.b, b, delta=5e-2 * (b - a))
+        #   negative infinitiy
+        dist_hat = parametric.QuadraticDistribution.fit(
+            ys=np.concatenate([[-np.inf], ys]),
+            limits=(a, np.inf),
+            constraints={"c": c, "convex": convex},
+        )
+        self.assertAlmostEqual(dist_hat.a, a, delta=5e-2 * (b - a))
+        self.assertAlmostEqual(dist_hat.b, b, delta=5e-2 * (b - a))
+        #   both positive and negative infinity
+        dist_hat = parametric.QuadraticDistribution.fit(
+            ys=np.concatenate([[-np.inf, np.inf], ys]),
+            limits=(a, b),
+            constraints={"c": c, "convex": convex},
+        )
+        self.assertAlmostEqual(dist_hat.a, a, delta=5e-2 * (b - a))
+        self.assertAlmostEqual(dist_hat.b, b, delta=5e-2 * (b - a))
+
 
 class NoisyQuadraticDistributionTestCase(testcases.RandomTestCase):
     """Test opda.parametric.NoisyQuadraticDistribution."""
