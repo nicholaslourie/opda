@@ -85,6 +85,11 @@ The format is based on `Keep a Changelog
   * Add the data itself: ``data/llama/llama-33m_residual.results.jsonl``.
   * Update its README to describe the data: ``data/llama/README.md``.
 
+* Make ``opda.parametric.QuadraticDistribution.fit`` and
+  ``opda.parametric.NoisyQuadraticDistribution.fit`` accept infinite
+  observations in ``ys`` if those observations are censored by
+  ``limits``.
+
 .. rubric:: Changes
 
 * Rename hyperparameter tuning results files:
