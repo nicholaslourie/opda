@@ -119,8 +119,8 @@ The format is based on `Keep a Changelog
 
 * Suppress expected deprecation warnings that ``autograd`` fires when
   installed with certain versions of ``numpy``.
-* Make ``opda.parametric.NoisyQuadraticDistribution.fit`` optimize
-  more robustly.
+* Make ``opda.parametric.NoisyQuadraticDistribution.fit`` slower but
+  also much more robust.
 * Fix flakiness in various tests.
 * Fix an error thrown by ``opda.parametric.QuadraticDistribution.fit``
   and ``opda.parametric.NoisyQuadraticDistribution.fit`` when all
