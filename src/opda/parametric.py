@@ -2630,8 +2630,8 @@ class NoisyQuadraticDistribution:
                     initial_estimates = collections.defaultdict(list)
                     ds = (
                         # When fitting a and b, use 2 estimates for
-                        # each since there are 5 s estimates for a
-                        # total of 2 * 2 * 5 = 20 estimates.
+                        # each since there are 7 s estimates for a
+                        # total of 2 * 2 * 7 = 28 estimates.
                         [-0.2, 0.2]
                         if a is None and b is None else
                         # When fitting only a or only b use more initial
