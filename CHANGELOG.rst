@@ -101,6 +101,8 @@ The format is based on `Keep a Changelog
 * Specify license using an SPDX license expression for
   ``project.license`` in ``pyproject.toml`` instead of the classifier:
   ``License :: OSI Approved :: Apache Software License``.
+* Parallelize the ``testpackage`` CI job over all NumPy and SciPy
+  versions in addition to Python versions.
 
 .. rubric:: Deprecations
 .. rubric:: Removals
