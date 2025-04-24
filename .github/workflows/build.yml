@@ -166,7 +166,9 @@ jobs:
     name: Compute test matrix.
     runs-on: ubuntu-latest
     outputs:
-      python-versions: ${{ steps.get-python-versions.outputs.python-versions }}
+      python-versions: ${{ steps.get-versions.outputs.python-versions }}
+      numpy-versions: ${{ steps.get-versions.outputs.numpy-versions }}
+      scipy-versions: ${{ steps.get-versions.outputs.scipy-versions }}
     steps:
       - name: Clone the repo.
         uses: actions/checkout@v4
@@ -176,9 +178,10 @@ jobs:
           python-version-file: .default-python-version
           cache: pip
       - name: Build the test matrix from available nox sessions.
-        id: get-python-versions
+        id: get-versions
         run: |
           python -Im pip install --quiet .[ci]
+
           PYTHON_VERSIONS=$( \
             python -Im \
               nox \
@@ -197,8 +200,46 @@ jobs:
                 'split("\n")[:-1]' \
           )
           echo "python-versions=${PYTHON_VERSIONS}" | tee -a "${GITHUB_OUTPUT}"
+
+          NUMPY_VERSIONS=$( \
+            python -Im \
+              nox \
+                --session testpackage \
+                --list \
+                --json \
+              | jq \
+                --raw-output \
+                '.[].call_spec.numpy' \
+              | sort --version-sort \
+              | uniq \
+              | jq \
+                --raw-input \
+                --slurp \
+                --compact-output \
+                'split("\n")[:-1]' \
+          )
+          echo "numpy-versions=${NUMPY_VERSIONS}" | tee -a "${GITHUB_OUTPUT}"
+
+          SCIPY_VERSIONS=$( \
+            python -Im \
+              nox \
+                --session testpackage \
+                --list \
+                --json \
+              | jq \
+                --raw-output \
+                '.[].call_spec.scipy' \
+              | sort --version-sort \
+              | uniq \
+              | jq \
+                --raw-input \
+                --slurp \
+                --compact-output \
+                'split("\n")[:-1]' \
+          )
+          echo "scipy-versions=${SCIPY_VERSIONS}" | tee -a "${GITHUB_OUTPUT}"
   testpackage:
-    name: Test package with Python ${{ matrix.python-version }}.
+    name: Test package (Python ${{ matrix.python-version }}, NumPy ${{ matrix.numpy-version }}, SciPy ${{ matrix.scipy-version }}).
     needs:
       - package
       - matrix
@@ -206,6 +247,8 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ${{ fromJson(needs.matrix.outputs.python-versions) }}
+        numpy-version: ${{ fromJson(needs.matrix.outputs.numpy-versions) }}
+        scipy-version: ${{ fromJson(needs.matrix.outputs.scipy-versions) }}
     runs-on: ubuntu-latest
     steps:
       - name: Clone the repo.
@@ -220,16 +263,18 @@ jobs:
         with:
           name: dist
           path: dist/
-      - name: Run tests on the package with Python ${{ matrix.python-version }}.
+      - name: Run tests on the package.
         env:
           PYTHON_VERSION: ${{ matrix.python-version }}
+          NUMPY_VERSION: ${{ matrix.numpy-version }}
+          SCIPY_VERSION: ${{ matrix.scipy-version }}
         # NOTE: Since the package job builds the wheel from the sdist,
         # test the wheel as it should cover both.
         run: |
           python -Im pip install --quiet .[ci]
           python -Im nox \
             --non-interactive \
-            --session "testpackage-${PYTHON_VERSION}" \
+            --session "testpackage-${PYTHON_VERSION}(numpy='${NUMPY_VERSION}', scipy='${SCIPY_VERSION}')" \
             -- \
             dist/*.whl
   verify:
