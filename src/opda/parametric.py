@@ -2630,8 +2630,8 @@ class NoisyQuadraticDistribution:
                     initial_estimates = collections.defaultdict(list)
                     ds = (
                         # When fitting a and b, use 2 estimates for
-                        # each since there are 5 s estimates for a
-                        # total of 2 * 2 * 5 = 20 estimates.
+                        # each since there are 7 s estimates for a
+                        # total of 2 * 2 * 7 = 28 estimates.
                         [-0.2, 0.2]
                         if a is None and b is None else
                         # When fitting only a or only b use more initial
@@ -2732,8 +2732,12 @@ class NoisyQuadraticDistribution:
                         bounds=bounds,
                         init=initial_population,
                         integrality=integrality,
-                        polish=True,
+                        strategy="rand2exp",
+                        mutation=(0.5, 1.5),
+                        recombination=0.9,
                         updating="immediate",
+                        tol=0.001,
+                        polish=True,
                         vectorized=False,
                         workers=1,
                         seed=generator,
