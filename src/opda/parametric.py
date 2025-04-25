@@ -426,7 +426,7 @@ class QuadraticDistribution:
 
         Parameters
         ----------
-        ys : 1D array of finite floats, required
+        ys : 1D array of floats, required
             The sample from the distribution.
         limits : pair of floats, optional
             The left-open interval over which to fit the distribution.
@@ -616,8 +616,12 @@ class QuadraticDistribution:
             raise ValueError(f"ys must be a 1D array, not {len(ys.shape)}D.")
         if len(ys) == 0:
             raise ValueError("ys must be non-empty.")
-        if not np.all(np.isfinite(ys)):
-            raise ValueError("ys must only contain finite floats.")
+        if limits[0] == -np.inf and np.any(np.isneginf(ys)):
+            raise ValueError("ys must not contain -inf unless it is censored.")
+        if limits[1] == np.inf and np.any(np.isposinf(ys)):
+            raise ValueError("ys must not contain inf unless it is censored.")
+        if np.any(np.isnan(ys)):
+            raise ValueError("ys must not contain NaN.")
         if np.issubdtype(ys.dtype, np.integer):
             # Only cast ys if it has an integer data type, otherwise
             # preserve its precision which we'll need later in order
@@ -1794,7 +1798,7 @@ class NoisyQuadraticDistribution:
 
         Parameters
         ----------
-        ys : 1D array of finite floats, required
+        ys : 1D array of floats, required
             The sample from the distribution.
         limits : pair of floats, optional
             The left-open interval over which to fit the distribution.
@@ -2055,8 +2059,12 @@ class NoisyQuadraticDistribution:
             raise ValueError(f"ys must be a 1D array, not {len(ys.shape)}D.")
         if len(ys) == 0:
             raise ValueError("ys must be non-empty.")
-        if not np.all(np.isfinite(ys)):
-            raise ValueError("ys must only contain finite floats.")
+        if limits[0] == -np.inf and np.any(np.isneginf(ys)):
+            raise ValueError("ys must not contain -inf unless it is censored.")
+        if limits[1] == np.inf and np.any(np.isposinf(ys)):
+            raise ValueError("ys must not contain inf unless it is censored.")
+        if np.any(np.isnan(ys)):
+            raise ValueError("ys must not contain NaN.")
         if np.issubdtype(ys.dtype, np.integer):
             # Only cast ys if it has an integer data type, otherwise
             # preserve its precision which we'll need later in order
