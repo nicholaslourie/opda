@@ -2013,18 +2013,20 @@ class NoisyQuadraticDistribution:
 
         Finally, you can use ``constraints`` to bound any of the
         parameters in case you have some extra information. For example,
-        if you knew a bound on the average performance of the worst or
-        best hyperparameters, you could constrain ``a`` and ``b``:
+        if you knew a bound on the average performance of the best
+        hyperparameters, you might constrain ``a`` (when minimizing) or
+        ``b`` (when maximizing):
 
         .. code:: python
 
            >>> min_accuracy, max_accuracy = 0., 1.
            >>> NoisyQuadraticDistribution.fit(
            ...   ys=[0.59, 0.86, 0.94, 0.81, 0.68, 0.90, 0.93, 0.75],
-           ...   constraints={
-           ...     "a": (min_accuracy, max_accuracy),
-           ...     "b": (min_accuracy, max_accuracy),
-           ...   },
+           ...   constraints=(
+           ...     {"a": (min_accuracy, max_accuracy)}
+           ...     if minimize else
+           ...     {"b": (min_accuracy, max_accuracy)}
+           ...   ),
            ... )
            NoisyQuadraticDistribution(...)
 
