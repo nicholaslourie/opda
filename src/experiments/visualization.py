@@ -89,7 +89,7 @@ def plot_pdf(
     ax.hist(xs, bins="auto", density=True)
 
     ax.set_xlabel(rf"${name.lower()}$")
-    ax.set_ylabel(rf"$d\mathbb{{P}}({name.upper()} = {name.lower()})$")
+    ax.set_ylabel(rf"$d\mathbb{{P}}({name.upper()} \leq {name.lower()})$")
     ax.set_title(rf"PDF (${name}$)")
 
     return fig, ax
