@@ -108,12 +108,19 @@ The format is based on `Keep a Changelog
   ``License :: OSI Approved :: Apache Software License``.
 * Parallelize the ``testpackage`` CI job over all NumPy and SciPy
   versions in addition to Python versions.
+* Automatically adjust the number of histogram bins used in
+  ``experiments.visualization.plot_pdf`` based on the sample size.
+* Standardize the figure sizes for plotting functions in
+  ``experiments.visualization``.
+* Improve the notation used in the notebooks and
+  ``experiments.visualization``.
 
 .. rubric:: Deprecations
 .. rubric:: Removals
 
 * Drop support for ``numpy == 1.23`` and ``scipy == 1.10``.
 * Drop support for Python 3.8.
+* Remove ``experiments.visualization.plot_random_search``.
 
 .. rubric:: Fixes
 
