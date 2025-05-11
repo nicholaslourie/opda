@@ -135,6 +135,10 @@ The format is based on `Keep a Changelog
 
 * Improve the README for the DeBERTa hyperparameter tuning results
   (``data/deberta/README.md``).
+* Fix examples in docstrings for
+  ``opda.parametric.QuadraticDistribution.fit`` and
+  ``opda.parametric.NoisyQuadraticDistribution.fit`` that constrain
+  the parameters using bounds on the validation score.
 
 .. rubric:: Security
 
