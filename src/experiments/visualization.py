@@ -9,90 +9,6 @@ from matplotlib import (
 import numpy as np
 
 
-def plot_random_search(
-        func,
-        bounds = (-1., 1.),
-        n_samples = 10,
-        n_grid = 1_000,
-        ax = None,
-        *,
-        generator = None,
-):
-    """Return a plot visualizing the random search process.
-
-    Parameters
-    ----------
-    func : function, required
-        A function mapping 1 dimensional vectors to scalars.
-    bounds : pair of floats, optional
-        Bounds for the random search's uniform sampling.
-    n_samples : int, optional
-        The number of samples to take in the random search.
-    n_grid : int, optional
-        The number of grid points to use when plotting the function.
-    ax : plt.Axes or None, optional
-        An axes on which to make the plot, or ``None``. If ``None``,
-        then a figure and axes for the plot will be automatically
-        generated.
-    generator : np.random.Generator or None, optional
-        The random number generator to use. If ``None``, then a new
-        random number generator is created, seeded with entropy from
-        the operating system.
-
-    Returns
-    -------
-    plt.Figure or None
-        The figure on which the plot was made. If ``ax`` was not
-        ``None``, then the returned figure will be ``None``.
-    plt.Axes
-        The axis on which the plot was made. If ``ax`` was not ``None``,
-        then the returned axis will be ``ax``.
-    """
-    # Validate arguments.
-    if ax is None:
-        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(11, 5))
-    else:
-        fig = None
-
-    generator = (
-        generator
-        if generator is not None else
-        np.random.default_rng()
-    )
-
-    # Construct the plot.
-    grid = np.linspace(*bounds, num=n_grid).reshape(n_grid, 1)
-
-    y_argmax = grid[np.argmax(func(grid))]
-
-    xs = generator.uniform(*bounds, size=(n_samples, 1))
-    ys = func(xs)
-
-    ax.plot(
-        grid,
-        func(grid),
-        linestyle="-",
-        c="grey",
-        label=r"$y = f(x)$",
-    )
-    ax.axvline(
-        y_argmax,
-        linestyle="--",
-        c="grey",
-        label=r"$\operatorname{arg\,max} f(x)$",
-    )
-    ax.scatter(xs, ys, marker="x", c="k", s=50)
-    for x in xs:
-        ax.axvline(x, linestyle=":", c="grey")
-
-    ax.legend()
-    ax.set_title("Random Search")
-    ax.set_xlabel(r"$x$")
-    ax.set_ylabel(r"$y$")
-
-    return fig, ax
-
-
 def plot_cdf(
         xs,
         name,
@@ -170,10 +86,10 @@ def plot_pdf(
 
     n, = xs.shape
 
-    ax.hist(xs, density=True)
+    ax.hist(xs, bins="auto", density=True)
 
     ax.set_xlabel(rf"${name.lower()}$")
-    ax.set_ylabel(rf"$d\mathbb{{P}}({name.upper()} = {name.lower()})$")
+    ax.set_ylabel(rf"$d\mathbb{{P}}({name.upper()} \leq {name.lower()})$")
     ax.set_title(rf"PDF (${name}$)")
 
     return fig, ax
@@ -207,7 +123,7 @@ def plot_distribution(
         ``None``, then the returned axes will be ``axes``.
     """
     if axes is None:
-        fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(11, 5), sharex=True)
+        fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(12, 5), sharex=True)
     else:
         fig = None
 
@@ -254,7 +170,7 @@ def plot_distribution_approximation(
     """
     fig, axes = plot_distribution(
         simulation.yss_cummax[:, n-1],
-        name=f"Y_{{({n})}}",
+        name=f"T_{{{n}}}",
         axes=axes,
     )
 
@@ -315,7 +231,7 @@ def plot_tuning_curve_approximation(
         ``None``, then the returned axes will be ``axes``.
     """
     if axes is None:
-        fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(11, 5), sharex=True)
+        fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(12, 5), sharex=True)
     else:
         fig = None
 
@@ -349,12 +265,12 @@ def plot_tuning_curve_approximation(
         ax.set_ylim(*ylim)
         ax.legend()
 
-    axes[0].set_xlabel(r"$n$")
-    axes[0].set_ylabel(r"$\tau_m(n)$")
+    axes[0].set_xlabel(r"$k$")
+    axes[0].set_ylabel(r"$\tau_m(k)$")
     axes[0].set_title("Median Tuning Curve")
 
-    axes[1].set_xlabel(r"$n$")
-    axes[1].set_ylabel(r"$\tau_e(n)$")
+    axes[1].set_xlabel(r"$k$")
+    axes[1].set_ylabel(r"$\tau_e(k)$")
     axes[1].set_title("Expected Tuning Curve")
 
     return fig, axes
