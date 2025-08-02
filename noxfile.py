@@ -9,6 +9,7 @@ import pathlib
 import re
 import shutil
 import tempfile
+import time
 
 from lxml import etree
 import nox
@@ -687,11 +688,30 @@ def release(session):
     #   Install the package from TestPyPI.
     #     For security, install from TestPyPI *without dependencies*,
     #     because we can't trust the dependencies are the expected packages.
-    session.install(
-        "--index-url", "https://test.pypi.org/simple/",
-        "--no-deps",
-        f"opda == {pyproject['project']['version']}",
-    )
+    max_retries = 5
+    for n_retries in range(max_retries + 1):
+        # Retry with exponential backoff because the package might not
+        # be available for download immediately after uploading.
+        try:
+            session.install(
+                "--index-url", "https://test.pypi.org/simple/",
+                "--no-deps",
+                f"opda == {pyproject['project']['version']}",
+            )
+            break
+        except nox.command.CommandFailed:
+            if n_retries == max_retries:
+                session.log(
+                    f"Installation failed. Retried {n_retries} / {max_retries}"
+                    f" times.",
+                )
+                raise
+            wait = 8 * 2**n_retries
+            session.log(
+                f"Installation failed. Retried {n_retries} / {max_retries}"
+                f" times. Waiting {wait}s before next attempt.",
+            )
+            time.sleep(wait)
     #     Then, install the dependencies from PyPI.
     # backwards compatibility (github.com/pypa/pip/issues/11440)
     # The code below should be replaced by pip's --only-deps feature
@@ -733,9 +753,28 @@ def release(session):
     # Test the package from PyPI.
     uninstall_all_packages(session)
     #   Install the package from PyPI.
-    session.install(
-        f"opda[test] == {pyproject['project']['version']}",
-    )
+    max_retries = 5
+    for n_retries in range(max_retries + 1):
+        # Retry with exponential backoff because the package might not
+        # be available for download immediately after uploading.
+        try:
+            session.install(
+                f"opda[test] == {pyproject['project']['version']}",
+            )
+            break
+        except nox.command.CommandFailed:
+            if n_retries == max_retries:
+                session.log(
+                    f"Installation failed. Retried {n_retries} / {max_retries}"
+                    f" times.",
+                )
+                raise
+            wait = 8 * 2**n_retries
+            session.log(
+                f"Installation failed. Retried {n_retries} / {max_retries}"
+                f" times. Waiting {wait}s before next attempt.",
+            )
+            time.sleep(wait)
     #   Test the package.
     session.run(
         "python", "-Im",
