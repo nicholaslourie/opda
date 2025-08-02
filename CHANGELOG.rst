@@ -45,7 +45,8 @@ The format is based on `Keep a Changelog
 =============
 .. rubric:: Additions
 
-* Add support for ``numpy == 2.2`` and ``scipy == 1.15``.
+* Add support for ``numpy == 2.2``, ``numpy == 2.3``, ``scipy == 1.15``,
+  and ``scipy == 1.16``.
 * Add the hyperparameter residual results from retraining configurations
   for ResNet18 on ImageNet with different random seeds.
 
@@ -118,7 +119,8 @@ The format is based on `Keep a Changelog
 .. rubric:: Deprecations
 .. rubric:: Removals
 
-* Drop support for ``numpy == 1.23`` and ``scipy == 1.10``.
+* Drop support for ``numpy == 1.23``, ``numpy == 1.24``,
+  ``numpy == 1.25``, and ``scipy == 1.10``.
 * Drop support for Python 3.8.
 * Remove ``experiments.visualization.plot_random_search``.
 
