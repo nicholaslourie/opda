@@ -44,7 +44,12 @@ def ellipse_volume(cs):
     )
 
 
-def get_approximation_parameters(func, bounds):
+def get_approximation_parameters(
+        func,
+        bounds,
+        *,
+        generator = None,
+):
     """Return parameters approximating random search on ``func``.
 
     Return :py:class:`opda.parametric.QuadraticDistribution` parameters
@@ -59,6 +64,10 @@ def get_approximation_parameters(func, bounds):
         An array of d pairs of floats, where d is the dimension of
         ``func``'s domain. Each pair, ``(lo, hi)`` defines a lower and
         upper bound for the random search on that respective coordinate.
+    generator : np.random.Generator or None, optional
+        The random number generator to use. If ``None``, then a new
+        random number generator is created, seeded with entropy from the
+        operating system.
 
     Returns
     -------
@@ -78,6 +87,7 @@ def get_approximation_parameters(func, bounds):
        asymptotically approximates the tail of the score distribution
        from random search.
     """
+    # Validate the arguments.
     bounds = np.array(bounds)
     if not len(bounds.shape) == 2:
         raise ValueError(
@@ -94,10 +104,17 @@ def get_approximation_parameters(func, bounds):
     if np.any(~np.isfinite(bounds)):
         raise ValueError("bounds must contain only finite floats.")
 
+    generator = (
+        generator
+        if generator is not None else
+        np.random.default_rng()
+    )
+
+    # Determine the approximation parameters.
     n_dims, _ = bounds.shape
 
     y_argmax = optimize.differential_evolution(
-        lambda x: -func(x), bounds=bounds,
+        lambda x: -func(x), bounds=bounds, seed=generator,
     ).x
     y_max = func(y_argmax)
 

@@ -45,6 +45,7 @@ classifiers = [
 experiments = [                                      # build: local-only
   "autograd >= 1.6.0",                               # build: local-only
   "matplotlib >= 3.7.0",                             # build: local-only
+  "scikit-learn >= 1.5.2",                           # build: local-only
 ]                                                    # build: local-only
 nbs = [
   "opda[experiments]",                               # build: local-only

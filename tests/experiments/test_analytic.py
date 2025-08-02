@@ -146,3 +146,52 @@ class GetApproximationParametersTestCase(unittest.TestCase):
                 empirical_distribution.average_tuning_curve(ns),
                 atol=0.025,
             ))
+
+    def test_get_approximation_parameters_with_generator_argument(self):
+        n_dims = 1
+
+        func = simulation.make_damped_linear_sin(
+            scale=1,
+            weights=[1] * n_dims,
+            bias=0,
+        )
+        bounds = [(0.0, 0.5)] * n_dims
+
+        # Without a generator, two runs should be unequal.
+        self.assertNotEqual(
+            analytic.get_approximation_parameters(
+                func=func,
+                bounds=bounds,
+            ),
+            analytic.get_approximation_parameters(
+                func=func,
+                bounds=bounds,
+            ),
+        )
+        # Reusing the same generator, two runs should be unequal.
+        generator = np.random.default_rng(0)
+        self.assertNotEqual(
+            analytic.get_approximation_parameters(
+                func=func,
+                bounds=bounds,
+                generator=generator,
+            ),
+            analytic.get_approximation_parameters(
+                func=func,
+                bounds=bounds,
+                generator=generator,
+            ),
+        )
+        # Using generators in the same state, two runs should be equal.
+        self.assertEqual(
+            analytic.get_approximation_parameters(
+                func=func,
+                bounds=bounds,
+                generator=np.random.default_rng(0),
+            ),
+            analytic.get_approximation_parameters(
+                func=func,
+                bounds=bounds,
+                generator=np.random.default_rng(0),
+            ),
+        )
