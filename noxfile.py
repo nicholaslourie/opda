@@ -36,7 +36,7 @@ SUPPORTED_PYTHON_VERSIONS = {"3.9", "3.10", "3.11", "3.12", "3.13"}
 
 SUPPORTED_PACKAGE_VERSIONS = {
     "numpy": {"1.26", "2.0", "2.1", "2.2", "2.3"},
-    "scipy": {"1.11", "1.12", "1.13", "1.14", "1.15"},
+    "scipy": {"1.11", "1.12", "1.13", "1.14", "1.15", "1.16"},
 }
 """All core package versions currently supported by opda."""
 
