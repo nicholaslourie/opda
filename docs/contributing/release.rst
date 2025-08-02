@@ -119,8 +119,8 @@ Then:
 
     a. Select the tag for the release.
     b. Use the tag's name, ``${VERSION}``, for the release title.
-    c. Copy and paste the changelog into the release description. Edit
-       the text so that it's properly formatted.
+    c. Link to the release's section of the :doc:`Changelog
+       </changelog>` in the release description.
     d. Acknowledge anyone who contributed to the release at the end of
        the description.
     e. Submit the release.
