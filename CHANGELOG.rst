@@ -41,8 +41,8 @@ The format is based on `Keep a Changelog
            .. _unreleased: https://github.com/nicholaslourie/opda/compare/${VERSION}...HEAD
 
 
-`Unreleased`_
-=============
+`v0.8.0`_ - 2025-08-02
+======================
 .. rubric:: Additions
 
 * Add support for ``numpy == 2.2``, ``numpy == 2.3``, ``scipy == 1.15``,
@@ -121,7 +121,6 @@ The format is based on `Keep a Changelog
 * Improve the notation used in the notebooks and
   ``experiments.visualization``.
 
-.. rubric:: Deprecations
 .. rubric:: Removals
 
 * Drop support for ``numpy == 1.23``, ``numpy == 1.24``,
@@ -165,8 +164,6 @@ The format is based on `Keep a Changelog
 
 * Begin linking to the changelog rather than copying it in release
   descriptions on GitHub.
-
-.. rubric:: Security
 
 
 `v0.7.0`_ - 2024-11-11
@@ -662,7 +659,7 @@ This version is the first uploaded to PyPI and available via ``pip``!
 ..
   Link Definitions
 
-.. _unreleased: https://github.com/nicholaslourie/opda/compare/v0.7.0...HEAD
+.. _v0.8.0: https://github.com/nicholaslourie/opda/compare/v0.7.0...v0.8.0
 .. _v0.7.0: https://github.com/nicholaslourie/opda/compare/v0.6.1...v0.7.0
 .. _v0.6.1: https://github.com/nicholaslourie/opda/compare/v0.6.0...v0.6.1
 .. _v0.6.0: https://github.com/nicholaslourie/opda/compare/v0.5.0...v0.6.0
