@@ -144,6 +144,8 @@ The format is based on `Keep a Changelog
 * Fix an error thrown by ``opda.parametric.QuadraticDistribution.fit``
   and ``opda.parametric.NoisyQuadraticDistribution.fit`` when all
   ``ys`` are negative.
+* Fix a race condition when downloading and testing a new release in
+  the "release" nox session.
 
 .. rubric:: Documentation
 
@@ -160,6 +162,9 @@ The format is based on `Keep a Changelog
   * *Validating the Parametric Analysis in Practice*
   * *Analyzing Variation Due to Random Seeds*
   * *Generalizing the Parametric Analysis Across Architectures*
+
+* Begin linking to the changelog rather than copying it in release
+  descriptions on GitHub.
 
 .. rubric:: Security
 
