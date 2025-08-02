@@ -90,6 +90,11 @@ The format is based on `Keep a Changelog
   ``opda.parametric.NoisyQuadraticDistribution.fit`` accept infinite
   observations in ``ys`` if those observations are censored by
   ``limits``.
+* Add a ``generator`` parameter to
+  ``experiments.analytic.get_approximation_parameters`` so that it's
+  possible to make it deterministic.
+* Add ``scikit-learn >= 1.5.2`` as part of the ``experiments``
+  optional dependencies.
 
 .. rubric:: Changes
 
@@ -148,6 +153,13 @@ The format is based on `Keep a Changelog
   ``opda.parametric.QuadraticDistribution.fit`` and
   ``opda.parametric.NoisyQuadraticDistribution.fit`` that constrain
   the parameters using bounds on the validation score.
+* Add Jupyter notebooks developing, describing, and analyzing the
+  parametric analysis:
+
+  * *Parametric Analysis*
+  * *Validating the Parametric Analysis in Practice*
+  * *Analyzing Variation Due to Random Seeds*
+  * *Generalizing the Parametric Analysis Across Architectures*
 
 .. rubric:: Security
 
